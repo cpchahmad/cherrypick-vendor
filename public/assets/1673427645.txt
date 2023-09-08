@@ -1,0 +1,2 @@
+1.desktop version bannner will show in mobile app.
+2. Produt >> offer Id>> Custom URL

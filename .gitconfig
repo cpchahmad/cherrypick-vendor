@@ -1,0 +1,5 @@
+[safe]
+	directory = /var/www/html/demo25.iitpl.com
+[user]
+	email = pradeep@orangemantra.in
+	name = pradeep

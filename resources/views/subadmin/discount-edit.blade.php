@@ -1,0 +1,235 @@
+@extends('layouts.admin')
+@section('main')
+<main id="main" class="main">
+    <div class="subpagetitle fit-title">
+        <h1>Discount Settings</h1>
+         <p><a href="{{url('manage-discount')}}">Discount</a> / <b>Discount Settings</b></p>
+      </div>
+      
+   <section class="section dashboard">
+    <div class="row">
+      <div class="col-lg-12">
+          <form class="edit-timer-form cp-setting" method="post" action="{{url('save-discount')}}">
+              @csrf
+            <div class="card">
+                <div class="seprate row g-3">
+                    <div class="col-12">
+                     <label for="inputNanme4" class="form-label"><b>Discount Code</b></label>
+                     <input type="text" class="form-control" name="discount_code" value="{{$data->code}}" placeholder="Discount Code" required="true">
+                     <span class="ds-text">Customers will enter this discount code at checkout.</span>
+                    </div>
+               </div>
+            </div>
+
+            <div class="card">
+            <div class="seprate row g-3">
+                <div class="col-6">
+                    <label for="" class="form-label"><b>Type</b></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="discount_type" id="gridRadios1" value="percentage"@if($data->type=='percentage') checked @endif>
+                        <label class="form-check-label" for="gridRadios1">
+                            Percentage
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="discount_type" id="gridRadios2" value="fixed_amount"@if($data->type=='fixed_amount') checked @endif>
+                        <label class="form-check-label" for="gridRadios2">
+                            Fixed Discount
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="col-12">
+                        <label for="inputNanme4" class="form-label"><b>Value</b></label>
+                        <input type="text" class="form-control" name="discount_value" value="{{$data->discount_value}}" placeholder="Discount Value"  required="true">
+                        <span class="ds-text">Example: 30%</span>
+                       </div>
+                </div>
+              </div>     
+           </div>
+           <div class="card">
+            <div class="seprate row g-3">
+                <div class="col-6">
+                    <label for="" class="form-label"><b>Minimum Requirement</b></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="minimum_requirements" id="gridMR1" value="none"@if($data->minimum_requirement=='none') checked @endif>
+                        <label class="form-check-label" for="gridMR1">
+                            None
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="minimum_requirements" id="gridMR2" value="price"@if($data->minimum_requirement=='price') checked @endif>
+                        <label class="form-check-label" for="gridMR2">
+                            Minimum Purchase Price ($)
+                        </label>
+                        <div class="show-fields-input">
+                            <input class="form-control" type="text" name="minimum_price" value="{{$data->minimum_requirement_value}}" placeholder="Enter Minimum Price">
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="minimum_requirements" id="gridMR3" value="quantity"@if($data->minimum_requirement=='quantity') checked @endif>
+                        <label class="form-check-label" for="gridMR3">
+                            Minimum Quantity of Items
+                        </label>
+                        <div class="show-fields-input">
+                            <input class="form-control" type="text" name="minimum_quantity" value="{{$data->minimum_requirement_value}}" placeholder="Enter Minimum Quantity">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="col-12">
+                        <label for="inputNanme4" class="form-label"><b>Usage Limits</b></label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="usage_limit" id="gridUL1" value="2"@if($data->usage_limit=='2') checked @endif>
+                            <label class="form-check-label" for="gridUL1">
+                                Limit number of times this discount can be used in total
+                            </label>
+                            <div class="show-fields-input">
+                                <input class="form-control" type="text" name="usage_value" value="{{$data->usage_limit_value}}" placeholder="Enter Limit number">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="usage_limit" id="gridUL2" value="1"@if($data->usage_limit=='1') checked @endif>
+                            <label class="form-check-label" for="gridUL2">
+                                Limit to one use per customer
+                            </label>
+                        </div>
+                       </div>
+                </div>
+              </div>     
+           </div>
+           <div class="card">
+            <div class="seprate row g-3">
+                <div class="col-12">
+                    <label for="" class="form-label"><b>Applies To</b></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="applies_to" id="gridAT1" value="collection" checked>
+                        <label class="form-check-label" for="gridAT1">
+                            Specific Collection
+                        </label>
+                        <div class="member-plan-search header browser-search">
+                          <div class="search-bar search-form d-flex align-items-center">
+                                <input type="text" name="collection_ids" value="{{$collections_ids}}" readonly="true" placeholder="Search Collection" title="Enter search keyword">
+                                <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+                                <span style="color:red;">
+                                    @if($errors->has('collection_ids'))
+                                        <div class="error">{{ $errors->first('collection_ids') }}</div>
+                                     @endif
+                                </span>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="applies_to" id="gridAT2" value="products">
+                        <label class="form-check-label" for="gridAT2">
+                            Specific Products
+                        </label>
+                        <span style="color:red;">
+                        @if($errors->has('products_ids'))
+                            <div class="error">{{ $errors->first('products_ids') }}</div>
+                         @endif
+                        </span>
+                        <div class="member-plan-search header browser-search">
+                          <div class="">
+                                     <select name="products_ids[]" multiple="multiple" id="e2" style="width: 75%">
+                                         @if(count($products) > 1)
+                                             @foreach($products as $row)
+                                                <option value="{{$row['id']}}">{{$row['title']}}</option>
+                                             @endforeach   
+                                         @endif
+                                    </select>                                   
+<!--                                <input type="text" name="products_ids" placeholder="Search Products" title="Enter search keyword">
+                                <button type="submit" title="Search"><i class="bi bi-search"></i></button>-->
+                            </div>
+                         </div>
+                    </div>
+                   
+                </div>
+              </div>     
+           </div>
+           <div class="card">
+            <div class="seprate row g-3">
+                <div class="col-12">
+                    <label for="" class="form-label"><b>Customer Eligibility</b></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="eligibility" id="gridCE" value="everyone" checked>
+                        <label class="form-check-label" for="gridCE">
+                            Everyone
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="eligibility" id="gridCE2" value="customers">
+                        <label class="form-check-label" for="gridCE2">
+                            Specific Customers
+                        </label>
+                        <span style="color:red;">
+                        @if($errors->has('customer_ids'))
+                            <div class="error">{{ $errors->first('customer_ids') }}</div>
+                         @endif
+                        </span>
+                        <div class="member-plan-search header browser-search">
+                          <div class="">
+                                    <select name="customer_ids[]" multiple="multiple" id="e3"  style="width: 75%">
+                                           
+                                    </select>
+<!--                                <input type="text" name="customer_ids" placeholder="Search Customers" title="Enter search keyword">
+                                <button type="submit" title="Search"><i class="bi bi-search"></i></button>-->
+                            </div>
+                         </div>
+                    </div>
+                   
+                </div>
+              </div>     
+           </div>
+           <div class="card">
+            <div class="seprate offer row g-3">
+                <div class="col-12">
+                 <p><b>Active Dates</b></p>
+                 <div class="row">
+                 <div class="col-6">
+                 <label for="inputNanme4" class="form-label">Start Date</label>
+                 <input type="date" name="start_date" class="form-control" id="" value=""  required="true">
+               
+                </div>
+                <div class="col-6">
+                    <label for="inputNanme4" class="form-label">Start Time</label>
+                    <input type="time" name="start_time" class="form-control" id="" placeholder="Offer Messages"  required="true">
+                    
+                   </div>
+                   <div class="col-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="gridEN" id="gridEN" value="option3">
+                      <label class="form-check-label" for="gridEN">
+                          Set End Date
+                      </label>
+                      <div class="end-date-time">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="inputNanme4" class="form-label">End Date</label>
+                          <input type="date" name="end_date" class="form-control" id="" value="">
+                        
+                         </div>
+                         <div class="col-6">
+                             <label for="inputNanme4" class="form-label">End Time</label>
+                             <input type="time" name="end_time" class="form-control" id="" placeholder="Offer Messages">
+                             
+                            </div>
+                      </div>
+                    </div>
+                  </div>
+                   </div>
+                </div>
+            </div>
+           </div>
+        </div>
+ 
+    <div class="timer-btns">
+        <button type="submit" class="btn btn-primary">Save</button>
+     </div>
+ </form>
+      </div>
+    </div>
+  </section>
+  </main><!-- End #main -->
+
+@endsection

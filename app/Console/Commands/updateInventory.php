@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use App\Models\ProductInfo;
+use DB;
+
+class updateInventory extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'inventory:update';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'update shopify inventory';
+
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle()
+    {
+       $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+       $PASSWORD = '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';
+       $SHOP_URL = 'cityshop-company-store.myshopify.com';
+       $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/inventory_levels/set.json";
+       //$product_inv = ProductInfo::where('stock', '>', 0)->whereNotNull('inventory_item_id')->get();
+	   $product_inv = ProductInfo::where('vendor_id', 32)->where('inventory_status', 1)->whereNotNull('inventory_item_id')->get();
+       foreach($product_inv as $row)
+       {
+           $data=array(
+               'location_id' => '62600577199',
+               'inventory_item_id' => $row['inventory_item_id'],
+               'available' => $row['stock']
+           );
+           $curl = curl_init();
+           curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+           $headers = array(
+               "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+               "Content-Type: application/json",
+               "charset: utf-8"
+           );
+           curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+           curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+           curl_setopt($curl, CURLOPT_VERBOSE, 0);
+           //curl_setopt($curl, CURLOPT_HEADER, 1);
+           curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+           //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+           curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+           curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+           curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+           $response = curl_exec ($curl);
+           curl_close ($curl);
+		   ProductInfo::where('id', $row->id)->update(['inventory_status' => 0]);
+       }
+        //return Command::SUCCESS;
+    }
+}

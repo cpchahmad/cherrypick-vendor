@@ -24,7 +24,7 @@ class ProductImport implements ToModel, WithStartRow, WithValidation
     {
         return 2;
     }
- 
+
     public function model(array $row)
     {
         //echo "<pre>"; print_r($row); die();
@@ -58,7 +58,7 @@ class ProductImport implements ToModel, WithStartRow, WithValidation
             $product->vendor = $vendor_id;
             $product->tags = $row[2];
             $product->category = $category_id;
-            $product->save(); 
+            $product->save();
             $product_id=$product->id;
 			$Tags=explode(",",$row[2]);
             if(in_array("Saree",$Tags))
@@ -88,10 +88,72 @@ class ProductImport implements ToModel, WithStartRow, WithValidation
 					$product_img->image = $img_name;
 					$product_img->product_id = $product_id;
 					$product_img->save();
-				}				
+				}
 			}
+
+                $url1 = $row[16];
+                if($url1!='')
+                {
+                    $handle1 = @fopen($url1, 'r');
+                    if($handle1){
+                        $img1 = "uploads/profile/".$product_id."-".time().".jpg";
+                        file_put_contents($img1, file_get_contents($url1));
+                        $img_name1=url($img1);
+                        $product_img = new ProductImages;
+                        $product_img->image = $img_name1;
+                        $product_img->product_id = $product_id;
+                        $product_img->save();
+                    }
+                }
+
+                $url2 = $row[17];
+                if($url2!='')
+                {
+                    $handle2 = @fopen($url2, 'r');
+                    if($handle2){
+                        $img2 = "uploads/profile/".$product_id."-".time().".jpg";
+                        file_put_contents($img2, file_get_contents($url2));
+                        $img_name2=url($img2);
+                        $product_img = new ProductImages;
+                        $product_img->image = $img_name2;
+                        $product_img->product_id = $product_id;
+                        $product_img->save();
+                    }
+                }
+
+                $url3 = $row[18];
+                if($url3!='')
+                {
+                    $handle3 = @fopen($url3, 'r');
+                    if($handle3){
+                        $img3 = "uploads/profile/".$product_id."-".time().".jpg";
+                        file_put_contents($img3, file_get_contents($url3));
+                        $img_name3=url($img3);
+                        $product_img = new ProductImages;
+                        $product_img->image = $img_name3;
+                        $product_img->product_id = $product_id;
+                        $product_img->save();
+                    }
+                }
+
+                $url4 = $row[19];
+                if($url4!='')
+                {
+                    $handle4 = @fopen($url4, 'r');
+                    if($handle4){
+                        $img4 = "uploads/profile/".$product_id."-".time().".jpg";
+                        file_put_contents($img4, file_get_contents($url4));
+                        $img_name4=url($img4);
+                        $product_img = new ProductImages;
+                        $product_img->image = $img_name4;
+                        $product_img->product_id = $product_id;
+                        $product_img->save();
+                    }
+                }
+
+
             ///Product variants
-            
+
                 $product_info = new ProductInfo;
                 $product_info->product_id = $product_id;
                 $product_info->vendor_id = $vendor_id;
@@ -123,7 +185,7 @@ class ProductImport implements ToModel, WithStartRow, WithValidation
 				$product->tags = $row[2];
 				$product->category = $category_id;
 				$product->save();
-				
+
 				$Tags=explode(",",$row[2]);
 				if(in_array("Saree",$Tags))
 					$is_saree = 1;

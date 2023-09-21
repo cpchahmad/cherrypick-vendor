@@ -14,7 +14,7 @@
             @foreach($prodcut_info as $row)
              <form action="{{url('update-variant')}}" method="post" class="add-product-form"  enctype="multipart/form-data">
             <div class="card" id='card_{{$row->id}}'>
-               
+
                     @csrf
                 <div class="row">
                     @if($is_variants==1)
@@ -52,7 +52,7 @@
                        @enderror
                      </span>
                      </div>
-                   
+
                   </div>
                   <div class="col-4">
                     <div class="col-add-product product-flex">
@@ -90,8 +90,8 @@
                  <div class="col-4">
                    <div class="col-add-product product-flex">
                     <label for="inputNanme4" class="form-label">Dimensions</label>
-                    @php 
-                    $dimensions=explode("-",$row->dimensions);                   
+                    @php
+                    $dimensions=explode("-",$row->dimensions);
                     @endphp
                     <div class="dimensions-input">
                       <input type="text" name="height" class="form-control" id="" placeholder="H" value="{{$dimensions[0]}}">
@@ -149,14 +149,14 @@
 					<a href="{{url('product-list')}}" class="btn btn-light">Back</a>
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>
-            
+
             </div>
             </form>
             @php $i++; @endphp
             @endforeach
              <meta name="csrf-token" content="{{ csrf_token() }}" />
-             
-    
+
+
     </section>
    </main>
 @endsection
@@ -189,7 +189,7 @@
       {
           var v_token = "{{csrf_token()}}";
            $.ajax({
-               type: 'POST',    
+               type: 'POST',
                 url:"{{url('delete-variant')}}",
                 data:'id='+ id,
                 headers: {'X-CSRF-Token': v_token},
@@ -221,8 +221,8 @@ function deleteImage(id)
         }
     });
 }
-      
-      
+
+
    $(document).ready(function () {
   document
     .getElementById("pro-image")
@@ -332,10 +332,9 @@ $(document).on("click", ".remove-field", function (e) {
                 }
             });
         });
-  
+
 </script>
 
 
 
-  
-  
+

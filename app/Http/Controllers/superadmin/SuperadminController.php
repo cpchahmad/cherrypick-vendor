@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\superadmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\Payment;
@@ -538,16 +539,18 @@ class SuperadminController extends Controller
         $total_weekly_approval=count($sql_weekly);
         $sql_month=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->lastOfMonth()->toDateString()])->get()->toArray();
         $total_month_approval=count($sql_month);
-        
+
         $sql_out_of_stock=ProductInfo::where('stock', 0)->get()->toArray();
         $total_out_of_stock=count($sql_out_of_stock);
-        
+
         $data = DB::table('products_variants')
                 ->select(array(DB::raw('COUNT(products_variants.id) as products'),'stores.name','stores.email','stores.status','stores.id'))
                 ->where('products_variants.stock', '=', 0)
                 ->join('stores', 'products_variants.vendor_id', '=', 'stores.id')
                 ->groupBy('products_variants.vendor_id')
                 ->get();
+
+
     	return view('superadmin.index', compact('total_approval','total_pending_approval','total_today_approval','total_weekly_approval','total_month_approval','total_out_of_stock','data','total_deny'));
     }
     public function changeVendorStatus(Request $request)
@@ -626,7 +629,7 @@ class SuperadminController extends Controller
             $filename = time().'.'.$extension;
             $file->move('uploads/logo/',$filename);
             $store->logo=$filename;
-        } 
+        }
         $store->about_store=$request->about_store;
         $store->store_carry=$request->store_carry;
 		$store->save();
@@ -875,8 +878,10 @@ class SuperadminController extends Controller
 	}
     public function createProductShopify($id)
     {
+
         $product = Product::find($id);
 		$store = Store::find($product->vendor);
+
         if($product->status==0 || $product->status==3)
         {
         $category=Category::find($product->category);
@@ -891,7 +896,7 @@ class SuperadminController extends Controller
                     "price"   => $v->price_usd,
                     "grams"   => $v->grams,
                     "taxable" => false,
-                    "inventory_management" => "shopify",
+                    "inventory_management" => ($v->stock ? "shopify" :null),
                     "inventory_quantity" => $v->stock
                 );
             }
@@ -900,7 +905,7 @@ class SuperadminController extends Controller
 		else
 			$opt[]=array('name' => 'Title');
         $products_array = array(
-            "product" => array( 
+            "product" => array(
                 "title"        => $product->title,
                 "body_html"    => $product->body_html,
                 "vendor"       =>  $store->name,
@@ -912,10 +917,20 @@ class SuperadminController extends Controller
 				"options"     =>  $opt
             )
         );
+
         //echo "<pre>"; print_r($products_array); die();
+
+
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+
+//            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//            $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//            $SHOP_URL = 'cherrpick-zain.myshopify.com';
+
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -950,7 +965,7 @@ class SuperadminController extends Controller
                                 ['items_id' => $prd['inventory_item_id'], 'location_id' => $location_id],
                                 ['items_id' => $prd['inventory_item_id'], 'stock' => $prd['inventory_quantity'], 'location_id' => $location_id]
                             );
-            
+
         }
         $this->shopifyUploadeImage($product->id,$shopify_product_id);
 		//$this->linkProductToCollection($shopify_product_id,$store->collections_ids);
@@ -969,6 +984,11 @@ class SuperadminController extends Controller
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+
+//            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//            $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//            $SHOP_URL = 'cherrpick-zain.myshopify.com';
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -990,6 +1010,112 @@ class SuperadminController extends Controller
             $response = curl_exec ($curl);
             curl_close ($curl);
             Product::where('id', $product['id'])->update(['edit_status' => 0, 'status' => '1', 'approve_date' => Carbon::now()]);
+
+            $product_infos =ProductInfo::where('product_id',$product['id'])->get();
+
+            if(count($product_infos) > 0) {
+                foreach ($product_infos as $index=> $product_info) {
+                    try {
+                        //update stock on live store
+                        $productController = new ProductController();
+                        $productController->updateStockLiveStore($product_info->inventory_id, $product_info->stock, $product_info->inventory_item_id);
+                        //update variant
+                        $productController->updateVarianatLiveStore($product_info->id);
+                        ///create new varient
+                        $invid = $product_info->inventory_id;
+                        if ($product_info->varient_name != '' && $product_info->varient_value != '') {
+                            $data['variant'] = array(
+                                "id" => $invid,
+                                "title" => $product_info->varient_name,
+                                "option1" => $product_info->varient_value,
+                                "sku" => $product_info->sku,
+                                "price" => $product_info->price_usd,
+                                "compare_at_price" => $product_info->price_usd,
+                                "grams" => $product_info->grams,
+                                "taxable" => false,
+                                "inventory_management" => ($product_info->stock) ? "shopify" : null,
+                            );
+                        } else {
+                            $data['variant'] = array(
+                                "id" => $invid,
+                                "sku" => $product_info->sku,
+                                "price" => $product_info->price_usd,
+                                "compare_at_price" => $product_info->price_usd,
+                                "grams" => $product_info->grams,
+                                "taxable" => false,
+                                "inventory_management" => ($product_info->stock) ? "shopify" : null,
+                            );
+                        }
+//                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+//                $PASSWORD = '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';
+//                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+                        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$invid.json";
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                        $headers = array(
+                            "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                            "Content-Type: application/json",
+                            "charset: utf-8"
+                        );
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+                        curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                        $response = curl_exec($curl);
+                        curl_close($curl);
+                        $res = json_decode($response, true);
+                        //echo "<pre>"; print_r($data); print_r($res); die();
+
+                        ////Update Image for variant
+                        $productDetails = Product::find($product_info->product_id);
+                        if ($productDetails->shopify_id != null && $productDetails->status == 1) {
+                            $shopify_product_id = $productDetails->shopify_id;
+                            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_product_id/images.json";
+                            $variant_id = $product_info->id;
+                            $imagesResult = ProductImages::where('variant_ids', $variant_id)->first();
+                            if ($imagesResult) {
+                                $data['image'] = array(
+                                    'src' => $imagesResult->image,
+                                    'variant_ids' => array($product_info->inventory_id),
+                                );
+                                $curl = curl_init();
+                                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                                $headers = array(
+                                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                                    "Content-Type: application/json",
+                                    "charset: utf-8"
+                                );
+                                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                                $response = curl_exec($curl);
+                                curl_close($curl);
+                                $img_result = json_decode($response, true);
+                                ProductImages::where('id', $imagesResult->id)->update(['image_id' => $img_result['image']['id']]);
+                            }
+                        }
+                        $location_id = Helpers::DiffalultLocation();
+                        ProductInventoryLocation::updateOrCreate(
+                            ['items_id' => $product_info->inventory_item_id, 'location_id' => $location_id],
+                            ['items_id' => $product_info->inventory_item_id, 'stock' => $product_info->stock, 'location_id' => $location_id]
+                        );
+
+
+                    }catch (\Exception $exception){
+                        dd($exception->getMessage());
+                    }
+            }
+            }
+
         }
         return redirect()->to('superadmin/approved-products/all')->with('success','Product Created Successfully.');
     }
@@ -1020,7 +1146,7 @@ class SuperadminController extends Controller
         curl_close ($curl);
 	}
     public function shopifyUploadeImage($id,$shopify_id)
-    {        
+    {
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -1066,27 +1192,27 @@ class SuperadminController extends Controller
    return redirect()->route('login');
 
    }
-   
+
    ///Fetch product from url and store in db
    public function fetchProductUrl(Request $request)
    {
    //echo "<pre>"; print_r($request->all()); die;
-      
+
 	   set_time_limit(0);
 	   $request->validate([
 			'username' => 'required',
             'url'=>'required|min:6',
             'password'=>'required|min:8',
         ]);
-		
+
 		$vendor=Store::where('name', $request->username)->first();
-		
+
 		$check=DB::table('cron_json_url')->where('url',$request->url)->get();
-		 
+
 		if($vendor)
 		{
 			$vid=$vendor->id;
-		
+
 		}
 		else{
 			$store = new Store;
@@ -1098,15 +1224,15 @@ class SuperadminController extends Controller
 			$store->save();
 			$vid=$store->id;
 		}
-		
-		
+
+
 		if(sizeof($check) == 0){
 		DB::table('cron_json_url')->insert(['vendor_id' =>$vid , 'url' => $request->url]);
-	      
+
 		}
-		
-		
-		
+
+
+
             $context = stream_context_create(
                 array(
                     "http" => array(
@@ -1116,14 +1242,14 @@ class SuperadminController extends Controller
             );
 			 $url=$request->url;
 			 $tag_url=$request->tag;
-			
+
 			$headers = @get_headers("https://".$url."/collections/all/products.json");
 			if(!$headers || strpos( $headers[0], '404')) {
 				return back()->with('error','Invalid Url');
 			}
 			//$vid=0;
 			for($i=1;$i<=100;$i++)
-			{	
+			{
 				$str=file_get_contents("https://".$url."/collections/all/products.json?page=".$i."&limit=250", false, $context);
                 $arr=json_decode($str,true);
 				if(count($arr['products']) < 250)
@@ -1134,7 +1260,7 @@ class SuperadminController extends Controller
 				else
 				{
 					$this->saveStoreFetchProductsFromJson($arr['products'],$vid,$tag_url);
-					
+
 				}
 				//echo "<pre>"; print_r($arr['products']); die();
 			}
@@ -1155,7 +1281,7 @@ class SuperadminController extends Controller
 			}
 			//echo $pid; die;
 			if($pid==0)  ////////New Product
-			{		
+			{
 			$cat=Category::where('category',$row['product_type'])->first();
             if($cat)
 				$category_id=$cat->id;
@@ -1163,7 +1289,7 @@ class SuperadminController extends Controller
                 {
                     $cate_que = new Category;
                     $cate_que->category = $row['product_type'];
-                    $cate_que->save(); 
+                    $cate_que->save();
                     $category_id=$cate_que->id;
                 }
 			$shopify_id=$row['id'];
@@ -1182,15 +1308,15 @@ class SuperadminController extends Controller
 				$product->vendor = $store_id;
 				$product->tags = $tags;
 				$product->category = $category_id;
-				$product->save(); 
+				$product->save();
 				$product_id=$product->id;
 			// }
 			// else
 			// {
 				// $product_id=$pInfo->id;
-			// } 
+			// }
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -1216,7 +1342,7 @@ class SuperadminController extends Controller
 					$product_info->dimensions = '0-0-0';
 					$product_info->varient_name = isset($row['options'][1]['name'])?$row['options'][1]['name']:$row['options'][0]['name'];
 					$product_info->varient_value = isset($var['option2'])?$var['option2']:$var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 			}
 			if($i>1)
@@ -1236,8 +1362,8 @@ class SuperadminController extends Controller
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 			else  //Existing Product
@@ -1248,7 +1374,7 @@ class SuperadminController extends Controller
 				Product::where('id', $pid)->update($data);
 				$product_id=$pid;
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -1274,7 +1400,7 @@ class SuperadminController extends Controller
 					$product_info->dimensions = '0-0-0';
 					$product_info->varient_name = isset($row['options'][1]['name'])?$row['options'][1]['name']:$row['options'][0]['name'];
 					$product_info->varient_value = isset($var['option2'])?$var['option2']:$var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 				else   //update variants
 				{
@@ -1313,25 +1439,25 @@ class SuperadminController extends Controller
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 		}
 	}
 	public function changestatus(){
 		$data = ProductInfo::get();
-	  
+
 		foreach($data as $key => $val) {
 			$price = $val->price;
 			$grams = $val->grams;
 			$mul = 0;
-			
+
 			if($val->dimensions != '' && $val->dimensions != '--' && $val->dimensions != '---' && $val->dimensions != '0' && $val->dimensions != '2'   ){
 				$d = explode('-',$val->dimensions);
 				if(sizeof($d) == 3){
                  if($d[2]!=''){
-                  
+
                    $mul = $d[0] * $d[1] * $d[2] /5000;
                 }
 				}
@@ -1342,14 +1468,14 @@ class SuperadminController extends Controller
            $product = Product::where('id',$val->product_id)->first();
            if($product){
 		    $db = Helpers::calc_price_new($price,$grams,$product->tags,$mul);
-		    
-		   
+
+
 		    ProductInfo::where('id',$val->id)->update([
-		    	'base_price'=>$db['inr'], 
-		    	'price_usd'=>$db['usd'], 
-		    	'price_aud'=>$db['aud'], 
-		    	'price_cad'=>$db['cad'], 
-		    	'price_gbp'=>$db['gbp'], 
+		    	'base_price'=>$db['inr'],
+		    	'price_usd'=>$db['usd'],
+		    	'price_aud'=>$db['aud'],
+		    	'price_cad'=>$db['cad'],
+		    	'price_gbp'=>$db['gbp'],
 		    	'price_nld'=>$db['nld'],
 				'price_irl'=>$db['irl'],
 				'price_ger'=>$db['ger'],
@@ -1374,34 +1500,34 @@ class SuperadminController extends Controller
         $request->validate([
             'file'=>'required|mimes:xlsx,csv',
         ]);
-		
+
         $data=Excel::import(new BluckProductImport,request()->file('file'));
-        
-         return redirect()->back()->with('success', 'uploaded Successfully');   
+
+         return redirect()->back()->with('success', 'uploaded Successfully');
        // return redirect()->route('superadmin.allproduct')->with('success','Product Rejected Successfully.');
 	}
-	
+
 	public function variantDetailUpdate(Request $request){
 		//echo "<pre>"; print_r($request->all()); die;
 	 $id=$request->post('variant_id');
 	$product_id=$request->post('product_id');
 	$shipping_weight=$request->post('shipping_weight');
-	
+
 	$product = Product::find($product_id);
-	
+
 	$product->title=$request->post('new_title');
 	$product->body_html=$request->post('new_body');
 	$product->tags=$request->post('tags');
 	$product->save();
-	
-	
-	
+
+
+
 	//dd($base_price);
 	$check=ProductInfo::where('id',$id)->exists();
-	
+
 	if ($check)
 	{
-	
+
 	        $product_info=ProductInfo::find($id);
 	       // dd($product_info->base_price);
 	        $prices=Helpers::calc_price_new($product_info->base_price,$shipping_weight,$request->post('tags'),'aaa',$product->vendor);
@@ -1417,11 +1543,11 @@ class SuperadminController extends Controller
 		$product_info->price_aud = $prices['aud'];
 		$product_info->price_irl = $prices['irl'];
 		$product_info->price_ger = $prices['ger'];
-		$product_info->save();   
+		$product_info->save();
 	}
-	
-	 return redirect()->back();   
+
+	 return redirect()->back();
 	}
-	
-	
+
+
 }

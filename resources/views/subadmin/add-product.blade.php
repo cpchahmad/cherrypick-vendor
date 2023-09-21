@@ -66,7 +66,7 @@
                  </div>
                </div>
                <span class="file0-size">Suggestion Size - 1080px * 1080xp </span>
-               
+
                 <div class="card">
                 <div class="row">
 								@php $var=0; @endphp
@@ -94,8 +94,8 @@
                             <input class="form-check-input" type="checkbox" name="payradious" id="payradious" value="1" onchange="showHideDiv()" @if($var==1) checked @endif>
                             <label class="form-check-label" for="payradious">
                               This product has variants, like size or color</label>
-	
-						
+
+
                         <div class="row show-options" id="multivarient" @if($var==1) style="display: block" @else style="display: none" @endif>
 						<span style="color:red;" id="err_var"></span>
                           <div class="customer_records_dynamic"></div>
@@ -111,7 +111,7 @@
                                    @enderror
                                 </span>
                                </div>
-                              
+
                              </div>
                              <div class="col-3">
                                <div class="col-add-product product-flex">
@@ -168,7 +168,7 @@
                                 </span>
                                 </div>
                              </div>
-                           
+
                              <div class="col-3">
                                <div class="col-add-product product-flex">
                                 <label for="inputNanme4" class="form-label">Dimensions</label>
@@ -217,12 +217,12 @@
                           </div>
                           <button class="extra-fields-customer" type="button" id='add'>Add More</button>
                         </div>
-                            
+
                         </div>
                   </div>
                </div>
             </div>
-               
+
                <div class="card" id="single_varient" @if($var==1) style="display: none" @endif>
                 <div class="row">
                    <div class="col-4">
@@ -235,7 +235,7 @@
                        @enderror
                      </span>
                      </div>
-                   
+
                   </div>
                   <div class="col-4">
                     <div class="col-add-product product-flex">
@@ -319,7 +319,7 @@
               <div class="row">
                  <div class="col-12">
                   <div class="col-add-product product-flex">
-                   <label for="inputNanme4" class="form-label">Category</label> 
+                   <label for="inputNanme4" class="form-label">Category</label>
                    <select class="form-select" aria-label="Default select example" name="category" >
                       <option value="">Select Category</option>
                       @foreach($category as $data)
@@ -373,7 +373,7 @@
             document.getElementById('err_tags').innerHTML="Please Enter Tags";
             document.form_data.tags.focus() ;
             return false;
-         }		 
+         }
 		 if (document.getElementById('payradious').checked) {
             var varient_name = document.getElementsByName('varient_name[]');
 			for (var i = 0, iLen = varient_name.length; i < iLen; i++) {
@@ -421,15 +421,15 @@
 				}
 			}
 			var varient_quantity = document.getElementsByName('varient_quantity[]');
-			for (var i = 0, iLen = varient_quantity.length; i < iLen; i++) {
-				if(varient_quantity[i].value=="")
-				{
-					document.getElementById('err_var').innerHTML="The varient quantity field is required.";
-					return false;
-				}
-			}
-			
-				
+			// for (var i = 0, iLen = varient_quantity.length; i < iLen; i++) {
+			// 	if(varient_quantity[i].value=="")
+			// 	{
+			// 		document.getElementById('err_var').innerHTML="The varient quantity field is required.";
+			// 		return false;
+			// 	}
+			// }
+
+
         } else {
 			if( document.form_data.price.value == "" ) {
 				document.getElementById('err_price').innerHTML="Please Enter Product Price";
@@ -446,11 +446,11 @@
 				document.form_data.grams.focus() ;
 				return false;
 			}
-			if( document.form_data.quantity.value == "" ) {
-				document.getElementById('err_quantity').innerHTML="Please Enter Product Quantity";
-				document.form_data.quantity.focus() ;
-				return false;
-			}
+			// if( document.form_data.quantity.value == "" ) {
+			// 	document.getElementById('err_quantity').innerHTML="Please Enter Product Quantity";
+			// 	document.form_data.quantity.focus() ;
+			// 	return false;
+			// }
         }
 		if( document.form_data.category.value == "" ) {
             document.getElementById('err_category').innerHTML="The category field is required.";
@@ -471,9 +471,9 @@ function showHideDiv()
         $("#multivarient").hide();
     }
 }
-      
-      
-      
+
+
+
    $(document).ready(function () {
   document
     .getElementById("pro-image")
@@ -584,7 +584,7 @@ $(document).on("click", ".remove-field", function (e) {
                 }
             });
         });
-  
+
 </script>
 @stop
 @section('js')
@@ -610,5 +610,4 @@ $(document).on("click", ".remove-field", function (e) {
 @stop
 
 
-  
-  
+

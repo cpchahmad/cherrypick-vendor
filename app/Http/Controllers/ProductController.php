@@ -24,7 +24,7 @@ class ProductController extends Controller
 {
 	public function demoTestProduct()
 	{
-		echo "hiii"; 
+		echo "hiii";
 		$products_price=1039;
 		$products_grams=200;
 		$prices=Helpers::calc_price_fetched_products($products_price,$products_grams);
@@ -46,7 +46,7 @@ class ProductController extends Controller
 			}
 		}
 	}
-	
+
 	public function shopifyProductTest()
 	{
 		set_time_limit(0);
@@ -64,7 +64,7 @@ class ProductController extends Controller
 		// {
 			// echo $product['id']; echo "<br>";
 		// }
-		$count=$this->getProductsCount(); 
+		$count=$this->getProductsCount();
 		$pages = ceil($count / 250);
 		for($i=1; $i<$pages; $i++)
 		{
@@ -76,11 +76,11 @@ class ProductController extends Controller
 			$lnkk2=array();
 			$get_products_details=$this->getProducts($page_info);
 			$get_products_details_arr=explode("\n",$get_products_details);
-			
+
 			$get_products_response_json=end($get_products_details_arr);
 			$pr_d=json_decode($get_products_response_json,true);
 			$this->saveStoreFetchProducts($pr_d["products"]);
-			
+
 			$link1=explode(",",$get_products_details_arr[17]);
 			if(isset($link1[1])) {
 			$lnk2=$link1[1];
@@ -148,7 +148,7 @@ class ProductController extends Controller
 				$product->category = '';
 				$product->status = 1;
 				$product->approve_date = Carbon::now();
-				$product->save(); 
+				$product->save();
 				$product_id=$product->id;
 				$this->linkProductToCollection($shopify_id,$store->collections_ids);
 			}
@@ -157,7 +157,7 @@ class ProductController extends Controller
 				$product_id=$pInfo->id;
 			}
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				if($var['sku']!='')
@@ -187,7 +187,7 @@ class ProductController extends Controller
 					$product_info->inventory_id = $var['id'];
 					$product_info->varient_name = $row['options'][0]['name'];
 					$product_info->varient_value = $var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 				}
 			}
@@ -208,8 +208,8 @@ class ProductController extends Controller
 								$product_img->image = $img_name;
 								$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 			}
@@ -227,7 +227,7 @@ class ProductController extends Controller
 				//$this->linkProductToCollection($row['id'],$store->collections_ids);
 				$product_id=$pid;
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -255,7 +255,7 @@ class ProductController extends Controller
 					$product_info->inventory_id = $var['id'];
 					$product_info->varient_name = $row['options'][0]['name'];
 					$product_info->varient_value = $var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 				else   //update variants
 				{
@@ -294,8 +294,8 @@ class ProductController extends Controller
 								$product_img->image = $img_name;
 								$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 		}
@@ -338,7 +338,7 @@ class ProductController extends Controller
 			$header=array(
 				"Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
 				"Content-Type: application/json",
-				"charset: utf-8"					 
+				"charset: utf-8"
 				);
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $SHOPIFY_API);
@@ -350,7 +350,7 @@ class ProductController extends Controller
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 			$response = curl_exec($ch);
 			curl_close($ch);
-			return($response);	
+			return($response);
 		}
 	function getProductsCount()
 		{
@@ -361,7 +361,7 @@ class ProductController extends Controller
 			$header=array(
 				"Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
 				"Content-Type: application/json",
-				"charset: utf-8"					 
+				"charset: utf-8"
 				);
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $SHOPIFY_API);
@@ -374,11 +374,11 @@ class ProductController extends Controller
 			curl_close($ch);
 			$result=json_decode($response, true);
 			return $result['count'];
-		}	
-	
-	
-	
-	
+		}
+
+
+
+
 	public function shopifyProductSync($cid)
     {
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
@@ -429,7 +429,7 @@ class ProductController extends Controller
 				$product->shopify_id = $shopify_id;
 				$product->category = '';
 				$product->status = 1;
-				$product->save(); 
+				$product->save();
 				$product_id=$product->id;
 			}
 			else
@@ -455,8 +455,8 @@ class ProductController extends Controller
 					$product_info->inventory_id = $var['id'];
 					$product_info->varient_name = $row['options'][0]['name'];
 					$product_info->varient_value = $var['option1'];
-					$product_info->save();   
-				}				
+					$product_info->save();
+				}
 			}
 			if($i>1)
 			{
@@ -475,8 +475,8 @@ class ProductController extends Controller
 								$product_img->image = $img_name;
 								$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 			//echo $row['id']."===".$row['$row['id'];'];
@@ -529,7 +529,7 @@ class ProductController extends Controller
                     "sku"   => 'vvvvvvvvv',
                 );
             $product_id=$data[0]->shopify_id;
-            
+
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -553,7 +553,7 @@ class ProductController extends Controller
             $response = curl_exec ($curl);
             curl_close ($curl);
     }
-    public function testinv() 
+    public function testinv()
     {
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
@@ -594,7 +594,7 @@ class ProductController extends Controller
         $result=json_decode($response, true);
         echo "<pre>"; print_r($result); die();
     }
-    public function testcode() 
+    public function testcode()
     {
         $data['product']=array(
                     "id" => 7426712764591,
@@ -627,28 +627,28 @@ class ProductController extends Controller
         $result=json_decode($response, true);
         echo "<pre>"; print_r($result); die();
     }
-	public function exportProductView() 
+	public function exportProductView()
     {
         return view('subadmin.export-product');
     }
-    public function exportProduct() 
+    public function exportProduct()
     {
         return Excel::download(new ProductExport, 'products.xlsx');
     }
-    public function importProduct(Request $request) 
+    public function importProduct(Request $request)
     {
     	$request->validate([
             'file'=>'required|mimes:xlsx,csv',
         ]);
 
         Excel::import(new ProductImport,request()->file('file'));
-               
+
         return back()->with('success', 'Excel file imported successfully!');
     }
-    public function importInventory() 
+    public function importInventory()
     {
         Excel::import(new InventoryImport,request()->file('file'));
-               
+
         return back()->with('success', 'Excel file imported successfully!');
     }
     public function importProductView()
@@ -660,7 +660,7 @@ class ProductController extends Controller
     	$category = Category::all();
     	return view('subadmin.add-product',compact('category'));
     }
-   
+
     public function saveproduct(Request $request){
       //echo "<pre>"; print_r($request->file()); die();
         if($request->hasfile('profile')){
@@ -674,7 +674,7 @@ class ProductController extends Controller
             $product_id=$product->id;
             $response['success'] = true;
             $response['message'] = $product_id;
-          }          
+          }
         return json_encode($response);
   }
    public function vendorId(){
@@ -686,6 +686,7 @@ class ProductController extends Controller
    }
    public function saveproducts(Request $request){
      $input = $request->all();
+
     if($request->payradious =='1'){
        $this->validate($request,([
         'name'=>'required',
@@ -696,7 +697,7 @@ class ProductController extends Controller
 		'varient_price.0' => 'required',
 		'varient_sku.0' => 'required',
 		'varient_grams.0' => 'required',
-		'varient_quantity.0' => 'required'
+//		'varient_quantity.0' => 'required'
        ]));
      }
      else{
@@ -707,10 +708,10 @@ class ProductController extends Controller
         'price'=>'required',
         'sku'=>'required',
         'grams'=>'required',
-        'quantity'=>'required',
+//        'quantity'=>'required',
         'category'=>'required',
         ]);
-       } 
+       }
         $vendor=$this->vendorId();
         $product = new Product;
         $product->title = $request->name;
@@ -719,7 +720,7 @@ class ProductController extends Controller
         $product->tags = $request->tags;
         $product->is_variants = $request->payradious;
         $product->category = $request->category;
-        $product->save(); 
+        $product->save();
         $product_id=$product->id;
 		$Tags=explode(",",$request->tags);
             if(in_array("Saree",$Tags))
@@ -735,7 +736,7 @@ class ProductController extends Controller
             {
                 $is_furniture = 0;
                 $volumetric_Weight = 0;
-            }	
+            }
         if($request->payradious!=1)
         {
 			$volumetric_Weight = 0;
@@ -804,8 +805,8 @@ class ProductController extends Controller
             $product_info->dimensions = $request->varient_height[$key].'-'.$request->varient_width[$key].'-'.$request->varient_length[$key];
             $product_info->save();
 			$info=$product_info->id;
-			
-			
+
+
 			if ($request->hasfile('imag')) {
 			$file = $request->file('imag');
 			if(isset($file[$key])) {
@@ -851,7 +852,18 @@ class ProductController extends Controller
         {
             $product->status = 0;
         }
-        $product->save(); 
+
+         if($product->status==1)
+         {
+             $category=Category::find($product->category);
+             $product->status = 2;
+             $product->title=$request->name;
+             $product->body_html= $request->description;
+             $product->tags= $request->tags;
+             $product->category=$category->id;
+         }
+
+        $product->save();
 		ProductInfo::where('product_id', $request->pid)->update(['price_conversion_update_status' => 1]);
 		if($product->shopify_id!=null && $product->status==1)
 		{
@@ -860,6 +872,10 @@ class ProductController extends Controller
 		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+//            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//            $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//            $SHOP_URL = 'cherrpick-zain.myshopify.com';
             $data['product']=array(
                     "id" => $product->shopify_id,
                     "title" => $product->title,
@@ -867,6 +883,7 @@ class ProductController extends Controller
 					"body_html"   => $product->body_html,
 					"product_type"   => $category->category??'',
                 );
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -886,6 +903,7 @@ class ProductController extends Controller
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
             $response = curl_exec ($curl);
+
             curl_close ($curl);
 		}
 		if($request->hasfile('image')){
@@ -903,6 +921,10 @@ class ProductController extends Controller
 			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+//                $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//                $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//                $SHOP_URL = 'cherrpick-zain.myshopify.com';
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_id/images.json";
 			$data1['image']=array(
 				'src' => url('uploads/profile/'.$filename),
@@ -927,13 +949,13 @@ class ProductController extends Controller
 			if(isset($img_result['image']['id']))
 			ProductImages::where('id', $pid)->update(['image_id' => $img_result['image']['id']]);
         }
-			
+
 		}
         return redirect()->route('product-list');
      }
 
     public function productlist( Request $request){
-      $vendor=$this->vendorId();  
+      $vendor=$this->vendorId();
       $res = Product::where('vendor', $vendor);
       if($request->search != ""){
           $res->where('title' , 'LIKE', '%' . $request->search . '%');
@@ -943,7 +965,8 @@ class ProductController extends Controller
     }
     public function outOfStockProductsList(Request $request)
     {
-        $vendor=$this->vendorId(); 
+        $vendor=$this->vendorId();
+
         $res = ProductInfo::select('product_master.id as pid','product_master.title','product_master.is_variants','products_variants.varient_name','products_variants.varient_value','products_variants.stock','products_variants.id')->join('product_master','product_master.id','products_variants.product_id')
                 ->where('product_master.vendor', $vendor)
                 ->where('products_variants.stock', 0);
@@ -959,7 +982,7 @@ class ProductController extends Controller
         $product->stock = $request->qty;
         $product->save();
         if($product->inventory_item_id!=null)
-        {    
+        {
 			$invid=$product->inventory_id;
             $data['variant']=array(
                     "id" => $invid,
@@ -1021,13 +1044,13 @@ class ProductController extends Controller
         return json_encode(array('status'=>'success','qty'=>$request->qty));
     }
     public function deleteproduct(Request $request,$id){
-      $res = Product::findOrFail($id);	  
+      $res = Product::findOrFail($id);
       $res->delete();
       DB::table('products_variants')->where('product_id', $id)->delete();
       DB::table('products_images')->where('product_id', $id)->delete();
       if($res->shopify_id!=null)
       {
-            $shopify_product_id=$res->shopify_id;  
+            $shopify_product_id=$res->shopify_id;
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -1058,7 +1081,7 @@ class ProductController extends Controller
 		  $productInfo = Product::find($res->product_id);
 		  $product_id=$productInfo->shopify_id;
 		  $image_id=$res->image_id;
-		  
+
 			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -1091,7 +1114,7 @@ class ProductController extends Controller
 
     }
     public function editVariant($id){
-      $product = Product::find($id); 
+      $product = Product::find($id);
       $is_variants=$product->is_variants;
       $pid=$product->id;
       $prodcut_info=ProductInfo::where('product_id',$id)->get();
@@ -1100,14 +1123,15 @@ class ProductController extends Controller
     }
     public function updateVariant(Request $request)
     {
+
         //echo "<pre>"; print_r($request->all()); die();
         $this->validate($request,([
             'price'=>'required',
             'sku'=>'required',
             'grams'=>'required',
-            'quantity'=>'required',
+//            'quantity'=>'required',
            ]));
-		  
+
         $product_info =ProductInfo::find($request->id);
 		$products=Product::where('id', $product_info->product_id)->first();
 		if($products->status==3)
@@ -1115,6 +1139,13 @@ class ProductController extends Controller
 			$products->status = 0;
 			$products->save();
 		}
+        if($products->status==1)
+        {
+
+            $products->status = 2;
+            $products->save();
+        }
+
 		$Tags=explode(",",$products->tags);
             if(in_array("Saree",$Tags))
                 $is_saree = 1;
@@ -1129,9 +1160,9 @@ class ProductController extends Controller
             {
                 $is_furniture = 0;
                 $volumetric_Weight = 0;
-            } 
-		$volumetric_Weight = 0;	
-		if($request->height!='' && $request->width!='' && $request->length!='')	
+            }
+		$volumetric_Weight = 0;
+		if($request->height!='' && $request->width!='' && $request->length!='')
 			$volumetric_Weight = $request->height * $request->width * $request->length/5000;
         if($request->is_variants==1)
         {
@@ -1164,7 +1195,7 @@ class ProductController extends Controller
 				$product_info->discounted_gbp = $prices_dis['gbp'];
 				$product_info->discounted_nld = $prices_dis['nld'];
 				$product_info->discounted_irl = $prices_dis['irl'];
-				$product_info->discounted_ger = $prices_dis['ger'];				
+				$product_info->discounted_ger = $prices_dis['ger'];
 			}
 		$product_info->base_price = $request->price;
         $product_info->grams = $request->grams;
@@ -1174,7 +1205,7 @@ class ProductController extends Controller
         $product_info->dimensions = $request->height.'-'.$request->width.'-'.$request->length;
         $product_info->edit_status = 1;
 		$product_info->price_status = 0;
-        $product_info->save(); 
+        $product_info->save();
 		///image
 		if($request->hasfile('image')){
             $file = $request->file('image');
@@ -1186,104 +1217,104 @@ class ProductController extends Controller
 				['image' => $img_full_path, 'product_id' => $product_info->product_id, 'variant_ids' => $product_info->id],
 			);
           }
-        if($product_info->inventory_id!=null)
-        {
-			//update stock on live store
-			$this->updateStockLiveStore($product_info->inventory_id,$request->quantity,$product_info->inventory_item_id);
-			//update variant
-			$this->updateVarianatLiveStore($product_info->id);
-            ///create new varient
-            $invid=$product_info->inventory_id;
-			if($request->varient_name!='' && $request->varient_value!='')
-			{
-            $data['variant']=array(
-                    "id" => $invid,
-                    "title" => $request->varient_name,
-                    "option1" => $request->varient_value,
-                    "sku"     => $request->sku,
-                    "price"   => $product_info->product_discount > 0 ? $prices_dis['usd']:$prices['usd'],
-					"compare_at_price" => $prices['usd'],
-                    "grams"   => $request->grams,
-                    "taxable" => false,
-                    "inventory_management" => "shopify",
-                );
-			}
-			else
-			{
-				$data['variant']=array(
-                    "id" => $invid,
-                    "sku"     => $request->sku,
-                    "price"   => $product_info->product_discount > 0 ? $prices_dis['usd']:$prices['usd'],
-					"compare_at_price" => $prices['usd'],
-                    "grams"   => $request->grams,
-                    "taxable" => false,
-                    "inventory_management" => "shopify",
-                );
-			}
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
-            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$invid.json";
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-            $headers = array(
-                "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
-                "Content-Type: application/json",
-                "charset: utf-8"
-            );
-            curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_VERBOSE, 0);
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
-            curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-            curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($data));
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-            $response = curl_exec ($curl);
-            curl_close ($curl);
-			$res=json_decode($response,true);
-			//echo "<pre>"; print_r($data); print_r($res); die();
-			
-			////Update Image for variant
-			$productDetails = Product::find($product_info->product_id);
-			if($productDetails->shopify_id!=null && $productDetails->status==1)
-			{
-				$shopify_product_id=$productDetails->shopify_id;
-				$SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_product_id/images.json";
-				$variant_id=$product_info->id;
-				$imagesResult=ProductImages::where('variant_ids',$variant_id)->first();
-				if($imagesResult) {
-					$data['image']=array(
-						'src' => $imagesResult->image,
-						'variant_ids'=> array($product_info->inventory_id),
-					);
-					$curl = curl_init();
-					curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-					$headers = array(
-						"Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
-						"Content-Type: application/json",
-						"charset: utf-8"
-					);
-					curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
-					curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-					curl_setopt($curl, CURLOPT_VERBOSE, 0);
-					curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-					curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-					curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
-					curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-					curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-					$response = curl_exec ($curl);
-					curl_close ($curl);
-					$img_result=json_decode($response, true);
-					ProductImages::where('id', $imagesResult->id)->update(['image_id' => $img_result['image']['id']]);
-				}
-            }
-            $location_id=Helpers::DiffalultLocation();
-            ProductInventoryLocation::updateOrCreate(
-                                ['items_id' => $product_info->inventory_item_id, 'location_id' => $location_id],
-                                ['items_id' => $product_info->inventory_item_id, 'stock' => $request->quantity, 'location_id' => $location_id]
-                            );
-        }
+//        if($product_info->inventory_id!=null)
+//        {
+//			//update stock on live store
+//			$this->updateStockLiveStore($product_info->inventory_id,$request->quantity,$product_info->inventory_item_id);
+//			//update variant
+//			$this->updateVarianatLiveStore($product_info->id);
+//            ///create new varient
+//            $invid=$product_info->inventory_id;
+//			if($request->varient_name!='' && $request->varient_value!='')
+//			{
+//            $data['variant']=array(
+//                    "id" => $invid,
+//                    "title" => $request->varient_name,
+//                    "option1" => $request->varient_value,
+//                    "sku"     => $request->sku,
+//                    "price"   => $product_info->product_discount > 0 ? $prices_dis['usd']:$prices['usd'],
+//					"compare_at_price" => $prices['usd'],
+//                    "grams"   => $request->grams,
+//                    "taxable" => false,
+//                    "inventory_management" => "shopify",
+//                );
+//			}
+//			else
+//			{
+//				$data['variant']=array(
+//                    "id" => $invid,
+//                    "sku"     => $request->sku,
+//                    "price"   => $product_info->product_discount > 0 ? $prices_dis['usd']:$prices['usd'],
+//					"compare_at_price" => $prices['usd'],
+//                    "grams"   => $request->grams,
+//                    "taxable" => false,
+//                    "inventory_management" => "shopify",
+//                );
+//			}
+//            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+//            $PASSWORD = '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';
+//            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+//            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$invid.json";
+//            $curl = curl_init();
+//            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+//            $headers = array(
+//                "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+//                "Content-Type: application/json",
+//                "charset: utf-8"
+//            );
+//            curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+//            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+//            curl_setopt($curl, CURLOPT_VERBOSE, 0);
+//            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+//            curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+//            curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($data));
+//            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+//            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+//            $response = curl_exec ($curl);
+//            curl_close ($curl);
+//			$res=json_decode($response,true);
+//			//echo "<pre>"; print_r($data); print_r($res); die();
+//
+//			////Update Image for variant
+//			$productDetails = Product::find($product_info->product_id);
+//			if($productDetails->shopify_id!=null && $productDetails->status==1)
+//			{
+//				$shopify_product_id=$productDetails->shopify_id;
+//				$SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_product_id/images.json";
+//				$variant_id=$product_info->id;
+//				$imagesResult=ProductImages::where('variant_ids',$variant_id)->first();
+//				if($imagesResult) {
+//					$data['image']=array(
+//						'src' => $imagesResult->image,
+//						'variant_ids'=> array($product_info->inventory_id),
+//					);
+//					$curl = curl_init();
+//					curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+//					$headers = array(
+//						"Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+//						"Content-Type: application/json",
+//						"charset: utf-8"
+//					);
+//					curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+//					curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+//					curl_setopt($curl, CURLOPT_VERBOSE, 0);
+//					curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+//					curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+//					curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+//					curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+//					curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+//					$response = curl_exec ($curl);
+//					curl_close ($curl);
+//					$img_result=json_decode($response, true);
+//					ProductImages::where('id', $imagesResult->id)->update(['image_id' => $img_result['image']['id']]);
+//				}
+//            }
+//            $location_id=Helpers::DiffalultLocation();
+//            ProductInventoryLocation::updateOrCreate(
+//                                ['items_id' => $product_info->inventory_item_id, 'location_id' => $location_id],
+//                                ['items_id' => $product_info->inventory_item_id, 'stock' => $request->quantity, 'location_id' => $location_id]
+//                            );
+//        }
         Session::flash('success', 'Variant update successfully');
         return redirect()->route('edit-variant', $request->pid);
     }
@@ -1300,6 +1331,10 @@ class ProductController extends Controller
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+//        $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//        $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//        $SHOP_URL = 'cherrpick-zain.myshopify.com';
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$invid.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1320,7 +1355,7 @@ class ProductController extends Controller
             curl_close ($curl);
 	}
 	public function updateStockLiveStore($invid,$stock,$inventory_item_id)
-    { 
+    {
             $data['variant']=array(
                     "id" => $invid,
                     "fulfillment_service"   => "manual",
@@ -1329,6 +1364,10 @@ class ProductController extends Controller
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+//                $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//        $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//        $SHOP_URL = 'cherrpick-zain.myshopify.com';
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$invid.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1375,7 +1414,7 @@ class ProductController extends Controller
            curl_close ($curl);;
 
     }
-	
+
     public function deleteVariant(Request $request)
     {
         $id=$request->id;
@@ -1415,7 +1454,7 @@ class ProductController extends Controller
         return redirect()->route('edit-variant', $data[0]->id);
     }
     public function addNewVariant($id){
-      $data = Product::find($id); 
+      $data = Product::find($id);
       return view('subadmin.add-new-variant',compact('data'));
 
     }
@@ -1427,7 +1466,7 @@ class ProductController extends Controller
             'sku'=>'required',
             'grams'=>'required',
             'quantity'=>'required',
-           ]));  
+           ]));
         $vendor=$this->vendorId();
         $product_info = new ProductInfo;
         $product_info->product_id = $request->pid;
@@ -1437,7 +1476,7 @@ class ProductController extends Controller
         $product_info->varient_value = $request->varient_value;
         //$product_info->price = $price;
 		$products=Product::where('id', $request->pid)->first();
-		$Tags=explode(",",$products->tags); 
+		$Tags=explode(",",$products->tags);
             if(in_array("Saree",$Tags))
                 $is_saree = 1;
             else
@@ -1452,8 +1491,8 @@ class ProductController extends Controller
                 $is_furniture = 0;
                 $volumetric_Weight = 0;
             }
-		$volumetric_Weight = 0;	
-		if($request->height!='' && $request->width!='' && $request->length!='')	
+		$volumetric_Weight = 0;
+		if($request->height!='' && $request->width!='' && $request->length!='')
 			$volumetric_Weight = $request->height * $request->width * $request->length/5000;
 		//$prices=Helpers::calc_price($request->price,$request->grams,$is_saree,$is_furniture,$volumetric_Weight);
 		$prices=Helpers::calc_price_new($request->price,$request->grams,$products->tags,$volumetric_Weight,$vendor);
@@ -1473,7 +1512,7 @@ class ProductController extends Controller
         $product_info->dimensions = $request->height.'-'.$request->width.'-'.$request->length;
         $product_info->save();
         $info_id=$product_info->id;
-		
+
 		///image
 		if($request->hasfile('image')){
             $file = $request->file('image');
@@ -1526,7 +1565,7 @@ class ProductController extends Controller
             $result=json_decode($response, true);
 			//echo "<pre>"; print_r($result); die();
             ProductInfo::where('id', $info_id)->update(['inventory_item_id' => $result['variant']['inventory_item_id'], 'inventory_id' => $result['variant']['id']]);
-			
+
 			////Update Image for variant
 			$productDetails = Product::find($request->pid);
 			if($productDetails->shopify_id!=null)
@@ -1566,7 +1605,7 @@ class ProductController extends Controller
     }
     public function uploadeImage()
     {
-        
+
         $API_KEY = '03549b537b31aeff2bdc45aa7c98d06d';
         $PASSWORD = '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';
         $SHOP_URL = 'mystore-3220.myshopify.com';
@@ -1590,7 +1629,7 @@ class ProductController extends Controller
 
         $response = curl_exec ($curl);
         curl_close ($curl);
-        
+
 //        $ch = curl_init();
 //        curl_setopt($ch, CURLOPT_URL, 'https://mystore-3220.myshopify.com/admin/api/2022-10/products/8047518646558/images.json');
 //        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1633,7 +1672,7 @@ echo $response;
                 );
             }
         $products_array = array(
-            "product" => array( 
+            "product" => array(
                 "title"        => $product->title,
                 "body_html"    => $product->body_html,
                 "vendor"       =>  Auth::user()->name,
@@ -1706,7 +1745,7 @@ echo $response;
             }
         //}
         $products_array = array(
-            "product" => array( 
+            "product" => array(
                 "title"        => $product->title,
                 "body_html"    => $product->body_html,
                 "vendor"       =>  Auth::user()->name,
@@ -1716,6 +1755,8 @@ echo $response;
                 "variants"     =>$variants,
             )
         );
+
+
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -1754,7 +1795,7 @@ echo $response;
         return redirect()->route('product-list')->with('success','Product Created Successfully.');
     }
     public function shopifyUploadeImage($id,$shopify_id)
-    {        
+    {
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -1805,7 +1846,7 @@ echo $response;
             }
         //}
         $products_array = array(
-            "product" => array( 
+            "product" => array(
                 "id"        => $product->shopify_id,
                 "title"        => $product->title,
                 "body_html"    => $product->body_html,
@@ -1934,7 +1975,7 @@ echo "ok";
     }
     public function detailsShopifyOrders($id)
     {
-      
+
         $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
@@ -2060,7 +2101,7 @@ echo "ok";
 				}
 			}
 			if($pid==0)  ////////New Product
-			{		
+			{
 			$cat=Category::where('category',$row['product_type'])->first();
             if($cat)
 				$category_id=$cat->id;
@@ -2068,7 +2109,7 @@ echo "ok";
                 {
                     $cate_que = new Category;
                     $cate_que->category = $row['product_type'];
-                    $cate_que->save(); 
+                    $cate_que->save();
                     $category_id=$cate_que->id;
                 }
 			$shopify_id=$row['id'];
@@ -2098,7 +2139,7 @@ echo "ok";
 				$product->category = $category_id;
 				//$product->status = 1;
 				//$product->approve_date = Carbon::now();
-				$product->save(); 
+				$product->save();
 				$product_id=$product->id;
 				//$this->linkProductToCollection($shopify_id,$store->collections_ids);
 			}
@@ -2107,7 +2148,7 @@ echo "ok";
 				$product_id=$pInfo->id;
 			}
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -2135,7 +2176,7 @@ echo "ok";
 					//$product_info->inventory_id = $var['id'];
 					$product_info->varient_name = $row['options'][0]['name'];;
 					$product_info->varient_value = $var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 			}
 			if($i>1)
@@ -2155,8 +2196,8 @@ echo "ok";
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 			}
@@ -2174,7 +2215,7 @@ echo "ok";
 				//$this->linkProductToCollection($row['id'],$store->collections_ids);
 				$product_id=$pid;
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -2202,7 +2243,7 @@ echo "ok";
 					//$product_info->inventory_id = $var['id'];
 					$product_info->varient_name = $row['options'][0]['name'];;
 					$product_info->varient_value = $var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 				else   //update variants
 				{
@@ -2243,8 +2284,8 @@ echo "ok";
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 		}
@@ -2263,7 +2304,7 @@ echo "ok";
         curl_close($ch);
         echo $response."==----";
     }
-	
+
 	public function allCategory()
 	{
 		$data=Category::all();

@@ -20,7 +20,7 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
-  
+
 
     public function loginview(Request $request){
     	return view('subadmin.pages-login');
@@ -37,8 +37,8 @@ class AdminController extends Controller
 		{
 		if($user->status=='Active')
 		{
-         $remember_me = $request->has('remember_me') ? true : false; 
-      if(auth::attempt(['username'=>$input['username'],'password'=>$input['password']],$remember_me)){               
+         $remember_me = $request->has('remember_me') ? true : false;
+      if(auth::attempt(['username'=>$input['username'],'password'=>$input['password']],$remember_me)){
         if(Auth::user()->role == "Vendor"){
           return redirect()->route('home');
         }
@@ -50,7 +50,7 @@ class AdminController extends Controller
             session()->put('store_configuration', $permission->store_configuration);
             session()->put('products', $permission->products);
             session()->put('orders',$permission->orders);
-            session()->put('marketing',$permission->marketing); 
+            session()->put('marketing',$permission->marketing);
           return redirect()->route('home');
           ///dd('cccc');
         }
@@ -105,7 +105,13 @@ class AdminController extends Controller
 		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
         $PASSWORD = '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';
         $SHOP_URL = 'cityshop-company-store.myshopify.com';
-        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/custom_collections.json";
+
+//        $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
+//        $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
+//        $SHOP_URL = 'cherrpick-zain.myshopify.com';
+
+//        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/custom_collections.json";
+        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/smart_collections.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
         $headers = array(
@@ -114,21 +120,43 @@ class AdminController extends Controller
             "X-Shopify-Api-Features: include-presentment-prices",
             "charset: utf-8"
         );
+
+
+             $values = [
+                 'column' => 'vendor',
+                 'relation'=>'equals',
+                 'condition'=>$title
+             ];
+
+         $data=
+             [
+                 'smart_collection' => [
+                     'title' => $title,
+                     "disjunctive" => false,
+                     "body_html" => null,
+                     'rules' => [$values]
+                 ]
+             ];
+
+
         curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_VERBOSE, 0);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, '{"custom_collection":{"title":"'.$title.'"}}');
+//        curl_setopt($curl, CURLOPT_POSTFIELDS, '{"custom_collection":{"title":"'.$title.'"}}');
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
         $response = curl_exec ($curl);
         curl_close ($curl);
         $result=json_decode($response, true);
-		return $result['custom_collection']['id'];
+//		return $result['custom_collection']['id'];
+		return $result['smart_collection']['id'];
 	}
-      public function dashboard(){	
+      public function dashboard(){
 		if(Auth::user()->id==7)
 		{
 			return redirect()->route('admin.logout');
@@ -147,7 +175,7 @@ class AdminController extends Controller
          $total_order_month=count($sql_month);
          $sql_today=Order::where('vendor', $vendor)->where('order_date',Carbon::now()->toDateString())->get()->toArray();
          $total_order_today=count($sql_today);
-         
+
          $sql_items=Orderitem::where('vendor_id', $vendor)->get()->toArray();
          $total_items_sale=count($sql_items);
          $total_price=0;
@@ -156,14 +184,14 @@ class AdminController extends Controller
              //$total_price=$total_price+($v['price']-$v['discount']);
 			 $total_price=$total_price+($v['price']);
          }
-         
+
          $out_of_stock=ProductInfo::join('product_master','product_master.id','products_variants.product_id')
                             ->select('product_master.id as pid','product_master.title','products_variants.*')
                             ->where('products_variants.vendor_id', $vendor)->where('products_variants.stock', '<', 1)->limit(20)->get();
-         
+
         $sql=Order::where('vendor', $vendor);
         $new_orders=$sql->where('status', 0)->paginate(30);
-        
+
         $month_arr=['01','02','03','04','05','06','07','08','09','10','11','12'];
         $data_month_arr=array();
         foreach($month_arr as $currentMonth)
@@ -171,8 +199,8 @@ class AdminController extends Controller
             $order_items_sql = Orderitem::select(\DB::raw('SUM(price) as price, SUM(discount) as discount'))->whereRaw('MONTH(created_at) = ?',[$currentMonth])->where('vendor_id', $vendor)->get()->toArray();
             $data_month_arr[]=ceil($order_items_sql[0]['price']-$order_items_sql[0]['discount']);
         }
-//         
-//         echo "<pre>"; print_r($data_month_arr);        
+//
+//         echo "<pre>"; print_r($data_month_arr);
 //         die();
         return view('subadmin.index',compact('total_order','total_order_week','total_order_month','total_items_sale','total_price','total_order_today','out_of_stock','new_orders','data_month_arr'));
       }
@@ -208,12 +236,12 @@ class AdminController extends Controller
 										['opening_time' => $request->open[$i], 'closing_time' => $request->close[$i], 'status' => $request->status[$i]]
 										);
 		  }
-		  
+
           return redirect()->route('admin.generalconfig')->with('success','data stored successfully');
 
        }
        public function storefront(){
-         $data=Store::where('id',Auth::user()->id)->first();  
+         $data=Store::where('id',Auth::user()->id)->first();
          return view('subadmin.store-front',compact('data'));
        }
        public function submitstorefront(Request $request){
@@ -228,7 +256,7 @@ class AdminController extends Controller
             $filename = time().'.'.$extension;
             $file->move('uploads/logo/',$filename);
             $data['logo']=$filename;
-          } 
+          }
            $data['about_store']=$request->about_store;
            $data['store_carry']=$request->store_carry;
            Store::where('id',Auth::user()->id)->update($data);
@@ -260,7 +288,7 @@ class AdminController extends Controller
             $data['job']=$request->job;
             $data['country']=$request->country;
             $data['address']=$request->address;
-            $id = session()->get('data'); 
+            $id = session()->get('data');
             Store::where('id',Auth::user()->id)->update($data);
             return redirect()->route('admin.editprofile')->with('success','profile updated');
       }
@@ -270,7 +298,7 @@ class AdminController extends Controller
              'newpassword'=>'required|min:8|max:8',
              'renewpassword'=>'required|same:newpassword',
           ]);
-          $id = session()->get('data'); 
+          $id = session()->get('data');
           $data = Store::where('id',Auth::user()->id)->first();
           if(Hash::check($request->password,$data->password)){
             Store::where('id',$id)->update(['password'=>Hash::make($request->newpassword)]);
@@ -293,6 +321,6 @@ class AdminController extends Controller
         return redirect()->route('admin.editprofile');
 
       }
-    
 
-} 
+
+}

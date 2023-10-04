@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
 use App\Models\ProductChange;
 use App\Models\Setting;
+use App\Models\VariantChange;
 use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\Payment;
@@ -897,7 +898,8 @@ class SuperadminController extends Controller
      $items = ProductInfo::where('product_id',$id)->get();
      $vendor = Store::where('id',$data->vendor)->first();
      $change_products=ProductChange::where('product_id',$id)->get();
-     return view('superadmin.products-details',compact('data','items','vendor'));
+     $change_variants=VariantChange::where('product_id',$id)->get();
+     return view('superadmin.products-details',compact('data','items','vendor','change_products','change_variants'));
     }
     public function outofstockProduct(){
         $data = DB::table('products_variants')

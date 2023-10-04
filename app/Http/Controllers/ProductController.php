@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductChange;
 use App\Models\Setting;
+use App\Models\VariantChange;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Auth;
@@ -917,6 +918,15 @@ class ProductController extends Controller
             'tags'=>'required',
            ]));
         $product =Product::find($request->pid);
+         //zain
+         $product_change=new ProductChange();
+         $product_change->title = $product->title;
+         $product_change->body_html = $product->body_html;
+         $product_change->tags = $product->tags;
+         $product_change->category = $product->category;
+         $product_change->status = $product->status;
+         $product_change->product_id = $product->id;
+         $product_change->save();
         $product->title = $request->name;
         $product->body_html = $request->description;
         $product->tags = $request->tags;
@@ -938,15 +948,7 @@ class ProductController extends Controller
 
         $product->save();
 
-         //zain
-         $product_change=new ProductChange();
-         $product_change->title = $product->title;
-         $product_change->body_html = $product->body_html;
-         $product_change->tags = $product->tags;
-         $product_change->category = $product->category;
-         $product_change->status = $product->status;
-         $product_change->product_id = $product->id;
-         $product_change->save();
+
 
 
 
@@ -1264,6 +1266,49 @@ class ProductController extends Controller
            ]));
 
         $product_info =ProductInfo::find($request->id);
+        $variant_change=new VariantChange();
+        $variant_change->product_id=$product_info->product_id;
+        $variant_change->sku=$product_info->sku;
+        $variant_change->taxable=$product_info->taxable;
+        $variant_change->shipping_weight=$product_info->shipping_weight;
+        $variant_change->price=$product_info->price;
+        $variant_change->base_price=$product_info->base_price;
+        $variant_change->price_usd=$product_info->price_usd;
+        $variant_change->price_aud=$product_info->price_aud;
+        $variant_change->price_cad=$product_info->price_cad;
+        $variant_change->price_gbp=$product_info->price_gbp;
+        $variant_change->price_nld=$product_info->price_nld;
+        $variant_change->price_irl=$product_info->price_irl;
+        $variant_change->price_ger=$product_info->price_ger;
+        $variant_change->grams=$product_info->grams;
+        $variant_change->stock=$product_info->stock;
+        $variant_change->shelf_life=$product_info->shelf_life;
+        $variant_change->temp_require=$product_info->temp_require;
+        $variant_change->dimensions=$product_info->dimensions;
+        $variant_change->varient_name=$product_info->varient_name;
+        $variant_change->varient_value=$product_info->varient_value;
+        $variant_change->vendor_id=$product_info->vendor_id;
+        $variant_change->inventory_item_id=$product_info->inventory_item_id;
+        $variant_change->inventory_id=$product_info->inventory_id;
+        $variant_change->edit_status=$product_info->edit_status;
+        $variant_change->new_add_status=$product_info->new_add_status;
+        $variant_change->price_status=$product_info->price_status;
+        $variant_change->inventory_status=$product_info->inventory_status;
+        $variant_change->product_discount=$product_info->product_discount;
+        $variant_change->discounted_base_price=$product_info->discounted_base_price;
+        $variant_change->discounted_inr=$product_info->discounted_inr;
+        $variant_change->discounted_usd=$product_info->discounted_usd;
+        $variant_change->discounted_aud=$product_info->discounted_aud;
+        $variant_change->discounted_cad=$product_info->discounted_cad;
+        $variant_change->discounted_gbp=$product_info->discounted_gbp;
+        $variant_change->discounted_nld=$product_info->discounted_nld;
+        $variant_change->discounted_irl=$product_info->discounted_irl;
+        $variant_change->discounted_ger=$product_info->discounted_ger;
+        $variant_change->price_conversion_update_status=$product_info->price_conversion_update_status;
+        $variant_change->save();
+
+
+
 		$products=Product::where('id', $product_info->product_id)->first();
 		if($products->status==3)
 		{

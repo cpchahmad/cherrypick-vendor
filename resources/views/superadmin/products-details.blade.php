@@ -28,26 +28,9 @@
                       <div class="col-12">
                         <hr>
                          <!-- <h4>Product Details</h4> -->
-                          <h3>Change Data</h3>
-                          <div class="order-summry">
-
-                              <div class="order-items">
-                                  <p><b>Title</b> <span>{{$data->title}}</span></p>
-                                  <p><b>Body HTML</b> <span>{{$data->body_html}}</span></p>
-                                  <p><b>Tags</b> <span>{{$data->tags}}</span></p>
-                                  @php
-                                      $info_query=\App\Models\Category::where(['id' => $data->category])->pluck('category')->first();
-                                  @endphp
-                                  <p><b>Type</b> <span>{{ $info_query }}</span></p>
-
-                              </div>
-
-                          </div>
 
 
-
-
-                          <h3>Orignal Data</h3>
+{{--                          <h3>Current Data</h3>--}}
 
                          <div class="order-summry">
 
@@ -129,6 +112,72 @@
                   <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image}}" height="120px" width='120px'></div>
                   @endforeach
                   </div>
+
+
+
+{{--                          <h3>Previous Data</h3>--}}
+{{--                          @foreach($change_products as $change_product)--}}
+{{--                              <div class="order-summry">--}}
+
+{{--                                  <div class="order-items">--}}
+{{--                                      <p><b>Title</b> <span>{{$change_product->title}}</span></p>--}}
+{{--                                      <p><b>Body HTML</b> <span>{{$change_product->body_html}}</span></p>--}}
+{{--                                      <p><b>Tags</b> <span>{{$change_product->tags}}</span></p>--}}
+{{--                                      @php--}}
+{{--                                          $info_query=\App\Models\Category::where(['id' => $change_product->category])->pluck('category')->first();--}}
+{{--                                      @endphp--}}
+{{--                                      <p><b>Type</b> <span>{{ $info_query }}</span></p>--}}
+{{--                                  </div>--}}
+
+{{--                              </div>--}}
+
+{{--                              <div class="card table-card">--}}
+{{--                                  <div class="table-responsive">--}}
+{{--                                      <table class="table table-borderless view-productd">--}}
+{{--                                          <thead>--}}
+{{--                                          <tr>--}}
+{{--                                              @if($change_product->is_variants==1)--}}
+{{--                                                  <th scope="col">Variant Name</th>--}}
+{{--                                                  <th scope="col">Variant Value</th>--}}
+{{--                                              @endif--}}
+{{--                                              <th scope="col">Price</th>--}}
+{{--                                              <th scope="col">SKU</th>--}}
+{{--                                              <th scope="col">Weight(GM)</th>--}}
+{{--                                              <th scope="col">Quantity</th>--}}
+{{--                                              <th scope="col">Dimensions(H-W-L)</th>--}}
+{{--                                              <th scope="col">Shelf life</th>--}}
+{{--                                              <th scope="col">Temp requirements</th>--}}
+
+{{--                                          </tr>--}}
+{{--                                          </thead>--}}
+{{--                                          <tbody>--}}
+{{--                                          @foreach($change_variants as $change_variant)--}}
+{{--                                              <tr>--}}
+{{--                                                  @if($data->is_variants==1)--}}
+{{--                                                      <td>{{$change_variant->varient_name}}</td>--}}
+{{--                                                      <td>{{$change_variant->varient_value}}</td>--}}
+{{--                                                  @endif--}}
+{{--                                                  <td>--}}
+{{--                                                      INR-{{$change_variant->price}}<br>--}}
+{{--                                                      USD-{{$change_variant->price_usd}}<br>--}}
+{{--                                                      GBP-{{$change_variant->price_gbp}}<br>--}}
+{{--                                                      NLD-{{$change_variant->price_nld}}<br>--}}
+{{--                                                      AUD-{{$change_variant->price_aud}}<br>--}}
+{{--                                                      CAD-{{$change_variant->price_cad}}--}}
+{{--                                                  </td>--}}
+{{--                                                  <td>{{$change_variant->sku}}</td>--}}
+{{--                                                  <td>{{$change_variant->grams}}</td>--}}
+{{--                                                  <td>{{$change_variant->stock}}</td>--}}
+{{--                                                  <td>{{$change_variant->dimensions}}</td>--}}
+{{--                                                  <td>{{$change_variant->shelf_life}}</td>--}}
+{{--                                                  <td>{{$change_variant->temp_require}}</td>--}}
+{{--                                              </tr>--}}
+{{--                                          @endforeach--}}
+{{--                                          </tbody>--}}
+{{--                                      </table>--}}
+{{--                                  </div>--}}
+{{--                              </div>--}}
+{{--                          @endforeach--}}
                       </div>
                     </div>
                  </div>

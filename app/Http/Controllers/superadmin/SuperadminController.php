@@ -620,6 +620,18 @@ class SuperadminController extends Controller
 	}
 
 	public function updateStoreFront(Store $store, Request $request) {
+
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
 		$request->validate([
             'logo'=>'image|mimes:jpg,jpeg,png,gif',
             'about_store'=>'required',
@@ -635,6 +647,48 @@ class SuperadminController extends Controller
         $store->about_store=$request->about_store;
         $store->store_carry=$request->store_carry;
 		$store->save();
+
+
+        $values = [
+            'store_logo' => 'http://phpstack-1103991-3868726.cloudwaysapps.com/uploads/logo/'.$store->logo,
+            'about_store' => $store->about_store,
+            'store_carry' => $store->store_carry
+        ];
+        $metafield_data=[
+            "metafield" =>
+                [
+                    "key" => 'store_front',
+                    "value" => json_encode($values),
+                    "type" => "json_string",
+                    "namespace" => "configuration",
+
+                ]
+        ];
+
+
+        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/smart_collections/$store->collections_ids/metafields.json";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+        $headers = array(
+            "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+            "Content-Type: application/json",
+            "charset: utf-8"
+        );
+        curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_VERBOSE, 0);
+        //curl_setopt($curl, CURLOPT_HEADER, 1);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_data));
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        $response = curl_exec ($curl);
+
+        curl_close ($curl);
+
 		return redirect()->back();
 	}
 	public function updateVendorTag($id, Request $request) {

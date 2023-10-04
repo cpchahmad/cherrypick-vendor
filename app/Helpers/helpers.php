@@ -1,5 +1,7 @@
-<?php 
-namespace App\Helpers;  
+<?php
+namespace App\Helpers;
+use App\Models\Extra;
+use App\Models\User;
 use Auth;
 use App\Models\Locations;
 use App\Models\ConversionRate;
@@ -56,7 +58,7 @@ class Helpers{
         $usa_shipping_1000gms = 16;
 		$price = str_replace(',', '',$products_price);
         $price_usd = $price;
-		
+
 		$weight_in_gms=$products_grams;
         if($weight_in_gms <= 50)
         {
@@ -81,7 +83,7 @@ class Helpers{
         elseif($weight_in_gms <= 300)
         {
             $Variant_Price = round(($price_usd - $usa_shipping_300gms), 2);
-        } 
+        }
         elseif($weight_in_gms <= 400)
         {
             $Variant_Price = round(($price_usd - $usa_shipping_400gms), 2);
@@ -102,7 +104,7 @@ class Helpers{
         {
             $Variant_Price = round(($price_usd - ($weight_in_gms * 0.016)), 2);
         }
-		
+
 		$decimal_part_usd = ltrim(($Variant_Price - floor($Variant_Price)),"0.");
         if($decimal_part_usd <= 25)
         {
@@ -137,7 +139,7 @@ class Helpers{
         $usa_shipping_1000gms = 16;
 		$price = str_replace(',', '',$products_price);
         $price_usd = $price;
-		
+
 		$weight_in_gms=$products_grams;
         if($weight_in_gms <= 50)
         {
@@ -162,7 +164,7 @@ class Helpers{
         elseif($weight_in_gms <= 300)
         {
             $Variant_Price = round(($price_usd + $usa_shipping_300gms), 2);
-        } 
+        }
         elseif($weight_in_gms <= 400)
         {
             $Variant_Price = round(($price_usd + $usa_shipping_400gms), 2);
@@ -183,7 +185,7 @@ class Helpers{
         {
             $Variant_Price = round(($price_usd + ($weight_in_gms * 0.016)), 2);
         }
-		
+
 		$decimal_part_usd = ltrim(($Variant_Price - floor($Variant_Price)),"0.");
         if($decimal_part_usd <= 25)
         {
@@ -207,7 +209,7 @@ class Helpers{
 		$cad=round(($products_price*1.33),2);
 		$aud=round(($products_price*1.41),2);
 		$inr=round(($products_price*82.23),2);
-		
+
 		$ind_shipping_2000gms = 15;
         $ind_shipping_5000gms = 13;
         $ind_shipping_saree = 20;
@@ -245,7 +247,7 @@ class Helpers{
         elseif($weight_in_gms <= 300)
         {
             $base_price = round(($inr - $ind_shipping_300gms), 2);
-        } 
+        }
         elseif($weight_in_gms <= 400)
         {
             $base_price = round(($inr - $ind_shipping_400gms), 2);
@@ -279,7 +281,7 @@ class Helpers{
 		$nld=round(($inr/$conversionPrice->euro_inr),2);
 		$cad=round(($inr/$conversionPrice->cad_inr),2);
 		$aud=round(($inr/$conversionPrice->aud_inr),2);
-		
+
 		///IND
 		$ind_ship=ShipingCharges::where('market', 4)->first();
 		$ind_shipping_50gms = $ind_ship->gms_50;
@@ -293,7 +295,7 @@ class Helpers{
         $ind_shipping_750gms = $ind_ship->gms_750;
         $ind_shipping_1000gms = $ind_ship->gms_1000;
         $ind_shipping_5000gms = $ind_ship->gms_5000;
-		
+
 		$weight_in_gms=$products_grams;
         if($weight_in_gms <= 50)
         {
@@ -318,7 +320,7 @@ class Helpers{
         elseif($weight_in_gms <= 300)
         {
             $base_price = round(($inr - $ind_shipping_300gms), 2);
-        } 
+        }
         elseif($weight_in_gms <= 400)
         {
             $base_price = round(($inr - $ind_shipping_400gms), 2);
@@ -352,7 +354,7 @@ class Helpers{
 		$dirham_inr=$conversionPrice->dirham_inr;
 		$cad_inr=$conversionPrice->cad_inr;
 		$aud_inr=$conversionPrice->aud_inr;
-		
+
 		///US
 		$usa_ship=ShipingCharges::where('market', 1)->first();
 		$usa_shipping_50gms = $usa_ship->gms_50;
@@ -365,7 +367,7 @@ class Helpers{
         $usa_shipping_500gms = $usa_ship->gms_500;
         $usa_shipping_750gms = $usa_ship->gms_750;
         $usa_shipping_1000gms = $usa_ship->gms_1000;
-		
+
 		///UK
 		$uk_ship=ShipingCharges::where('market', 2)->first();
 		$uk_shipping_50gms = $uk_ship->gms_50;
@@ -378,7 +380,7 @@ class Helpers{
         $uk_shipping_500gms = $uk_ship->gms_500;
         $uk_shipping_750gms = $uk_ship->gms_750;
         $uk_shipping_1000gms = $uk_ship->gms_1000;
-		
+
 		///NLD
 		$nld_ship=ShipingCharges::where('market', 3)->first();
 		$nld_shipping_50gms = $nld_ship->gms_50;
@@ -391,7 +393,7 @@ class Helpers{
         $nld_shipping_500gms = $nld_ship->gms_500;
         $nld_shipping_750gms = $nld_ship->gms_750;
         $nld_shipping_1000gms = $nld_ship->gms_1000;
-		
+
 		///IND
 		$ind_ship=ShipingCharges::where('market', 4)->first();
 		$ind_shipping_50gms = $ind_ship->gms_50;
@@ -404,7 +406,7 @@ class Helpers{
         $ind_shipping_500gms = $ind_ship->gms_500;
         $ind_shipping_750gms = $ind_ship->gms_750;
         $ind_shipping_1000gms = $ind_ship->gms_1000;
-		
+
 		///CAD
 		$cad_ship=ShipingCharges::where('market', 5)->first();
 		$cad_shipping_50gms = $cad_ship->gms_50;
@@ -417,7 +419,7 @@ class Helpers{
         $cad_shipping_500gms = $cad_ship->gms_500;
         $cad_shipping_750gms = $cad_ship->gms_750;
         $cad_shipping_1000gms = $cad_ship->gms_1000;
-		
+
 		///CAD
 		$au_ship=ShipingCharges::where('market', 6)->first();
 		$au_shipping_50gms = $au_ship->gms_50;
@@ -430,10 +432,10 @@ class Helpers{
         $au_shipping_500gms = $au_ship->gms_500;
         $au_shipping_750gms = $au_ship->gms_750;
         $au_shipping_1000gms = $au_ship->gms_1000;
-		
+
 		$usa_shipping_saree = 20;
-        
-        #  Convert base INR price to respective currencies using currency conversion rates 
+
+        #  Convert base INR price to respective currencies using currency conversion rates
             $price = str_replace(',', '',$products_price);
             $price_inr = $price;
             $price_usd = $price_inr / $usd_inr;
@@ -442,7 +444,7 @@ class Helpers{
             $price_aed = $price_inr / $dirham_inr;
             $price_cad = $price_inr / $cad_inr;
             $price_aud = $price_inr / $aud_inr;
-            
+
             if($is_saree==1)
                 $price_usd=round(($price_usd + $usa_shipping_saree), 2);
             elseif($is_furniture==1)
@@ -505,7 +507,7 @@ class Helpers{
             $price_aud_final = round(($price_aud + $au_shipping_300gms), 2);
 			// echo $Variant_Price;
         // echo "<br>";
-        } 
+        }
         elseif($weight_in_gms <= 400)
         {
             $Variant_Price = round(($price_usd + $usa_shipping_400gms), 2);
@@ -571,7 +573,7 @@ class Helpers{
             $price_cad_final=round(($price_cad_final  * 1.04), 2);
             $price_aud_final=round(($price_aud_final  * 1.04), 2);
         }
-		
+
 		$decimal_part_usd = ltrim(number_format(($Variant_Price - floor($Variant_Price)),2),"0.");
         $decimal_part_gbp = ltrim(number_format(($price_gbp_final - floor($price_gbp_final)),2),"0.");
         $decimal_part_nld = ltrim(number_format(($price_nld_final - floor($price_nld_final)),2),"0.");
@@ -590,7 +592,7 @@ class Helpers{
         {
             $Variant_Price=floor($Variant_Price);
         }
-        
+
         if($decimal_part_gbp <= 25)
         {
             $price_gbp_final=floor($price_gbp_final);
@@ -603,7 +605,7 @@ class Helpers{
         {
             $price_gbp_final=floor($price_gbp_final);
         }
-        
+
         if($decimal_part_nld <= 25)
         {
             $price_nld_final=floor($price_nld_final);
@@ -616,7 +618,7 @@ class Helpers{
         {
             $price_nld_final=floor($price_nld_final);
         }
-        
+
         if($decimal_part_inr <= 25)
         {
             $price_inr_final=floor($price_inr_final);
@@ -629,7 +631,7 @@ class Helpers{
         {
             $price_inr_final=floor($price_inr_final);
         }
-        
+
         if($decimal_part_cad <= 25)
         {
             $price_cad_final=floor($price_cad_final);
@@ -642,7 +644,7 @@ class Helpers{
         {
             $price_cad_final=floor($price_cad_final);
         }
-        
+
         if($decimal_part_aud <= 25)
         {
             $price_aud_final=floor($price_aud_final);
@@ -661,7 +663,7 @@ class Helpers{
         $market_price=['usd' => $Variant_Price, 'gbp' => $price_gbp_final, 'nld' => $price_nld_final, 'inr' => $price_inr_final, 'cad' => $price_cad_final, 'aud' => $price_aud_final];
         return $market_price;
     }
-	
+
 	public static function calc_price_new($products_price,$products_grams,$tags,$volumetric_Weight=null,$vendor)
     {
 		$store=Store::where('id',$vendor)->first();
@@ -672,7 +674,7 @@ class Helpers{
 		$dirham_inr=$conversionPrice->dirham_inr;
 		$cad_inr=$conversionPrice->cad_inr;
 		$aud_inr=$conversionPrice->aud_inr;
-		
+
 		///US
 		$usa_ship=ShipingCharges::where('market', 1)->first();
 		$usa_shipping_50gms = $usa_ship->gms_50;
@@ -686,7 +688,7 @@ class Helpers{
         $usa_shipping_750gms = $usa_ship->gms_750;
         $usa_shipping_1000gms = $usa_ship->gms_1000;
         $usa_shipping_5000gms = $usa_ship->gms_5000;
-		
+
         $usa_shipping_50gms_savory = $usa_ship->savory_gms_50;
         $usa_shipping_100gms_savory = $usa_ship->savory_gms_100;
         $usa_shipping_150gms_savory = $usa_ship->savory_gms_150;
@@ -698,10 +700,10 @@ class Helpers{
         $usa_shipping_750gms_savory = $usa_ship->savory_gms_750;
         $usa_shipping_1000gms_savory = $usa_ship->savory_gms_1000;
         $usa_shipping_5000gms_savory = $usa_ship->savory_gms_5000;
-		
+
 		$usa_saree = $usa_ship->saree;
 		$usa_furniture = $usa_ship->furniture;
-		
+
 		///UK
 		$uk_ship=ShipingCharges::where('market', 2)->first();
 		$uk_shipping_50gms = $uk_ship->gms_50;
@@ -715,7 +717,7 @@ class Helpers{
         $uk_shipping_750gms = $uk_ship->gms_750;
         $uk_shipping_1000gms = $uk_ship->gms_1000;
         $uk_shipping_5000gms = $uk_ship->gms_5000;
-		
+
 	$uk_shipping_50gms_savory = $uk_ship->savory_gms_50;
         $uk_shipping_100gms_savory = $uk_ship->savory_gms_100;
         $uk_shipping_150gms_savory = $uk_ship->savory_gms_150;
@@ -727,10 +729,10 @@ class Helpers{
         $uk_shipping_750gms_savory = $uk_ship->savory_gms_750;
         $uk_shipping_1000gms_savory = $uk_ship->savory_gms_1000;
         $uk_shipping_5000gms_savory = $uk_ship->savory_gms_5000;
-		
+
 		$uk_saree = $uk_ship->saree;
 		$uk_furniture = $uk_ship->furniture;
-		
+
 		///NLD
 		$nld_ship=ShipingCharges::where('market', 3)->first();
 		$nld_shipping_50gms = $nld_ship->gms_50;
@@ -744,7 +746,7 @@ class Helpers{
         $nld_shipping_750gms = $nld_ship->gms_750;
         $nld_shipping_1000gms = $nld_ship->gms_1000;
         $nld_shipping_5000gms = $nld_ship->gms_5000;
-		
+
 	$nld_shipping_50gms_savory = $nld_ship->savory_gms_50;
         $nld_shipping_100gms_savory = $nld_ship->savory_gms_100;
         $nld_shipping_150gms_savory = $nld_ship->savory_gms_150;
@@ -756,10 +758,10 @@ class Helpers{
         $nld_shipping_750gms_savory = $nld_ship->savory_gms_750;
         $nld_shipping_1000gms_savory = $nld_ship->savory_gms_1000;
         $nld_shipping_5000gms_savory = $nld_ship->savory_gms_5000;
-		
+
 		$nld_saree = $nld_ship->saree;
 		$nld_furniture = $nld_ship->furniture;
-		
+
 		///IND
 		$ind_ship=ShipingCharges::where('market', 4)->first();
 		$ind_shipping_50gms = $ind_ship->gms_50;
@@ -773,7 +775,7 @@ class Helpers{
         $ind_shipping_750gms = $ind_ship->gms_750;
         $ind_shipping_1000gms = $ind_ship->gms_1000;
         $ind_shipping_5000gms = $ind_ship->gms_5000;
-		
+
 	$ind_shipping_50gms_savory = $ind_ship->savory_gms_50;
         $ind_shipping_100gms_savory = $ind_ship->savory_gms_100;
         $ind_shipping_150gms_savory = $ind_ship->savory_gms_150;
@@ -785,10 +787,10 @@ class Helpers{
         $ind_shipping_750gms_savory = $ind_ship->savory_gms_750;
         $ind_shipping_1000gms_savory = $ind_ship->savory_gms_1000;
         $ind_shipping_5000gms_savory = $ind_ship->savory_gms_5000;
-		
+
 		$ind_saree = $ind_ship->saree;
 		$ind_furniture = $ind_ship->furniture;
-		
+
 		///CAD
 		$cad_ship=ShipingCharges::where('market', 5)->first();
 		$cad_shipping_50gms = $cad_ship->gms_50;
@@ -802,7 +804,7 @@ class Helpers{
         $cad_shipping_750gms = $cad_ship->gms_750;
         $cad_shipping_1000gms = $cad_ship->gms_1000;
         $cad_shipping_5000gms = $cad_ship->gms_5000;
-		
+
 	$cad_shipping_50gms_savory = $cad_ship->savory_gms_50;
         $cad_shipping_100gms_savory = $cad_ship->savory_gms_100;
         $cad_shipping_150gms_savory = $cad_ship->savory_gms_150;
@@ -814,10 +816,10 @@ class Helpers{
         $cad_shipping_750gms_savory = $cad_ship->savory_gms_750;
         $cad_shipping_1000gms_savory = $cad_ship->savory_gms_1000;
         $cad_shipping_5000gms_savory = $cad_ship->savory_gms_5000;
-		
+
 		$cad_saree = $cad_ship->saree;
 		$cad_furniture = $cad_ship->furniture;
-		
+
 		///CAD
 		$au_ship=ShipingCharges::where('market', 6)->first();
 		$au_shipping_50gms = $au_ship->gms_50;
@@ -831,7 +833,7 @@ class Helpers{
         $au_shipping_750gms = $au_ship->gms_750;
         $au_shipping_1000gms = $au_ship->gms_1000;
         $au_shipping_5000gms = $au_ship->gms_5000;
-		
+
 	$au_shipping_50gms_savory = $au_ship->savory_gms_50;
         $au_shipping_100gms_savory = $au_ship->savory_gms_100;
         $au_shipping_150gms_savory = $au_ship->savory_gms_150;
@@ -843,10 +845,10 @@ class Helpers{
         $au_shipping_750gms_savory = $au_ship->savory_gms_750;
         $au_shipping_1000gms_savory = $au_ship->savory_gms_1000;
         $au_shipping_5000gms_savory = $au_ship->savory_gms_5000;
-		
+
 		$au_saree = $au_ship->saree;
 		$au_furniture = $au_ship->furniture;
-		
+
 		///Irlend
 		$irl_ship=ShipingCharges::where('market', 7)->first();
 		$irl_shipping_50gms = $irl_ship->gms_50;
@@ -860,7 +862,7 @@ class Helpers{
         $irl_shipping_750gms = $irl_ship->gms_750;
         $irl_shipping_1000gms = $irl_ship->gms_1000;
         $irl_shipping_5000gms = $irl_ship->gms_5000;
-		
+
 	$irl_shipping_50gms_savory = $irl_ship->savory_gms_50;
         $irl_shipping_100gms_savory = $irl_ship->savory_gms_100;
         $irl_shipping_150gms_savory = $irl_ship->savory_gms_150;
@@ -872,10 +874,10 @@ class Helpers{
         $irl_shipping_750gms_savory = $irl_ship->savory_gms_750;
         $irl_shipping_1000gms_savory = $irl_ship->savory_gms_1000;
         $irl_shipping_5000gms_savory = $irl_ship->savory_gms_5000;
-		
+
 		$irl_saree = $irl_ship->saree;
 		$irl_furniture = $irl_ship->furniture;
-		
+
 		///Germany
 		$ger_ship=ShipingCharges::where('market', 8)->first();
 		$ger_shipping_50gms = $ger_ship->gms_50;
@@ -889,7 +891,7 @@ class Helpers{
         $ger_shipping_750gms = $ger_ship->gms_750;
         $ger_shipping_1000gms = $ger_ship->gms_1000;
         $ger_shipping_5000gms = $ger_ship->gms_5000;
-		
+
 	$ger_shipping_50gms_savory = $ger_ship->savory_gms_50;
         $ger_shipping_100gms_savory = $ger_ship->savory_gms_100;
         $ger_shipping_150gms_savory = $ger_ship->savory_gms_150;
@@ -901,13 +903,13 @@ class Helpers{
         $ger_shipping_750gms_savory = $ger_ship->savory_gms_750;
         $ger_shipping_1000gms_savory = $ger_ship->savory_gms_1000;
         $ger_shipping_5000gms_savory = $ger_ship->savory_gms_5000;
-		
+
 		$ger_saree = $ger_ship->saree;
 		$ger_furniture = $ger_ship->furniture;
-		
+
 		//$usa_shipping_saree = 20;
-        
-        #  Convert base INR price to respective currencies using currency conversion rates 
+
+        #  Convert base INR price to respective currencies using currency conversion rates
 		$weight_in_gms=$products_grams;
             $price = str_replace(',', '',$products_price);
             $price_inr = $price;
@@ -917,16 +919,16 @@ class Helpers{
             $price_aed = $price_inr / $dirham_inr;
             $price_cad = $price_inr / $cad_inr;
             $price_aud = $price_inr / $aud_inr;
-            
-			$is_saree = 0;	
+
+			$is_saree = 0;
 			$is_furniture = 0;
 			$savory=0;
-			if($tags!='')	
+			if($tags!='')
 			{
 				$Tags=explode(",",$tags);
 				foreach($Tags as $tags_val)
 				{
-					
+
 					if(strpos(strtoupper($tags_val), "SAREE") !== false)
 						$is_saree = 1;
 					elseif(strpos(strtoupper($tags_val),"FURNITURE") !== false)
@@ -947,6 +949,8 @@ class Helpers{
 			{
                 //$price_inr=round(($price_inr + $usa_shipping_saree), 2);
 				$Variant_Price = round(($price_usd + $usa_saree), 2);
+
+
 				$price_gbp_final = round(($price_gbp + $uk_saree), 2);
 				$price_nld_final = round(($price_euro + $nld_saree), 2);
 				$price_inr_final = round(($price_inr + $ind_saree), 2);
@@ -1034,7 +1038,7 @@ class Helpers{
 					$price_aud_final = round(($price_aud + $au_shipping_300gms_savory), 2);
 					$price_irl_final = round(($price_euro + $irl_shipping_300gms_savory), 2);
 					$price_ger_final = round(($price_euro + $ger_shipping_300gms_savory), 2);
-				} 
+				}
 				elseif($weight_in_gms <= 400)
 				{
 					$Variant_Price = round(($price_usd + $usa_shipping_400gms_savory), 2);
@@ -1081,7 +1085,7 @@ class Helpers{
 				}
 				else
 				{
-				
+
 				        $Variant_Price = round(($price_usd + $usa_shipping_5000gms_savory), 2);
 					$price_gbp_final = round(($price_gbp + $uk_shipping_5000gms_savory), 2);
 					$price_nld_final = round(($price_euro + $nld_shipping_5000gms_savory), 2);
@@ -1090,8 +1094,8 @@ class Helpers{
 					$price_aud_final = round(($price_aud + $au_shipping_5000gms_savory), 2);
 					$price_irl_final = round(($price_euro + $irl_shipping_5000gms_savory), 2);
 					$price_ger_final = round(($price_euro + $ger_shipping_5000gms_savory), 2);
-					
-					
+
+
 					/*$Variant_Price = round(($price_usd + ($weight_in_gms * 0.016)), 2);
 					$price_gbp_final = round(($price_gbp + ($weight_in_gms * 0.011)), 2);
 					$price_nld_final = round(($price_euro + ($weight_in_gms * 0.012)), 2);
@@ -1099,7 +1103,7 @@ class Helpers{
 					$price_cad_final = round(($price_cad + ($weight_in_gms * 0.016)), 2);
 					$price_aud_final = round(($price_aud + ($weight_in_gms * 0.016)), 2);*/
 				}
-			}       
+			}
 			else  //For normal product
 			{
 				if($weight_in_gms <= 50)
@@ -1167,7 +1171,7 @@ class Helpers{
 					$price_aud_final = round(($price_aud + $au_shipping_300gms), 2);
 					$price_irl_final = round(($price_euro + $irl_shipping_300gms), 2);
 					$price_ger_final = round(($price_euro + $ger_shipping_300gms), 2);
-				} 
+				}
 				elseif($weight_in_gms <= 400)
 				{
 					$Variant_Price = round(($price_usd + $usa_shipping_400gms), 2);
@@ -1222,7 +1226,7 @@ class Helpers{
 					$price_aud_final = round(($price_aud + $au_shipping_5000gms), 2);
 					$price_irl_final = round(($price_euro + $irl_shipping_5000gms), 2);
 					$price_ger_final = round(($price_euro + $ger_shipping_5000gms), 2);
-					
+
 					/*$Variant_Price = round(($price_usd + ($weight_in_gms * 0.016)), 2);
 					$price_gbp_final = round(($price_gbp + ($weight_in_gms * 0.011)), 2);
 					$price_nld_final = round(($price_euro + ($weight_in_gms * 0.012)), 2);
@@ -1256,7 +1260,7 @@ class Helpers{
 			$price_irl_final=round(($price_irl_final  * 1.04), 2);
 			$price_ger_final=round(($price_ger_final  * 1.04), 2);
         }
-		
+
 		$decimal_part_usd = ltrim(number_format(($Variant_Price - floor($Variant_Price)),2),"0.");
         $decimal_part_gbp = ltrim(number_format(($price_gbp_final - floor($price_gbp_final)),2),"0.");
         $decimal_part_nld = ltrim(number_format(($price_nld_final - floor($price_nld_final)),2),"0.");
@@ -1277,7 +1281,7 @@ class Helpers{
         {
             $Variant_Price=floor($Variant_Price).".5";
         }
-        
+
         if($decimal_part_gbp < 25)
         {
             $price_gbp_final=floor($price_gbp_final);
@@ -1290,7 +1294,7 @@ class Helpers{
         {
             $price_gbp_final=floor($price_gbp_final).".5";
         }
-        
+
         if($decimal_part_nld < 25)
         {
             $price_nld_final=floor($price_nld_final);
@@ -1303,7 +1307,7 @@ class Helpers{
         {
             $price_nld_final=floor($price_nld_final).".5";
         }
-		
+
 		if($decimal_part_irl < 25)
         {
             $price_irl_final=floor($price_irl_final);
@@ -1316,7 +1320,7 @@ class Helpers{
         {
             $price_irl_final=floor($price_irl_final).".5";
         }
-		
+
 		if($decimal_part_ger < 25)
         {
             $price_ger_final=floor($price_ger_final);
@@ -1329,7 +1333,7 @@ class Helpers{
         {
             $price_ger_final=floor($price_ger_final).".5";
         }
-        
+
         if($decimal_part_inr < 50)
         {
             $price_inr_final=floor($price_inr_final);
@@ -1338,7 +1342,7 @@ class Helpers{
         {
             $price_inr_final=ceil($price_inr_final);
         }
-        
+
         if($decimal_part_cad < 25)
         {
             $price_cad_final=floor($price_cad_final);
@@ -1351,7 +1355,7 @@ class Helpers{
         {
             $price_cad_final=floor($price_cad_final).".5";
         }
-        
+
         if($decimal_part_aud < 25)
         {
             $price_aud_final=floor($price_aud_final);
@@ -1365,7 +1369,7 @@ class Helpers{
             $price_aud_final=floor($price_aud_final).".5";
         }
 		//echo $Variant_Price; die;
-		// echo "<br>"; die;  
+		// echo "<br>"; die;
         //echo $Variant_Price."+++".$price_gbp_final."+++".$price_nld_final."+++".$price_inr_final;
         $market_price=['usd' => $Variant_Price, 'gbp' => $price_gbp_final, 'nld' => $price_nld_final, 'inr' => $price_inr_final, 'cad' => $price_cad_final, 'aud' => $price_aud_final, 'irl' => $price_irl_final, 'ger' => $price_ger_final];
         return $market_price;

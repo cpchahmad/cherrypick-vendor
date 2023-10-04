@@ -282,7 +282,7 @@ class AdminController extends Controller
 $store=Store::where('id',Auth::user()->id)->latest()->first();
 
            $values = [
-               'store_log' => $store->logo,
+               'store_logo' => 'http://phpstack-1103991-3868726.cloudwaysapps.com/uploads/logo/'.$store->logo,
                'about_store' => $store->about_store,
                'store_carry' => $store->store_carry
            ];

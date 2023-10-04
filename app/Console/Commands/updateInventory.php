@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\ProductInfo;
 use DB;
@@ -29,9 +30,18 @@ class updateInventory extends Command
      */
     public function handle()
     {
-       $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-       $PASSWORD = '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';
-       $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/inventory_levels/set.json";
        //$product_inv = ProductInfo::where('stock', '>', 0)->whereNotNull('inventory_item_id')->get();
 	   $product_inv = ProductInfo::where('vendor_id', 32)->where('inventory_status', 1)->whereNotNull('inventory_item_id')->get();

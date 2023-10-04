@@ -4,6 +4,8 @@ namespace App\Http\Controllers\superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
+use App\Models\ProductChange;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\Payment;
@@ -764,6 +766,7 @@ class SuperadminController extends Controller
    public function productlist(Request $request){
    	//return $request->all();
        //echo "<pre>"; print_r($request->all()); die();
+
      $res = Product::whereIn('status',[0,2]);
       if($request->search != ""){
           $res->where('title' , 'LIKE', '%' . $request->search . '%');
@@ -776,7 +779,11 @@ class SuperadminController extends Controller
           $request->date = str_replace('/', '-', $request->date);
           $res->whereDate('created_at' , date('Y-m-d',strtotime($request->date)));
       }
-      $data = $res->orderBy('id', 'DESC')->paginate(30)->appends($request->all());
+      if($request->status!=""){
+          $res->where('status',$request->status);
+      }
+
+      $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
       $vendorlist = Store::where('role','Vendor')->get();
       //dd($data);
      return view('superadmin.products-list',compact('data','vendorlist'));
@@ -835,6 +842,7 @@ class SuperadminController extends Controller
      $data = Product::find($id);
      $items = ProductInfo::where('product_id',$id)->get();
      $vendor = Store::where('id',$data->vendor)->first();
+     $change_products=ProductChange::where('product_id',$id)->get();
      return view('superadmin.products-details',compact('data','items','vendor'));
     }
     public function outofstockProduct(){
@@ -920,10 +928,18 @@ class SuperadminController extends Controller
 
         //echo "<pre>"; print_r($products_array); die();
 
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
 
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
 
 
 //            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
@@ -953,6 +969,7 @@ class SuperadminController extends Controller
         $response = curl_exec ($curl);
         curl_close ($curl);
         $result=json_decode($response, true);
+
         //echo "<pre>"; print_r($result); die();
         $shopify_product_id=$result['product']['id'];
 		$shopify_handle=$result['product']['handle'];
@@ -975,15 +992,26 @@ class SuperadminController extends Controller
         {
             $category=Category::find($product->category);
             $shopify_id=$product->shopify_id;
+
             $data['product']=array(
                     "id" => $shopify_id,
                     "title" => $product->title,
                     "tags"   => $product->tags,
                     "product_type" => $category->category,
                 );
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
 
 
 //            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
@@ -1008,6 +1036,7 @@ class SuperadminController extends Controller
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
             $response = curl_exec ($curl);
+
             curl_close ($curl);
             Product::where('id', $product['id'])->update(['edit_status' => 0, 'status' => '1', 'approve_date' => Carbon::now()]);
 
@@ -1121,9 +1150,18 @@ class SuperadminController extends Controller
     }
 	public function linkProductToCollection($product_id,$collection_id)
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/collects.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1147,9 +1185,18 @@ class SuperadminController extends Controller
 	}
     public function shopifyUploadeImage($id,$shopify_id)
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_id/images.json";
         $product_images = ProductImages::where('product_id',$id)->get();
         foreach($product_images as $img_val)
@@ -1549,5 +1596,22 @@ class SuperadminController extends Controller
 	 return redirect()->back();
 	}
 
+    public function Settings(Request $request){
+        $setting=Setting::first();
+        return view('superadmin.settings',compact('setting'));
+    }
+
+    public function SaveSettings(Request $request){
+
+       $setting=Setting::first();
+       if($setting==null){
+           $setting=new Setting();
+       }
+       $setting->api_key=$request->api_key;
+       $setting->password=$request->password;
+       $setting->shop_url=$request->shop_url;
+       $setting->save();
+        return redirect()->back()->with('success', 'Setting Saved Successfully');
+    }
 
 }

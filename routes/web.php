@@ -58,7 +58,7 @@ Route::group(['middleware'=>'guest'],function(){
    Route::post('register',[AdminController::class,'register'])->name('post.register');
 });
 Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])->name('forget.password.get');
-Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post'); 
+Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post');
 Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset.password.get');
 Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
 
@@ -83,13 +83,22 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 	  Route::post('bulk-reject-product',[SuperadminController::class,'bulkRejectProduct'])->name('superadmin.bulk-reject-product');
       Route::get('store-configuration',[SuperadminController::class,'vendorlist'])->name('superadmin.store-configuration');
       Route::get('products-details/{id}',[SuperadminController::class,'productDetails'])->name('superadmin.productdetails');
-      //15-06-2023
+
+
+      //zain
+    Route::get('settings',[SuperadminController::class,'Settings'])->name('superadmin.settings');
+    Route::post('save-settings',[SuperadminController::class,'SaveSettings'])->name('superadmin.save_settings');
+
+
+
+
+    //15-06-2023
       Route::post('variant-details',[SuperadminController::class,'variantDetailUpdate'])->name('superadmin.variantdetails');
       Route::get('banner',[SuperadminController::class,'bannerlist'])->name('superadmin.banner');
       Route::post('change-banner-status',[SuperadminController::class,'changeBannerStatus'])->name('superadmin.change-banner-status');
 	  Route::get('stores-products',[SuperadminController::class,'storesList']);
 	  Route::get('store-products-csv/{id}',[SuperadminController::class,'pricecalculate']);
-	  
+
 	  Route::get('/download/{file}',[SuperadminController::class,'download'])->name('download');
 	  Route::get('/download_logo/{file}',[SuperadminController::class,'download_logo'])->name('download_logo');
 	  Route::get('updateprice',[SuperadminController::class,'updateAllProductPrices']);
@@ -100,7 +109,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 	  Route::post('update-conversion-rate',[SuperadminController::class,'updateConversionRate']);
 	  Route::get('shipingchagres/{id}',[SuperadminController::class,'shipingCharges']);
 	  Route::post('update-shiping-charges',[SuperadminController::class,'updateShipingCharges']);
-	  
+
       Route::get('vendor-list',[SuperadminController::class,'vendorlist'])->name('vendor-list');
       Route::get('vendor-details/{id}',[SuperadminController::class,'vendordetails'])->name('vendordetails');
       Route::post('vendor-general-configuration/{store}',[SuperadminController::class,'updateGeneralConfiguration'])->name('genralconfiguration.update');
@@ -116,10 +125,10 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
       Route::post('changepassword',[SuperadminController::class,'password'])->name('change-password');
       Route::get('/change',[SuperadminController::class,'changestatus'])->name('change-status');
       Route::get('banner-list',[SuperadminController::class,'bannerlist'])->name('banner-list');
-	  
-	  Route::get('fetch-product-form',function(){ return view('superadmin.fetch-product-url');}); 
+
+	  Route::get('fetch-product-form',function(){ return view('superadmin.fetch-product-url');});
 	  Route::post('fetch-product-url',[SuperadminController::class,'fetchProductUrl'])->name('fetch-product-url');
-	  
+
 	  Route::get('uploade-product-form',function(){ return view('superadmin.uploade-product-form');});
 	  Route::post('uploade-bulk-products',[SuperadminController::class,'uploadeBulkProducts']);
 });
@@ -136,7 +145,7 @@ Route::group(['middleware'=>'products'],function(){
      Route::post('delete-variant',[ProductController::class,'deleteVariant'])->name('delete-variant');
      Route::get('add-new-variant/{id}',[ProductController::class,'addNewVariant']);
      Route::post('save-new-variant',[ProductController::class,'saveNewVariant']);
-	 
+
 	 Route::get('category',[ProductController::class,'allCategory']);
 	 Route::get('add-category',[ProductController::class,'addCategory']);
 	 Route::post('save-category',[ProductController::class,'saveCategory'])->name('save-category');
@@ -151,7 +160,7 @@ Route::group(['middleware'=>'marketing'],function(){
     Route::get('discount-delete/{id}',[DiscountController::class,'deleteDiscount']);
     Route::get('discount-edit/{id}',[DiscountController::class,'editDiscount']);
     Route::post('savebanner',[BannerController::class,'savebanner']);
-	
+
 	Route::get('manage-product-discount',[DiscountController::class,'productsDiscountlist'])->name('manage-product-discount');
 	Route::get('product-add-discount',[DiscountController::class,'productsDiscountAddForm']);
 	Route::post('save-product-discount',[DiscountController::class,'saveProductDiscount']);
@@ -191,7 +200,7 @@ Route::group(['middleware'=>'orders'],function(){
  Route::post('store-mobile-banner',[BannerController::class,'submitstoremobilebanner'])->name('store-mobile-banner');
  Route::post('profile-image',[AdminController::class,'profileimage'])->name('profile-image');
 
- 
+
   Route::get('user-role',[RoleController::class,'userrole'])->name('user-role')->middleware('vendoruser');
   Route::get('user-role-create',[RoleController::class,'roleCreate'])->name('role.create')->middleware('vendoruser');
   Route::get('role-edit/{id}',[RoleController::class,'edit']);
@@ -214,21 +223,21 @@ Route::group(['middleware'=>'orders'],function(){
  Route::get('shopify-orders',[ProductController::class,'fetchShopifyOrders']);
 
 
- 
- ////Discount part   
- 
 
- 
+ ////Discount part
+
+
+
  Route::get('testcron',[ProductController::class,'cronInventoryUpdate']);
  //Route::get('fetch_products/{url}',[ProductController::class,'fetchProductFromUrl']);
- 
+
  Route::get('testevent',[TestController::class,'testEvent']);
 
 
- 
+
 Route::get('testinv',[ProductController::class,'testinv']);
 Route::get('testcode',[ProductController::class,'testcode']);
-  
+
  Route::get('testimg',[ProductController::class,'uploadeImage']);
  Route::get('curltest',[ProductController::class,'curlTest']);
  Route::get('exportProductView',[ProductController::class,'exportProductView']);

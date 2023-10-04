@@ -56,9 +56,18 @@ class TestController extends Controller
 
 	public function updateTestPrice()
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
 		$data=ProductInfo::where('id', 6729)->get();
 		foreach($data as $row)
@@ -135,10 +144,10 @@ class TestController extends Controller
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
             echo $response = curl_exec ($curl);
             curl_close ($curl);
-			$res=json_decode($response,true); 
+			$res=json_decode($response,true);
 
 		foreach($arr as $k=>$v)
-		{			
+		{
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
         $headers = array(
@@ -204,7 +213,7 @@ class TestController extends Controller
 			}
 			for($i=1;$i<=10;$i++)
 			{
-	
+
 			$str=file_get_contents("https://".$url."/collections/all/products.json?page=".$i."&limit=250", false, $context);
                 $arr=json_decode($str,true);
 				//echo count($arr['products']);
@@ -241,10 +250,23 @@ class TestController extends Controller
 		}
 		}
 	}
-	
+
 	public function checkpricelist()
 	{
-        $SHOPIFY_API = "https://cityshop-company-store.myshopify.com/admin/api/2022-04/graphql.json";
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+//        $SHOPIFY_API = "https://cityshop-company-store.myshopify.com/admin/api/2022-04/graphql.json";
+        $SHOPIFY_API = "https://$SHOP_URL/admin/api/2022-04/graphql.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
         $headers = array(
@@ -277,10 +299,19 @@ class TestController extends Controller
 	}
 	public function pricelist()
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
-		
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2023-01/graphql.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -324,9 +355,18 @@ class TestController extends Controller
 
 	public function price()
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -364,16 +404,25 @@ class TestController extends Controller
         $result=json_decode($response, true);
         echo "<pre>"; print_r($result);
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	public function createCollection()
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/custom_collections.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -399,9 +448,18 @@ class TestController extends Controller
 	}
 	public function linkProductCollection()
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/collects.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -442,7 +500,7 @@ curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS,$postdata);
 
 // In real life you should use something like:
-// curl_setopt($ch, CURLOPT_POSTFIELDS, 
+// curl_setopt($ch, CURLOPT_POSTFIELDS,
 //          http_build_query(array('postvar1' => 'value1')));
 
 // Receive server response ...
@@ -471,11 +529,20 @@ echo $server_output;
 	}
     public function testEvent(Request $request)
     {
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
         //echo $request->search;
         $name=$request->search;
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/customers/search.json?limit=10&query=customer_first_name:$name";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -493,7 +560,7 @@ echo $server_output;
         $response = curl_exec ($curl);
         curl_close ($curl);
         $cust_result=json_decode($response,true);
-        //echo "<pre>"; 
+        //echo "<pre>";
         foreach($cust_result['customers'] as $cus_v )
         {
             $data[]=array(
@@ -503,11 +570,11 @@ echo $server_output;
         }
         return json_encode($data);
     }
-    
+
        public function testProduct()
     {
-    
-    
+
+
         set_time_limit(0);
             $context = stream_context_create(
                 array(
@@ -516,63 +583,63 @@ echo $server_output;
                     )
                 )
             );
-	    
+
 	   $vendor_data=DB::table('cron_json_url')->get();
-	    
+
 	   foreach($vendor_data as $val){
-	  
+
 	   $vid=$val->vendor_id;
-	   
-	   
+
+
 	    $url=$val->url;
            // $str_cnt=file_get_contents("https://".$url."/collections/all/count.json", false, $context);
             //$arr_1=json_decode($str_cnt,true);
             //$page_total=$arr_1['collection']['products_count'];
-            
-            
-            
-            
+
+
+
+
             for($i=1;$i<=1;$i++)
-			{	
+			{
 				$str=file_get_contents("https://".$url."/collections/all/products.json?page=".$i."&limit=250", false, $context);
 				$arr=json_decode($str,true);
 
 				$data=collect($arr['products']);
-				
+
 				$date=date('Y-m-d');
 				//$date='2023-06-24';
-                                  
+
 				$product=$data->filter(function ($q) use ($date) {
 				return Str::startsWith($q['updated_at'], $date);
 				});
-				
-				
+
+
 				 // dd($product);
-		
-		                  
-		                    
+
+
+
 		                if(sizeof($product) > 0){
 					$this->saveStoreFetchProductsFromJson($product,$vid,'');
 					echo "updated";
 					//return back()->with('success','Product imported successfully');
-				
+
 				}
-				
-				
+
+
 				//echo "<pre>"; print_r($arr['products']); die();
 			}
-            
-            
-   
-			
-			} 			
+
+
+
+
+			}
         //return Command::SUCCESS;
     }
-    
-    
-    
-    
-    
+
+
+
+
+
         function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
 	{
 		//echo "<pre>"; print_r($products); die;
@@ -589,7 +656,7 @@ echo $server_output;
 			}
 			//echo $pid; die;
 			if($pid==0)  ////////New Product
-			{		
+			{
 			$cat=Category::where('category',$row['product_type'])->first();
             if($cat)
 				$category_id=$cat->id;
@@ -597,7 +664,7 @@ echo $server_output;
                 {
                     $cate_que = new Category;
                     $cate_que->category = $row['product_type'];
-                    $cate_que->save(); 
+                    $cate_que->save();
                     $category_id=$cate_que->id;
                 }
 			$shopify_id=$row['id'];
@@ -616,15 +683,15 @@ echo $server_output;
 				$product->vendor = $store_id;
 				$product->tags = $tags;
 				$product->category = $category_id;
-				$product->save(); 
+				$product->save();
 				$product_id=$product->id;
 			// }
 			// else
 			// {
 				// $product_id=$pInfo->id;
-			// } 
+			// }
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -648,7 +715,7 @@ echo $server_output;
 					$product_info->dimensions = '0-0-0';
 					$product_info->varient_name = isset($row['options'][1]['name'])?$row['options'][1]['name']:$row['options'][0]['name'];
 					$product_info->varient_value = isset($var['option2'])?$var['option2']:$var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 			}
 			if($i>1)
@@ -668,8 +735,8 @@ echo $server_output;
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 			else  //Existing Product
@@ -680,7 +747,7 @@ echo $server_output;
 				Product::where('id', $pid)->update($data);
 				$product_id=$pid;
 			$i=0;
-			
+
 			foreach($row['variants'] as $var)
 			{
 				$i++;
@@ -704,7 +771,7 @@ echo $server_output;
 					$product_info->dimensions = '0-0-0';
 					$product_info->varient_name = isset($row['options'][1]['name'])?$row['options'][1]['name']:$row['options'][0]['name'];
 					$product_info->varient_value = isset($var['option2'])?$var['option2']:$var['option1'];
-					$product_info->save();   
+					$product_info->save();
 				}
 				else   //update variants
 				{
@@ -741,14 +808,14 @@ echo $server_output;
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
-								$product_img->save(); 
-							}							
+								$product_img->save();
+							}
                         }
 			}
 		}
 	}
-    
-    
-    
-   
+
+
+
+
 }

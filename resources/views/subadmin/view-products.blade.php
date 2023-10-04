@@ -36,18 +36,19 @@
                         <tbody>
                           @foreach($product as $row)
                           <tr>
-                            @php 
+                            @php
                                 $image=\App\Models\ProductImages::where(['product_id' => $row->id])->pluck('image')->first();
                             @endphp
                             <th scope="row"><a href="#"><img src="{{$image}}" alt=""></a></th>
                             <td>{{$row->title}}</td>
-                            @php 
+                            @php
                                 //$info_query=\App\Models\ProductInfo::where(['product_id' => $row->id])->pluck('price')->first();
 								$info_query=\App\Models\Category::where(['id' => $row->category])->pluck('category')->first();
                             @endphp
                             <td>{{ $info_query }}</td>
                             <td>{{$row->tags}}</td>
-                            <td>@if($row->status=='1') <span class="en-recovered"></span>{{'Approved'}} @elseif($row->status=='3') <span class="en-dismissed"></span>{{'Deny'}} @else <span class="en-dismissed"></span>{{'Pending'}} @endif</td>
+
+                            <td>@if($row->status=='1') <span class="en-recovered"></span>{{'Approved'}}@elseif($row->status=='2') <span class="en-in-progress"></span>{{'Changes Pending'}} @elseif($row->status=='3') <span class="en-dismissed"></span>{{'Deny'}} @else <span class="en-dismissed"></span>{{'Pending'}} @endif</td>
                             <td class="icon-action">
                                 <a href="{{route('edit-product',$row->id)}}" title="Edit Product"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>
                                 <a title="Edit Variant" href="{{route('edit-variant',$row->id)}}"><span><img style="width:20px;" src="{{url('subadmin/assets/img/Edit-Variant.png')}}" alt=""></span></a>
@@ -56,10 +57,10 @@
                             </td>
                           </tr>
                           @endforeach
-                          
+
                         </tbody>
                       </table>
-                      
+
                     </div>
                 </div>
         </form>

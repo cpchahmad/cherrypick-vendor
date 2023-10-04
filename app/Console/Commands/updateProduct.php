@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\Product;
 
@@ -27,10 +28,19 @@ class updateProduct extends Command
      * @return int
      */
     public function handle()
-    {       
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+    {
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $product = Product::where('edit_status', 1)->where('status', 1)->get();
         foreach($product as $row)
         {

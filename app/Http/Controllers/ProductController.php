@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductChange;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Auth;
@@ -302,9 +304,18 @@ class ProductController extends Controller
 	}
 	public function linkProductToCollection($product_id,$collection_id)
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/collects.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -328,9 +339,18 @@ class ProductController extends Controller
 	}
 	function getProducts($page_info)
 		{
-			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-			$PASSWORD = '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';
-			$SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
 			if($page_info=='')
 				$SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products.json?limit=250";
 			else
@@ -354,9 +374,18 @@ class ProductController extends Controller
 		}
 	function getProductsCount()
 		{
-			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-			$PASSWORD = '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';
-			$SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
 				$SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/count.json";
 			$header=array(
 				"Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
@@ -381,9 +410,18 @@ class ProductController extends Controller
 
 	public function shopifyProductSync($cid)
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products.json?collection_id=$cid&limit=250";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -486,9 +524,18 @@ class ProductController extends Controller
     }
     public function cronInventoryUpdate()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/inventory_levels/set.json";
         $product_inv = ProductInfo::where('stock', '>', 0)->whereNotNull('inventory_item_id')->get();
         foreach($product_inv as $row)
@@ -529,10 +576,18 @@ class ProductController extends Controller
                     "sku"   => 'vvvvvvvvv',
                 );
             $product_id=$data[0]->shopify_id;
+        $setting=Setting::first();
+                if($setting){
+                    $API_KEY =$setting->api_key;
+                    $PASSWORD = $setting->password;
+                    $SHOP_URL =$setting->shop_url;
 
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+                }else{
+                    $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                    $PASSWORD = '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';
+                    $SHOP_URL = 'cityshop-company-store.myshopify.com';
+                }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-04//variants/$inventory_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -555,9 +610,19 @@ class ProductController extends Controller
     }
     public function testinv()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/price_rules.json";
         $data['price_rule']=array(
             'title' => 'OMTest',
@@ -601,9 +666,17 @@ class ProductController extends Controller
                     "title" => 'om new title',
                     "tags"   => 'hhhh,bbbb',
                 );
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/7426712764591.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -864,14 +937,36 @@ class ProductController extends Controller
          }
 
         $product->save();
+
+         //zain
+         $product_change=new ProductChange();
+         $product_change->title = $product->title;
+         $product_change->body_html = $product->body_html;
+         $product_change->tags = $product->tags;
+         $product_change->category = $product->category;
+         $product_change->status = $product->status;
+         $product_change->product_id = $product->id;
+         $product_change->save();
+
+
+
 		ProductInfo::where('product_id', $request->pid)->update(['price_conversion_update_status' => 1]);
 		if($product->shopify_id!=null && $product->status==1)
 		{
 			$shopify_id=$product->shopify_id;
 			$category=Category::find($product->category);
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
 
 //            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
 //            $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
@@ -918,9 +1013,19 @@ class ProductController extends Controller
 			$pid=$product1->id;
 			if($product->shopify_id!=null && $product->status==1) {
 				$shopify_id=$product->shopify_id;
-			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+                $setting=Setting::first();
+                if($setting){
+                    $API_KEY =$setting->api_key;
+                    $PASSWORD = $setting->password;
+                    $SHOP_URL =$setting->shop_url;
+
+                }else{
+                    $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                    $PASSWORD = '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';
+                    $SHOP_URL = 'cityshop-company-store.myshopify.com';
+                }
+
 
 //                $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
 //                $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
@@ -989,9 +1094,18 @@ class ProductController extends Controller
                     "fulfillment_service"   => "manual",
                     "inventory_management" => "shopify",
                 );
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$invid.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1051,9 +1165,18 @@ class ProductController extends Controller
       if($res->shopify_id!=null)
       {
             $shopify_product_id=$res->shopify_id;
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+          $setting=Setting::first();
+          if($setting){
+              $API_KEY =$setting->api_key;
+              $PASSWORD = $setting->password;
+              $SHOP_URL =$setting->shop_url;
+
+          }else{
+              $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+              $PASSWORD = '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';
+              $SHOP_URL = 'cityshop-company-store.myshopify.com';
+          }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2023-01/products/$shopify_product_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1081,10 +1204,18 @@ class ProductController extends Controller
 		  $productInfo = Product::find($res->product_id);
 		  $product_id=$productInfo->shopify_id;
 		  $image_id=$res->image_id;
+          $setting=Setting::first();
+          if($setting){
+              $API_KEY =$setting->api_key;
+              $PASSWORD = $setting->password;
+              $SHOP_URL =$setting->shop_url;
 
-			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+          }else{
+              $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+              $PASSWORD = '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';
+              $SHOP_URL = 'cityshop-company-store.myshopify.com';
+          }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$product_id/images/$image_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1328,9 +1459,18 @@ class ProductController extends Controller
                     "weight" => $product_info->grams,
 					"option1" => $product_info->varient_value??'',
                 );
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
 
 //        $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
 //        $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
@@ -1361,9 +1501,18 @@ class ProductController extends Controller
                     "fulfillment_service"   => "manual",
                     "inventory_management" => "shopify",
                 );
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
             $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
 
 //                $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
 //        $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
@@ -1426,9 +1575,18 @@ class ProductController extends Controller
         {
             $product_id=$data[0]->shopify_id;
             $inventory_id=$data[0]->inventory_id;
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-04/products/$product_id/variants/$inventory_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1541,9 +1699,18 @@ class ProductController extends Controller
                     "inventory_management" => "shopify",
                     //"inventory_quantity" => $request->quantity,
                 );
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$pid/variants.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1686,9 +1853,18 @@ echo $response;
 //        $API_KEY = '03549b537b31aeff2bdc45aa7c98d06d';
 //        $PASSWORD = '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';
 //        $SHOP_URL = 'mystore-3220.myshopify.com';
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1756,10 +1932,18 @@ echo $response;
             )
         );
 
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
 
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1796,9 +1980,18 @@ echo $response;
     }
     public function shopifyUploadeImage($id,$shopify_id)
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_id/images.json";
         $product_images = ProductImages::where('product_id',$id)->get();
         foreach($product_images as $img_val)
@@ -1889,9 +2082,18 @@ echo "ok";
     }
     public function fetchShopifyOrders()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1950,9 +2152,18 @@ echo "ok";
     }
     public function allOrders()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders.json?limit=20";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -1975,10 +2186,18 @@ echo "ok";
     }
     public function detailsShopifyOrders($id)
     {
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
 
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders/$id.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -2003,9 +2222,18 @@ echo "ok";
     }
     public function openOrders()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders.json?status=open";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -2028,9 +2256,18 @@ echo "ok";
     }
     public function closeOrders()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders.json?status=closed";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\ProductInfo;
 use Auth;
@@ -31,9 +32,18 @@ class updatePrice extends Command
      */
     public function handle()
     {
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
 		$data=ProductInfo::whereIn('vendor_id', [32,42])->where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
 		foreach($data as $row)
@@ -94,9 +104,19 @@ class updatePrice extends Command
                     "price"   => $USD_com,
 					"compare_at_price" => $USD
                 );
-			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
             $SHOPIFY_API_primary = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$variant_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API_primary);
@@ -185,7 +205,7 @@ class updatePrice extends Command
             // curl_close ($curl);
 			// $res=json_decode($response,true);
 		// }
-		
+
 			ProductInfo::where('id', $row->id)->update(['price_status' => 1]);
 		//DB::table('tests')->insert(['name' => 'okk']);
 		}

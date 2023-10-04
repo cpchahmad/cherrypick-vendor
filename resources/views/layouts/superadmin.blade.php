@@ -21,10 +21,10 @@
   <link href="{{url('superadmin/assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/vendor/datepicker/datepicker.css')}}" rel="stylesheet">
-  
+
   <link href="{{url('superadmin/assets/vendor/quill/quill.snow.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/vendor/quill/quill.bubble.css')}}" rel="stylesheet">
- 
+
   <!-- Template Main CSS File -->
   <link href="{{url('superadmin/assets/css/style.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/css/custom.css')}}" rel="stylesheet">
@@ -41,7 +41,7 @@
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
-  
+
     <nav class="header-nav ms-auto">
      <ul class="d-flex align-items-center">
         <li class="nav-item dropdown pe-3">
@@ -89,17 +89,17 @@
             <a href="{{url('superadmin/products')}}">
               <span>Catalog</span>
             </a>
-          </li>  
+          </li>
           <li>
             <a href="{{url('superadmin/banner')}}">
               <span>Banner</span>
             </a>
-          </li>  
+          </li>
 			<li>
             <a href="{{url('superadmin/stores-products')}}">
               <span>Store Products</span>
             </a>
-          </li>		  
+          </li>
           <li>
             <a href="{{url('superadmin/store-configuration')}}">
               <span>Store Configuration</span>
@@ -132,7 +132,7 @@
             <a href="{{url('superadmin/conversion-rate')}}">
               <span>Price Conversion Rate</span>
             </a>
-          </li>  
+          </li>
           <li>
             <a href="{{url('superadmin/shipingchagres/1')}}">
               <span>USA Market</span>
@@ -142,7 +142,7 @@
             <a href="{{url('superadmin/shipingchagres/2')}}">
               <span>UK Market</span>
             </a>
-          </li>	
+          </li>
 		<li>
             <a href="{{url('superadmin/shipingchagres/3')}}">
               <span>NLD Market</span>
@@ -172,15 +172,21 @@
             <a href="{{url('superadmin/shipingchagres/8')}}">
               <span>Germany Market</span>
             </a>
-          </li>		  
+          </li>
         </ul>
       </li>
+        <li class="nav-item @if(request()->is('superadmin/settings')) active @endif">
+            <a class="nav-link collapsed" href="{{url('superadmin/settings')}}">
+                <i class="bi bi-bag"></i>
+                <span>Settings</span>
+            </a>
+        </li>
     </ul>
 
   </aside><!-- End Sidebar-->
   @yield('main')
 
-  
+
   <!-- End #main -->
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
@@ -198,7 +204,7 @@
   <script src="{{url('superadmin/assets/vendor/chart.js/chart.min.js')}}"></script>
   <script src="{{url('superadmin/assets/vendor/echarts/echarts.min.js')}}"></script>
   <script src="{{url('superadmin/assets/vendor/quill/quill.min.js')}}"></script>
-  
+
   <script src="{{url('superadmin/assets/vendor/tinymce/tinymce.min.js')}}"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
@@ -206,7 +212,7 @@
  <script src="{{url('superadmin/assets/js/main.js')}}"></script>
  <script>
     $('.sidebar-nav .nav-link:not(.collapsed) ~ .nav-content').addClass('show');
-  
+
     jQuery(function($) {
      var path = window.location.href; // because the 'href' property of the DOM element is the absolute path
      $('ul a').each(function() {
@@ -231,10 +237,10 @@
     });
 
   </script>
-  
-  
 
-  
+
+
+
 <script>
 
 
@@ -242,10 +248,10 @@ $('.decimal').keyup(function(){
     var val = $(this).val();
     if(isNaN(val)){
          val = val.replace(/[^0-9\.]/g,'');
-         if(val.split('.').length>2) 
+         if(val.split('.').length>2)
              val =val.replace(/\.+$/,"");
     }
-    $(this).val(val); 
+    $(this).val(val);
 });
 
 function dismissModal(){

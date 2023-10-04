@@ -9,10 +9,10 @@
     <section class="section up-banner">
       <p><strong>Search and filter by products, vendor and date.</strong></p>
       <div class="sort-by">
-      
+
         <div class="member-plan-search header onetime-search">
           <div class="search-bar">
-            
+
               <form class="search-form d-flex align-items-center" method="get" action="">
                 <input type="text" name="search" id='search' value='{{Request::get('search')}}' placeholder="Search products" title="Enter search keyword">
                 <button type="button" title="Search" onclick="filterByName()"><i class="bi bi-search"></i></button>
@@ -27,6 +27,8 @@
               @endforeach
             </select>
          </div>
+
+
         <div class="sale-date">
           <div class="input-group">
               <input type="text" class="datepicker_input form-control datepicker-input" placeholder="Select date" onblur='filterByDate(this.value)' value='{{Request::get('date')}}' aria-label="Date and Month">
@@ -52,9 +54,9 @@
                           </tr>
                         </thead>
                         <tbody>
-                         @php $i=0; @endphp   
+                         @php $i=0; @endphp
                          @foreach($data as $row)
-                         @php 
+                         @php
                             $i++;
                             $image=\App\Models\ProductImages::where(['product_id' => $row->id])->pluck('image')->first();
                          @endphp
@@ -62,7 +64,7 @@
                             <th scope="row"><a href="#"><img src="{{$image}}" alt=""></a></th>
                             <td><a href="#" class="text-primary fw-bold">{{$row->title}}</a></td>
                             <td>{{date('d-m-Y',strtotime($row->approve_date))}}</td>
-                            @php 
+                            @php
                                 $info_query=\App\Models\Store::where(['id' => $row->vendor])->pluck('name')->first();
                             @endphp
                             <td>{{ $info_query }}</td>
@@ -83,7 +85,7 @@
     </section>
    </main>
 @endsection
-  
+
  <script>
      var segment='{{ Request::segment(3) }}';
      function approveProduct(id)
@@ -116,7 +118,7 @@
          }
      }
      function approveMultiple()
-     {       
+     {
         var array = $.map($('input[name="products[]"]:checked'), function(c){return c.value; });
         if(array!='')
         {
@@ -159,7 +161,7 @@
          }
      }
     $('.sidebar-nav .nav-link:not(.collapsed) ~ .nav-content').addClass('show');
-  
+
     jQuery(function($) {
      var path = window.location.href; // because the 'href' property of the DOM element is the absolute path
      $('ul a').each(function() {
@@ -182,6 +184,6 @@
         var theSplit = a.value.split('\\');
         fileLabel.innerHTML = theSplit[theSplit.length-1];
     }
-};         
-       
+};
+
 </script>

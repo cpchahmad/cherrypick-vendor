@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\Role;
@@ -102,13 +103,19 @@ class AdminController extends Controller
      }
 	 public function createCollection($title)
 	{
-		$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
 
-//        $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
-//        $PASSWORD = 'shpua_daf4f90db21249801ebf3d93bdfd0335';
-//        $SHOP_URL = 'cherrpick-zain.myshopify.com';
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+
 
 //        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/custom_collections.json";
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/smart_collections.json";
@@ -245,6 +252,18 @@ class AdminController extends Controller
          return view('subadmin.store-front',compact('data'));
        }
        public function submitstorefront(Request $request){
+
+           $setting=Setting::first();
+           if($setting){
+               $API_KEY =$setting->api_key;
+               $PASSWORD = $setting->password;
+               $SHOP_URL =$setting->shop_url;
+
+           }else{
+               $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+               $PASSWORD = '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';
+               $SHOP_URL = 'cityshop-company-store.myshopify.com';
+           }
             $request->validate([
             'logo'=>'image|mimes:jpg,jpeg,png,gif',
             'about_store'=>'required',
@@ -259,7 +278,52 @@ class AdminController extends Controller
           }
            $data['about_store']=$request->about_store;
            $data['store_carry']=$request->store_carry;
-           Store::where('id',Auth::user()->id)->update($data);
+       $store_data=Store::where('id',Auth::user()->id)->update($data);
+$store=Store::where('id',Auth::user()->id)->latest()->first();
+
+           $values = [
+               'store_log' => $store->logo,
+               'about_store' => $store->about_store,
+               'store_carry' => $store->store_carry
+           ];
+       $metafield_data=[
+               "metafield" =>
+                [
+                               "key" => 'store_front',
+                               "value" => json_encode($values),
+                               "type" => "json_string",
+                               "namespace" => "configuration",
+
+               ]
+       ];
+
+
+
+
+           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/smart_collections/$store->collections_ids/metafields.json";
+
+           $curl = curl_init();
+           curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+           $headers = array(
+               "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+               "Content-Type: application/json",
+               "charset: utf-8"
+           );
+           curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+           curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+           curl_setopt($curl, CURLOPT_VERBOSE, 0);
+           //curl_setopt($curl, CURLOPT_HEADER, 1);
+           curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+           //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+           curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_data));
+           curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+           curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+           $response = curl_exec ($curl);
+
+           curl_close ($curl);
+
+
            return redirect()->route('admin.storefront')->with('success','data stored successfully');
        }
       public function editprofile(){

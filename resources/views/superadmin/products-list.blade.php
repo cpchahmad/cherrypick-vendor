@@ -9,17 +9,17 @@
     <section class="section up-banner">
       <p><strong>Search and filter by products, vendor and date.</strong></p>
       <div class="sort-by">
-      
+
         <div class="member-plan-search header onetime-search">
           <div class="search-bar">
-            
+
               <form class="search-form d-flex align-items-center" method="get" action="">
                 <input type="text" name="search" id='search' value='{{Request::get('search')}}' placeholder="Search products" title="Enter search keyword">
                 <button type="button" title="Search" onclick="filterByName()"><i class="bi bi-search"></i></button>
               </form>
             </div>
          </div>
-         <div class="label-area sort-area">
+         <div class="label-area sort-area mx-2">
             <select class="form-select" aria-label="Default select example" onchange='filterByVendor(this.value)'>
               <option value='' selected="">Select Vendor</option>
               @foreach($vendorlist as $ven)
@@ -27,7 +27,17 @@
               @endforeach
             </select>
          </div>
-        <div class="sale-date">
+
+          <div class="label-area sort-area mx-2">
+              <select class="form-select" aria-label="Default select example" onchange='filterByStatus(this.value)'>
+                  <option value=''  selected="">Select Status</option>
+                  <option value="0" {{ Request::get('status') == "0" ? 'selected' : '' }}>Pending</option>
+                  <option value="2" {{ Request::get('status') == "2" ? 'selected' : '' }}>Changes Pending</option>
+
+              </select>
+          </div>
+
+          <div class="sale-date mx-2">
           <div class="input-group">
               <input type="text" class="datepicker_input form-control datepicker-input" id="fil_date" placeholder="@if(Request::get('date')!='') {{Request::get('date')}} @else {{'Select Date'}} @endif" onblur='filterByDate(this.value)'  aria-label="Date and Month">
             <i class="bi bi-calendar4 input-group-text"></i>
@@ -53,27 +63,27 @@
                           </tr>
                         </thead>
                         <tbody>
-                         @php $i=0; @endphp   
+                         @php $i=0; @endphp
                          @foreach($data as $row)
-                         @php 
+                         @php
                             $i++;
                             $image=\App\Models\ProductImages::where(['product_id' => $row->id])->pluck('image')->first();
                          @endphp
                           <tr>
-                              <td><input class="form-check-input chk" type="checkbox"  name='products[]' value="{{$row->id}}"></td>  
+                              <td><input class="form-check-input chk" type="checkbox"  name='products[]' value="{{$row->id}}"></td>
                             <th scope="row"><a href="#"><img src="{{$image}}" alt=""></a></th>
                             <td><a href="{{url('superadmin/products-details')}}/{{$row->id}}" class="text-primary fw-bold">{{$row->title}}</a></td>
                             <td>{{date('d-m-Y',strtotime($row->created_at))}}</td>
-                            @php 
+                            @php
                                 $info_query=\App\Models\Store::where(['id' => $row->vendor])->pluck('name')->first();
                             @endphp
                             <td>{{ $info_query }}</td>
-                            <td>@if($row->status==1) <span class="en-recovered"></span> Approved @else <span class="en-dismissed"></span> Pending @endif</td>
+                            <td>@if($row->status==1) <span class="en-recovered"></span> Approved @elseif($row->status=='2') <span class="en-in-progress"></span>{{'Changes Pending'}} @else <span class="en-dismissed"></span> Pending @endif</td>
                             <!--<td><span class="form-switch">
                                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault_{{$row->id}}" onclick="approveProduct({{$row->id}})" checked="">
                                </span>
                             </td>-->
-				
+
                             <td>
 							<a class="btn btn-success btn-sm" href="{{url('superadmin/shopify-create')}}/{{$row->id}}">Approve</a>
 							<a class="btn btn-danger btn-sm" href="{{url('superadmin/reject-product')}}/{{$row->id}}">Deny</a>
@@ -97,9 +107,9 @@
     </section>
    </main>
 @endsection
-  
+
  <script>
-     
+
      function approveProduct(id)
      {
          window.location.href='shopify-create/'+id;
@@ -108,7 +118,17 @@
      {
           var search='{{Request::get('search')}}';
           var date='{{Request::get('date')}}';
-          window.location.href='products?search='+search+'&vendor='+id+'&date='+date;
+         var status='{{Request::get('status')}}';
+          window.location.href='products?search='+search+'&vendor='+id+'&date='+date+'&status='+status;
+     }
+
+     function filterByStatus(id)
+     {
+
+         var search='{{Request::get('search')}}';
+         var vendor='{{Request::get('vendor')}}';
+         var date='{{Request::get('date')}}';
+         window.location.href='products?search='+search+'&vendor='+vendor+'&date='+date+'&status='+id;
      }
      function filterByName(val)
      {
@@ -117,7 +137,8 @@
          {
              var vendor='{{Request::get('vendor')}}';
              var date='{{Request::get('date')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&date='+date;
+             var status='{{Request::get('status')}}';
+             window.location.href='products?search='+search+'&vendor='+vendor+'&date='+date+'&status='+status;
          }
      }
      function filterByDate(val)
@@ -126,11 +147,12 @@
          {
              var search='{{Request::get('search')}}';
              var vendor='{{Request::get('vendor')}}';
-             window.location.href='products?search='+search+'&venodr='+vendor+'&date='+val;
+             var status='{{Request::get('status')}}';
+             window.location.href='products?search='+search+'&vendor='+vendor+'&date='+val+'&status='+status;
          }
      }
      function approveMultiple()
-     {       
+     {
         var array = $.map($('input[name="products[]"]:checked'), function(c){return c.value; });
         if(array!='')
         {
@@ -156,7 +178,7 @@
         }
      }
 	 function rejectMultiple()
-     {       
+     {
         var array = $.map($('input[name="products[]"]:checked'), function(c){return c.value; });
         if(array!='')
         {
@@ -199,7 +221,7 @@
          }
      }
     $('.sidebar-nav .nav-link:not(.collapsed) ~ .nav-content').addClass('show');
-  
+
     jQuery(function($) {
      var path = window.location.href; // because the 'href' property of the DOM element is the absolute path
      $('ul a').each(function() {
@@ -222,6 +244,6 @@
         var theSplit = a.value.split('\\');
         fileLabel.innerHTML = theSplit[theSplit.length-1];
     }
-};         
-       
+};
+
 </script>

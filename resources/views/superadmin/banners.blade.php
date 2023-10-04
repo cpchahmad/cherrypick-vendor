@@ -6,7 +6,7 @@
        <h1>Bannner Lists</h1>
     </div><!-- End Page Title -->
    </div>
-   
+
     <section class="section up-banner">
       <div class="row">
         <P><b>Bannner Lists</b></P>
@@ -62,7 +62,7 @@
 <script>
      function changeBannerStatus(id,status)
      {
-        var v_token = "{{csrf_token()}}";       
+        var v_token = "{{csrf_token()}}";
         $.ajax({
                 type:'post',
                 data:{id : id, status : status},

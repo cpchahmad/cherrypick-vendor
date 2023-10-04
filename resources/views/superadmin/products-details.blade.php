@@ -11,7 +11,7 @@
                 <div class="card fullorders">
                   <div class="row ">
                   <div class="m-3">
-                           
+
                             <div style="float:right;">
                             @if($data->status != 1)
                               <a class="btn btn-success btn-sm" href="{{url('superadmin/shopify-create')}}/{{$data->id}}">Approve</a>
@@ -20,7 +20,7 @@
                               <a class="btn btn-danger btn-sm" href="{{url('superadmin/reject-product')}}/{{$data->id}}">Deny</a>
                             @endif
                             </div>
-                            
+
                             <div style="float:left;">
                               <a class="btn btn-warning btn-sm" href="{{url()->previous()}}">Back</a>
                             </div>
@@ -28,26 +28,48 @@
                       <div class="col-12">
                         <hr>
                          <!-- <h4>Product Details</h4> -->
+                          <h3>Change Data</h3>
+                          <div class="order-summry">
+
+                              <div class="order-items">
+                                  <p><b>Title</b> <span>{{$data->title}}</span></p>
+                                  <p><b>Body HTML</b> <span>{{$data->body_html}}</span></p>
+                                  <p><b>Tags</b> <span>{{$data->tags}}</span></p>
+                                  @php
+                                      $info_query=\App\Models\Category::where(['id' => $data->category])->pluck('category')->first();
+                                  @endphp
+                                  <p><b>Type</b> <span>{{ $info_query }}</span></p>
+
+                              </div>
+
+                          </div>
+
+
+
+
+                          <h3>Orignal Data</h3>
+
                          <div class="order-summry">
+
                         <div class="order-items">
-                        <input type="hidden" id="product_id" value="{{$data->id}}" > 
-                        <input type="hidden" id="title" value="{{$data->title}}" > 
-                        <input type="hidden" id="body_html" value="{{$data->body_html}}" > 
-                         <p><b>Ttile</b> <span>{{$data->title}}</span></p>
+                        <input type="hidden" id="product_id" value="{{$data->id}}" >
+                        <input type="hidden" id="title" value="{{$data->title}}" >
+                        <input type="hidden" id="body_html" value="{{$data->body_html}}" >
+                         <p><b>Title</b> <span>{{$data->title}}</span></p>
 						 <p><b>Body HTML</b> <span>{{$data->body_html}}</span></p>
                          <p><b>Tags</b> <span>{{$data->tags}}</span></p>
-						 @php 
+						 @php
                                 $info_query=\App\Models\Category::where(['id' => $data->category])->pluck('category')->first();
                             @endphp
 						 <p><b>Type</b> <span>{{ $info_query }}</span></p>
-            
+
                         </div>
                         <div class="order-items">
                           <p><b>Vendor Name</b> <span>{{$vendor->name}}</span></p>
                           <p><b>Vendor Email</b> <span>{{$vendor->email}}</span></p>
                         </div>
                         </div>
-                         
+
 						 <div class="card table-card">
                   <div class="table-responsive">
                     <table class="table table-borderless view-productd">
@@ -108,15 +130,15 @@
                   @endforeach
                   </div>
                       </div>
-                    </div>     
+                    </div>
                  </div>
-                
+
             </div>
           </div>
     </section>
    </main>
-   
-   
+
+
    <div id="updateModal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -125,9 +147,9 @@
                     <button type="button" class="close" data-dismiss="modal" onclick="dismissModal();">&times;</button>
             </div>
             <div class="modal-body">
-            
+
                 <form role="form" method="POST" action="{{route('superadmin.variantdetails')}}">
-                
+
                  @csrf
                @method('post')
                     <input type="hidden" name="variant_id" id="variant_id" >
@@ -136,7 +158,7 @@
                         <label class="control-label">Title</label>
                         <div>
                         <input type="text"  class="form-control input-lg"  name="new_title" id="title_val" placeholder="title" required>
-                          
+
                         </div>
                     </div>
                     <div class="form-group">
@@ -151,29 +173,29 @@
                           <input type="text"  class="form-control input-lg" name="tags" value="{{$data->tags}}" id="tags" placeholder="Tags" required >
                         </div>
                     </div>
-                    
+
                       <div class="form-group">
                         <label class="control-label">Shipping Weight</label>
                         <div>
                           <input type="text"  class="form-control input-lg decimal" name="shipping_weight" id="shipping_weight" placeholder="Shipping Wieght" required>
                         </div>
                     </div><br>
-                    
-                 
-                    
+
+
+
                     <div class="modal-footer">
-                    
+
                     <div class="form-group">
                         <div>
-                           
+
                             <button type="submit" class="btn btn-info btn-block">Update</button>
                         </div>
                     </div>
-                  
+
       </div>
                 </form>
             </div>
-           
+
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -182,7 +204,7 @@
 
 
 
-   
+
 @endsection
 
-  
+

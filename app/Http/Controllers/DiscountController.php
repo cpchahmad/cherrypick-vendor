@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Discount;
 use App\Models\Store;
@@ -54,7 +55,7 @@ class DiscountController extends Controller
 				{
 					$base_price=$row->base_price;
 					$discounted_price=$base_price-($base_price*$request->discount/100);
-				
+
 					$Tags=explode(",",$product_row->tags);
 					if(in_array("Saree",$Tags))
 						$is_saree = 1;
@@ -72,7 +73,7 @@ class DiscountController extends Controller
 						$volumetric_Weight = 0;
 					}
 					$prices=Helpers::calc_price($discounted_price,$row->grams,$is_saree,$is_furniture,$volumetric_Weight);
-				
+
 					ProductInfo::where('id', $row->id)->update(['product_discount' => $request->discount, 'discounted_base_price' => $discounted_price, 'price_status' => 0, 'discounted_inr' => $prices['inr'], 'discounted_usd' => $prices['usd'], 'discounted_aud' => $prices['aud'], 'discounted_cad' => $prices['cad'], 'discounted_gbp' => $prices['gbp'], 'discounted_nld' => $prices['nld']]);
 					$variant_id=$row->inventory_id;
 					//$this->updatePrimaryStorePrice($variant_id,$prices['usd'],$row->price_usd);
@@ -96,7 +97,7 @@ class DiscountController extends Controller
 			{
 				$base_price=$row->base_price;
 				$discounted_price=$base_price-($base_price*$request->discount/100);
-				
+
 				$Tags=explode(",",$product_data->tags);
 				if(in_array("Saree",$Tags))
 					$is_saree = 1;
@@ -114,13 +115,13 @@ class DiscountController extends Controller
 					$volumetric_Weight = 0;
 				}
 				$prices=Helpers::calc_price($discounted_price,$row->grams,$is_saree,$is_furniture,$volumetric_Weight);
-				
+
 				ProductInfo::where('id', $row->id)->update(['product_discount' => $request->discount, 'discounted_base_price' => $discounted_price, 'price_status' => 0, 'discounted_inr' => $prices['inr'], 'discounted_usd' => $prices['usd'], 'discounted_aud' => $prices['aud'], 'discounted_cad' => $prices['cad'], 'discounted_gbp' => $prices['gbp'], 'discounted_nld' => $prices['nld']]);
-				
+
 				$variant_id=$row->inventory_id;
-				//$this->updatePrimaryStorePrice($variant_id,$prices['usd'],$row->price_usd); 
+				//$this->updatePrimaryStorePrice($variant_id,$prices['usd'],$row->price_usd);
 			}
-			
+
 		}
 		}
 		return redirect()->route('manage-product-discount')->with('success','Discount Created Successfully.');
@@ -143,9 +144,19 @@ class DiscountController extends Controller
                     "price"   => $price,
 					"compare_at_price" => $compare_price
                 );
-			$API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
             $PASSWORD = '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';
             $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/variants/$variant_id.json";
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -165,7 +176,7 @@ class DiscountController extends Controller
             curl_close ($curl);
 			$res=json_decode($response,true);
 	}
-	
+
     public function discountlist(Request $request){
         //echo $_ENV['par']; die();
           $vendor_id=Helpers::VendorID();
@@ -213,7 +224,7 @@ class DiscountController extends Controller
                     // 'title' => $v['title']
                     // );
             // }
-        // } 
+        // }
 		$res = Product::where('vendor', $vendor_id)->whereNotNull('shopify_id');
 		$product = $res->orderBy('id', 'DESC')->get();
 		//$products[]=array();
@@ -235,7 +246,7 @@ class DiscountController extends Controller
         'discount_value'=>'required',
         'start_date'=>'required',
         'start_time'=>'required',
-        ]);        
+        ]);
        if ( $request->applies_to=='collection') {
             $this->validate($request, [
                 'collection_ids'=>'required',
@@ -376,7 +387,7 @@ class DiscountController extends Controller
             else
                 $vendor_id=Auth::user()->vendor_id;
             $this->createDiscountCode($result['price_rule']['id'],$request->discount_code);
-            
+
             $minimum_requirement_value='';
             $usage_limit='0';
             if($request->minimum_price!='')
@@ -389,15 +400,15 @@ class DiscountController extends Controller
             $res->code=$request->discount_code;
             $res->type=$request->discount_type;
             $res->discount_value=$request->discount_value;
-            $res->minimum_requirement=$request->minimum_requirements;            
+            $res->minimum_requirement=$request->minimum_requirements;
             $res->minimum_requirement_value=$minimum_requirement_value;
             $res->usage_limit=$usage_limit;
             if(isset($request->usage_value))
             $res->usage_limit_value=$request->usage_value;
-            if(isset($request->products_ids) && is_array($request->products_ids)) 
+            if(isset($request->products_ids) && is_array($request->products_ids))
             $res->products=implode(",",$request->products_ids);
             $res->collections=$request->collection_ids;
-            if(isset($request->customer_ids) && is_array($request->customer_ids)) 
+            if(isset($request->customer_ids) && is_array($request->customer_ids))
             $res->customers=implode(",",$request->customer_ids);
             $res->start_date=$request->start_date.' '.$request->start_time;
             if($request->end_date!='' && $request->end_time!='')

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\Order;
 use App\Models\Orderitem;
@@ -32,9 +33,18 @@ class fetchOrders extends Command
      */
     public function handle()
     {
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders.json?order=created_at+desc";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -68,7 +78,7 @@ class fetchOrders extends Command
 
                 $store_arr=array();
                 foreach($v['line_items'] as $item_val)
-                {  
+                {
                     $store_id=0;
                     $store=Store::where('name',$item_val['vendor'])->first();
                     if($store)
@@ -90,7 +100,7 @@ class fetchOrders extends Command
                         $discount=$discount_arr[0]['amount'];
                     else
                         $discount=0;
-                    
+
                     $items=new Orderitem;
                     $items->vendor=$vendor;
                     $items->vendor_id=$store_id;

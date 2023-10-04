@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Auth;
@@ -36,10 +37,10 @@ class OrdersController extends Controller
             $fulfillment_status=$v['fulfillment_status'];
             $total_items=count($v['line_items']);
             $billing_address=json_encode($v['billing_address']);
-            $customer=json_encode($v['customer']);               
+            $customer=json_encode($v['customer']);
                 $store_arr=array();
                 foreach($v['line_items'] as $item_val)
-                {                          
+                {
                     $store_id=0;
 					$check_count=Orderitem::where('shopify_variant_id', $item_val['variant_id'])->where('shopify_orders_id', $order_number)->count();
 					if($check_count==0)
@@ -66,8 +67,8 @@ class OrdersController extends Controller
                     // if(!empty($discount_arr))
                         // $discount=$discount_arr[0]['amount'];
                     // else
-                        $discount=0; 
-					
+                        $discount=0;
+
                     $info_price=ProductInfo::where('inventory_id', $shopify_variant_id)->first();
 					if($info_price) {
 						if($info_price->product_discount > 0)
@@ -136,9 +137,19 @@ class OrdersController extends Controller
     public function fetchShopifyOrders()
     {
 		//die();
-        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-        $PASSWORD = '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';
-        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/orders.json?order=created_at+desc";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -162,7 +173,7 @@ class OrdersController extends Controller
         $arr_key=0;
         // foreach($result['orders'] as $k=>$v)
         // {
-			
+
 			// if($v['order_number'] > 2612)
 			// {
 			// $order_number=$v['order_number'];
@@ -173,10 +184,10 @@ class OrdersController extends Controller
             // $fulfillment_status=$v['fulfillment_status'];
             // $total_items=count($v['line_items']);
             // $billing_address=json_encode($v['billing_address']);
-            // $customer=json_encode($v['customer']);               
+            // $customer=json_encode($v['customer']);
                 // $store_arr=array();
                 // foreach($v['line_items'] as $item_val)
-                // {                          
+                // {
                     // $store_id=0;
                     // $store=Store::where('name',$item_val['vendor'])->first();
                     // if($store)
@@ -198,8 +209,8 @@ class OrdersController extends Controller
                     // if(!empty($discount_arr))
                         // $discount=$discount_arr[0]['amount'];
                     // else
-                        // $discount=0;  
-                    
+                        // $discount=0;
+
                     // $items=new Orderitem;
                     // $items->vendor=$vendor;
                     // $items->vendor_id=$store_id;
@@ -232,11 +243,11 @@ class OrdersController extends Controller
                     // $res->vendor_discount=$store_dis->vendor_discount;
                     // $res->save();
                 // }
-			
+
 			// }
-			
-			
-			
+
+
+
         // }
                 echo "good"; die();
     }
@@ -322,10 +333,10 @@ class OrdersController extends Controller
 			curl_setopt($ch, CURLOPT_POSTFIELDS,$postdata);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			echo $server_output = curl_exec($ch);
-			curl_close($ch);			
+			curl_close($ch);
 			$result=json_decode($server_output, true);
 		/////////////////////////////
-		$email=Auth::user()->email; 
+		$email=Auth::user()->email;
 		if($status==1)
 		{
 			// Mail::send('subadmin.mail.order-status-change', array('order' => $oid), function($message) use ($email)
@@ -333,7 +344,7 @@ class OrdersController extends Controller
 				// $message->from('cherrypick@example.com', 'Cherrypick');
 				// $message->to($email);
 				// $message->subject('Order Ready For Pickup');
-			// });        
+			// });
             return redirect()->route('pickup-orders')->with('success','Order Status Updated Successfully');
 		}
         else
@@ -350,15 +361,15 @@ class OrdersController extends Controller
 					$stock=$productInfo->stock - $quantity;
 					ProductInfo::where('id',$productInfo->id)->update(['inventory_status'=>1,'stock'=>$stock]);
 				}
-				
+
 			}
-			
+
 			// Mail::send('subadmin.mail.order-complete', array('order' => $oid), function($message) use ($email)
 			// {
 				// $message->from('cherrypick@example.com', 'Cherrypick');
 				// $message->to($email);
 				// $message->subject('Order Completed');
-			// }); 
+			// });
             return redirect()->route('pickup-orders')->with('success','Order Status Updated Successfully');
 		}
     }

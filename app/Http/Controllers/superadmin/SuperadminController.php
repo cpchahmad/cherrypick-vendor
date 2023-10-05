@@ -1003,7 +1003,7 @@ class SuperadminController extends Controller
 //            $SHOP_URL = 'cherrpick-zain.myshopify.com';
 
 
-        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products.json";
+        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2023-01/products.json";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
         $headers = array(
@@ -1025,6 +1025,7 @@ class SuperadminController extends Controller
         $response = curl_exec ($curl);
         curl_close ($curl);
         $result=json_decode($response, true);
+
 
         //echo "<pre>"; print_r($result); die();
         $shopify_product_id=$result['product']['id'];
@@ -1369,25 +1370,205 @@ class SuperadminController extends Controller
 				//echo "<pre>"; print_r($arr['products']); die();
 			}
    }
+//    function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
+//	{
+//
+//		//echo "<pre>"; print_r($products); die;
+//		foreach($products as $index=> $row)
+//		{
+//			$pid=0;
+//			foreach($row['variants'] as $var)
+//			{
+//
+//				$check=ProductInfo::where('sku',$var['sku'])->first();
+//
+//				if ($check)
+//				{
+//					$pid=$check->product_id;
+//				}
+//			}
+//			//echo $pid; die;
+//			if($pid==0)  ////////New Product
+//			{
+//			$cat=Category::where('category',$row['product_type'])->first();
+//            if($cat)
+//				$category_id=$cat->id;
+//            else
+//                {
+//                    $cate_que = new Category;
+//                    $cate_que->category = $row['product_type'];
+//                    $cate_que->save();
+//                    $category_id=$cate_que->id;
+//                }
+//			$shopify_id=$row['id'];
+//			$title=$row['title'];
+//			$description=$row['body_html'];
+//			$vendor=$row['vendor'];
+//			$tags=implode(",",$row['tags']);
+//			$handle=$row['handle'];
+//			$store_id=$vid;
+//			// $pInfo=Product::where('shopify_id', $shopify_id)->first();
+//			// if(!$pInfo)
+//			// {
+//				$product = new Product;
+//				$product->title = $title;
+//				$product->body_html = $description;
+//				$product->vendor = $store_id;
+//				$product->tags = $tags;
+//				$product->category = $category_id;
+//				$product->save();
+//				$product_id=$product->id;
+//			// }
+//			// else
+//			// {
+//				// $product_id=$pInfo->id;
+//			// }
+//			$i=0;
+//
+//			foreach($row['variants'] as $var)
+//			{
+//				$i++;
+//				$check=ProductInfo::where('sku',$var['sku'])->exists();
+//				if (!$check)
+//				{
+//					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
+//					$product_info = new ProductInfo;
+//					$product_info->product_id = $product_id;
+//					$product_info->sku = $var['sku'];
+//					$product_info->price = $prices['inr'];
+//					$product_info->price_usd = $prices['usd'];
+//					$product_info->price_nld = $prices['nld'];
+//					$product_info->price_gbp = $prices['gbp'];
+//					$product_info->price_cad = $prices['cad'];
+//					$product_info->price_aud = $prices['aud'];
+//					$product_info->price_irl = $prices['nld'];
+//					$product_info->price_ger = $prices['nld'];
+//					$product_info->base_price = $prices['base_price'];
+//					$product_info->grams = $var['grams'];
+//					$product_info->stock = $var['available'];
+//					$product_info->vendor_id = $store_id;
+//					$product_info->dimensions = '0-0-0';
+//					$product_info->varient_name = isset($row['options'][1]['name'])?$row['options'][1]['name']:$row['options'][0]['name'];
+//					$product_info->varient_value = isset($var['option2'])?$var['option2']:$var['option1'];
+//					$product_info->save();
+//				}
+//			}
+//			if($i>1)
+//			{
+//				Product::where('id', $product_id)->update(['is_variants' => 1]);
+//			}
+//			foreach($row['images'] as $img_val)
+//                        {
+//							$imgCheck=ProductImages::where('image_id',$img_val['id'])->exists();
+//							if (!$imgCheck)
+//							{
+//								$url = $img_val['src'];
+////								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
+////								file_put_contents($img, file_get_contents($url));
+////								$img_name=url($img);
+//                                $img_name=$url;
+//								$product_img = new ProductImages;
+//								$product_img->image = $img_name;
+//								//$product_img->image_id = $img_val['id'];
+//								$product_img->product_id = $product_id;
+//								$product_img->save();
+//							}
+//                        }
+//			}
+//			else  //Existing Product
+//			{
+//				$data['title']=$row['title'];
+//				$data['body_html']=$row['body_html'];
+//				$data['tags']=implode(",",$row['tags']);
+//				Product::where('id', $pid)->update($data);
+//				$product_id=$pid;
+//			$i=0;
+//
+//			foreach($row['variants'] as $var)
+//			{
+//				$i++;
+//				$check_info=ProductInfo::where('sku',$var['sku'])->first();
+//				if (!$check_info)
+//				{
+//					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
+//					$product_info = new ProductInfo;
+//					$product_info->product_id = $product_id;
+//					$product_info->sku = $var['sku'];
+//					$product_info->price = $prices['inr'];
+//					$product_info->price_usd = $prices['usd'];
+//					$product_info->price_nld = $prices['nld'];
+//					$product_info->price_gbp = $prices['gbp'];
+//					$product_info->price_cad = $prices['cad'];
+//					$product_info->price_aud = $prices['aud'];
+//					$product_info->price_irl = $prices['nld'];
+//					$product_info->price_ger = $prices['nld'];
+//					$product_info->base_price = $prices['base_price'];
+//					$product_info->grams = $var['grams'];
+//					$product_info->stock = $var['available'];
+//					$product_info->vendor_id = $vid;
+//					$product_info->dimensions = '0-0-0';
+//					$product_info->varient_name = isset($row['options'][1]['name'])?$row['options'][1]['name']:$row['options'][0]['name'];
+//					$product_info->varient_value = isset($var['option2'])?$var['option2']:$var['option1'];
+//					$product_info->save();
+//				}
+//				else   //update variants
+//				{
+//					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
+//					$info_id=$check_info->id;
+//					$info['price']=$prices['inr'];
+//					$info['price_usd']=$prices['usd'];
+//					$info['price_nld']=$prices['nld'];
+//					$info['price_gbp']=$prices['gbp'];
+//					$info['price_cad']=$prices['cad'];
+//					$info['price_aud']=$prices['aud'];
+//					$info['price_irl']=$prices['nld'];
+//					$info['price_ger']=$prices['nld'];
+//					$info['base_price']=$prices['base_price'];
+//					$info['grams']=$var['grams'];
+//					$info['stock']=$var['available'];
+//					$info['varient_name']=$row['title'];
+//					$info['varient_value']=$var['option1'];
+//					ProductInfo::where('id', $info_id)->update($info);
+//				}
+//			}
+//			if($i>1)
+//			{
+//				Product::where('id', $product_id)->update(['is_variants' => 1]);
+//			}
+//			foreach($row['images'] as $img_val)
+//                        {
+//							$imgCheck=ProductImages::where('image_id',$img_val['id'])->exists();
+//							if (!$imgCheck)
+//							{
+//								$url = $img_val['src'];
+////								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
+////								file_put_contents($img, file_get_contents($url));
+////								$img_name=url($img);
+//                                $img_name=$url;
+//								$product_img = new ProductImages;
+//								$product_img->image = $img_name;
+//								//$product_img->image_id = $img_val['id'];
+//								$product_img->product_id = $product_id;
+//								$product_img->save();
+//							}
+//                        }
+//			}
+//
+//		}
+//
+//	}
     function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
 	{
 
 		//echo "<pre>"; print_r($products); die;
 		foreach($products as $index=> $row)
 		{
-			$pid=0;
-			foreach($row['variants'] as $var)
-			{
 
-				$check=ProductInfo::where('sku',$var['sku'])->first();
 
-				if ($check)
-				{
-					$pid=$check->product_id;
-				}
-			}
+            $product_check=Product::where('title',$row['title'])->where('vendor',$vid)->first();
+
 			//echo $pid; die;
-			if($pid==0)  ////////New Product
+			if($product_check==null)  ////////New Product
 			{
 			$cat=Category::where('category',$row['product_type'])->first();
             if($cat)
@@ -1406,9 +1587,7 @@ class SuperadminController extends Controller
 			$tags=implode(",",$row['tags']);
 			$handle=$row['handle'];
 			$store_id=$vid;
-			// $pInfo=Product::where('shopify_id', $shopify_id)->first();
-			// if(!$pInfo)
-			// {
+
 				$product = new Product;
 				$product->title = $title;
 				$product->body_html = $description;
@@ -1417,18 +1596,17 @@ class SuperadminController extends Controller
 				$product->category = $category_id;
 				$product->save();
 				$product_id=$product->id;
-			// }
-			// else
-			// {
-				// $product_id=$pInfo->id;
-			// }
+
 			$i=0;
 
 			foreach($row['variants'] as $var)
 			{
+
 				$i++;
-				$check=ProductInfo::where('sku',$var['sku'])->exists();
-				if (!$check)
+				$check=ProductInfo::where('sku',$var['sku'])->where('product_id',$product_id)->first();
+
+
+				if ($check==null)
 				{
 					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
 					$product_info = new ProductInfo;
@@ -1470,6 +1648,9 @@ class SuperadminController extends Controller
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
+//                                $product_img->image_id = $img_val['id'];
+//                                $product_img->width = $img_val['width'];
+//                                $product_img->height = $img_val['height'];
 								$product_img->save();
 							}
                         }
@@ -1479,8 +1660,8 @@ class SuperadminController extends Controller
 				$data['title']=$row['title'];
 				$data['body_html']=$row['body_html'];
 				$data['tags']=implode(",",$row['tags']);
-				Product::where('id', $pid)->update($data);
-				$product_id=$pid;
+				Product::where('id',$product_check->id)->update($data);
+				$product_id=$product_check->id;
 			$i=0;
 
 			foreach($row['variants'] as $var)
@@ -1548,6 +1729,9 @@ class SuperadminController extends Controller
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
 								$product_img->product_id = $product_id;
+//								$product_img->image_id = $img_val['id'];
+//								$product_img->width = $img_val['width'];
+//								$product_img->height = $img_val['height'];
 								$product_img->save();
 							}
                         }

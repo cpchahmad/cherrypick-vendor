@@ -273,6 +273,7 @@ class Helpers{
 	}
 	public static function calc_price_fetched_products($products_price,$products_grams)
 	{
+
 		$conversionPrice=ConversionRate::first();
 		//$usd=$products_price;
 		$inr=round($products_price,2);

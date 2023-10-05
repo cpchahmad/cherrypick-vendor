@@ -1,4 +1,12 @@
 @extends('layouts.admin')
+<style>
+    .member-plan-search .search-form.d-flex.align-items-center{
+        margin: 0;
+    }
+    .member-plan-search.header.onetime-search .search-bar{
+        width:60% !important;
+    }
+</style>
 @section('main')
   <main id="main" class="main">
    <div class="home-flex">
@@ -8,12 +16,26 @@
    </div>
    <div class="member-plan-search header onetime-search">
     <div class="search-bar">
-        <form class="search-form d-flex align-items-center" method="GET" action="{{route('product-list')}}" onsubmit="return checkSearch()">
+        <form class="search-form d-flex align-items-center" method="get" action="">
+
           <label>Search Products</label>
-          <input type="search" name="search" id="search" placeholder="Search Product Name" title="Enter search keyword" id="search">
-          <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+            <input type="text" name="search" id='search' value='{{Request::get('search')}}' placeholder="Search products" title="Enter search keyword">
+            <button type="button" title="Search" onclick="filterByName()"><i class="bi bi-search"></i></button>
         </form>
+
+
       </div>
+
+       <div class="label-area sort-area mx-2">
+           <select class="form-select" aria-label="Default select example" onchange='filterByStatus(this.value)'>
+               <option value=''  selected="">Select Status</option>
+               <option value="0" {{ Request::get('status') == "0" ? 'selected' : '' }}>Pending</option>
+               <option value="1" {{ Request::get('status') == "1" ? 'selected' : '' }}>Approved</option>
+               <option value="2" {{ Request::get('status') == "2" ? 'selected' : '' }}>Changes Pending</option>
+               <option value="3" {{ Request::get('status') == "3" ? 'selected' : '' }}>Deny</option>
+
+           </select>
+       </div>
       <div class="create-plan">
         <a class="btn btn-primary" href="{{route('add-product')}}">Add New Product</a>
       </div>
@@ -89,15 +111,35 @@
 @stop
   @section('js')
 <script type="text/javascript">
-function checkSearch()
+// function checkSearch()
+// {
+// 	var val=jQuery.trim($('#search').val());
+// 	$('#search').val(val);
+// 	if(val.length==0)
+// 	{
+// 		return false;
+// 	}
+// }
+
+
+function filterByName(val)
 {
-	var val=jQuery.trim($('#search').val());
-	$('#search').val(val);
-	if(val.length==0)
-	{
-		return false;
-	}
+    var search=$('#search').val();
+    if(search!='')
+    {
+        var status='{{Request::get('status')}}';
+        window.location.href='product-list?search='+search+'&status='+status;
+    }
 }
+
+function filterByStatus(id)
+{
+    var search='{{Request::get('search')}}';
+    window.location.href='product-list?search='+search+'&status='+id;
+}
+
+
+
 
 </script>
 @stop

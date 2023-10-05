@@ -1067,6 +1067,9 @@ class ProductController extends Controller
       if($request->search != ""){
           $res->where('title' , 'LIKE', '%' . $request->search . '%');
       }
+        if($request->status!=""){
+            $res->where('status',$request->status);
+        }
       $product = $res->orderBy('id', 'DESC')->paginate(20);
       return view('subadmin.view-products',compact('product'));
     }

@@ -26,11 +26,11 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
     {
         return 2;
     }
-    
-    
+
+
       public function collection(Collection $collection)
     {
-    
+
      $result= collect($collection)
             ->groupBy('handle')
             ->map(function ($group) {
@@ -45,7 +45,7 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
                    'variant_inventory_item_id'=>$group[0]['variant_inventory_item_id'],
                     'variant_id'=>$group[0]['variant_id'],
                    'image_src' => $group[0]['image_src'],
-                  
+
                    /// 'summary'=>$group[0]['summary'],
                    // 'photo' => $group[0]['photo'],
                     // 'is_featured'=>$group[0]['is_featured'],
@@ -54,15 +54,15 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
             })
             ->values()
             ->all();
-            
+
          // dd($result);
-            
-            
+
+
              foreach($result as $value){
               if(!empty($value['product_id']) && !empty($value['product_category']) ){
                 $variant_data=$value['variant_res'];
                 if(sizeof($variant_data)> 0){ $is_variant=1;}else{$is_variant=0; }
-                
+
 		$check_category=Category::where('category',$value['product_category'])->first();
 		if($check_category == null)
 		{
@@ -75,9 +75,9 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
 		{
 		$category_id=$check_category->id;
 		}
-		
+
 		$get_vendor_id=Store::where('name',$value['vendor'])->first();
-                
+
                 $product = Product::updateOrCreate(['shopify_id'=>$value['product_id']],[
                                 'handle' => $value['handle'],
                                  'vendor' =>32,
@@ -89,12 +89,12 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
                                 'tags' => $value['tags'],
                                 'is_variants'=>$is_variant,
                                 'body_html'=>$value['body_html'],
-                                
+
                             ]);
 
                             foreach($variant_data as $variant_val){
-                            
-                            
+
+
                         $url = $variant_val['image_src'];
 			if($url!='')
 			{
@@ -103,12 +103,12 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
 					$img = "uploads/profile/".$product->id."-".time().".jpg";
 					file_put_contents($img, file_get_contents($url));
 					$img_name=url($img);
-					
-				}				
+
+				}
 			}
-                            
-                             
-                            
+
+
+
 			if(!empty($variant_val['inventory_id'])){
 			$product_details=ProductInfo::updateOrCreate(
 			['inventory_id' => $variant_val['variant_id'],'product_id'=>$product->id],
@@ -120,18 +120,18 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
 			['image' => $img_name]);
 
 			}
-                          
-             }
-             }     
-     
-        }
-        
-        
-        
 
-           
+             }
+             }
+
+        }
+
+
+
+
+
     }
- 
+
     /*public function model(array $row)
     {
         echo "<pre>"; print_r($row); die();
@@ -165,7 +165,7 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
             $product->vendor = $vendor_id;
             $product->tags = $row[2];
             $product->category = $category_id;
-            $product->save(); 
+            $product->save();
             $product_id=$product->id;
 			$Tags=explode(",",$row[2]);
             if(in_array("Saree",$Tags))
@@ -195,10 +195,10 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
 					$product_img->image = $img_name;
 					$product_img->product_id = $product_id;
 					$product_img->save();
-				}				
+				}
 			}
             ///Product variants
-            
+
                 $product_info = new ProductInfo;
                 $product_info->product_id = $product_id;
                 $product_info->vendor_id = $vendor_id;
@@ -228,7 +228,7 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
 				$product->tags = $row[2];
 				$product->category = $category_id;
 				$product->save();
-				
+
 				$Tags=explode(",",$row[2]);
 				if(in_array("Saree",$Tags))
 					$is_saree = 1;
@@ -295,15 +295,15 @@ class BluckProductImport implements ToCollection, WithHeadingRow,WithValidation
 				}
 			}
     }*/
-    
+
 	public function rules(): array
     {
-    
+
      return [
             'variant_id'=>'required|integer',
             'variant_inventory_item_id'=>'required|integer',
         ];
-       
+
     }
 	//public function customValidationMessages()
 	//{

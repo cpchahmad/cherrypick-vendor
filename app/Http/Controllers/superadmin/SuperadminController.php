@@ -1355,6 +1355,7 @@ class SuperadminController extends Controller
 			{
 				$str=file_get_contents("https://".$url."/collections/all/products.json?page=".$i."&limit=250", false, $context);
                 $arr=json_decode($str,true);
+
 				if(count($arr['products']) < 250)
 				{
 					$this->saveStoreFetchProductsFromJson($arr['products'],$vid,$tag_url);
@@ -1370,13 +1371,16 @@ class SuperadminController extends Controller
    }
     function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
 	{
+
 		//echo "<pre>"; print_r($products); die;
-		foreach($products as $row)
+		foreach($products as $index=> $row)
 		{
 			$pid=0;
 			foreach($row['variants'] as $var)
 			{
+
 				$check=ProductInfo::where('sku',$var['sku'])->first();
+
 				if ($check)
 				{
 					$pid=$check->product_id;
@@ -1458,9 +1462,10 @@ class SuperadminController extends Controller
 							if (!$imgCheck)
 							{
 								$url = $img_val['src'];
-								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
-								file_put_contents($img, file_get_contents($url));
-								$img_name=url($img);
+//								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
+//								file_put_contents($img, file_get_contents($url));
+//								$img_name=url($img);
+                                $img_name=$url;
 								$product_img = new ProductImages;
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
@@ -1535,9 +1540,10 @@ class SuperadminController extends Controller
 							if (!$imgCheck)
 							{
 								$url = $img_val['src'];
-								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
-								file_put_contents($img, file_get_contents($url));
-								$img_name=url($img);
+//								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
+//								file_put_contents($img, file_get_contents($url));
+//								$img_name=url($img);
+                                $img_name=$url;
 								$product_img = new ProductImages;
 								$product_img->image = $img_name;
 								//$product_img->image_id = $img_val['id'];
@@ -1546,7 +1552,9 @@ class SuperadminController extends Controller
 							}
                         }
 			}
+
 		}
+
 	}
 	public function changestatus(){
 		$data = ProductInfo::get();

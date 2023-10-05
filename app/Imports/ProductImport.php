@@ -33,6 +33,9 @@ class ProductImport implements ToModel, WithStartRow, WithValidation
             $vendor_id=Auth::user()->id;
        else
            $vendor_id=Auth::user()->vendor_id;
+
+
+
         $check_category=Category::where('category',$row[3])->first();
         if($check_category == null)
         {

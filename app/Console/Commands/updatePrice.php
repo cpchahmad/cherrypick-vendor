@@ -45,7 +45,10 @@ class updatePrice extends Command
         }
 
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
-		$data=ProductInfo::whereIn('vendor_id', [32,42])->where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
+//		$data=ProductInfo::whereIn('vendor_id', [32,42])->where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
+
+		//zain
+        $data=ProductInfo::where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
 		foreach($data as $row)
 		{
 			//DB::table('tests')->insert(['name' => 'start']);

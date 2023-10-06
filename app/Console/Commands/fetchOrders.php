@@ -112,6 +112,7 @@ class fetchOrders extends Command
                     $items->sku=$sku;
                     $items->discount=$discount;
                     $items->save();
+
                 }
                 foreach($store_arr as $store_val)
                 {

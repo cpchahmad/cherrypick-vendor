@@ -5,12 +5,12 @@
         <h1>View Order</h1>
          <p><a href="{{url('orders')}}">Order</a> / <b>View Order</b></p>
       </div>
-   
+
     <section class="section dashboard">
       <div class="row">
         <div class="col-12 ">
             <div class="card fullorders">
-                
+
               <div class="row ">
                   @php $price=0; $items=0; $discount=0; @endphp
                   @foreach($items_data as $item)
@@ -30,7 +30,8 @@
                      <p><b>Fulfillment Status</b> <span>{{$data->fulfillment_status}}</span></p>
                      <p><b>Payment Status</b> <span>{{$data->payment_status}}</span></p>
                      <p><b>Items</b> <span>{{count($items_data)}}</span></p>
-                     
+
+
 					 <p><b>Price</b> <span>{{$price}}</span></p>
                      <!--<p><b>Items</b> <span>{{$items}}</span></p>-->
 					 <!--<p><b>Discount</b> <span>0</span></p>-->
@@ -46,7 +47,7 @@
                     </div>
                      @endif
                     </div>
-                         
+
                     <div class="order-items">
                         @foreach($items_data as $item)
                       <p><b>Product Name</b> <span>{{$item->product_name}}</span></p>
@@ -55,17 +56,16 @@
                       ----------------------------------------------------------------------
                       @endforeach
                     </div>
-                         
+
                     </div>
-                     
+
                   </div>
                   <a href="{{url('orders')}}" class="btn btn-light">Back</a>
-                </div>     
+                </div>
              </div>
-            
+
         </div>
       </div>
     </section>
    </main>
 @stop
-  

@@ -96,6 +96,7 @@ class OrdersController extends Controller
                     $items->shopify_variant_id=$shopify_variant_id;
                     $items->product_name=$product_name;
                     $items->price=$price;
+
                     $items->quantity=$quantity;
                     $items->sku=$sku;
                     $items->discount=$discount;

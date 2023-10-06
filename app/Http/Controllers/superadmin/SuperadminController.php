@@ -944,6 +944,7 @@ class SuperadminController extends Controller
     {
 
         $product = Product::find($id);
+
 		$store = Store::find($product->vendor);
 
         if($product->status==0 || $product->status==3)
@@ -951,6 +952,7 @@ class SuperadminController extends Controller
         $category=Category::find($product->category);
             $variants=[];
             $product_info =ProductInfo::where('product_id',$product->id)->get();
+
             foreach($product_info as $v)
             {
                 $variants[]=array(
@@ -995,7 +997,6 @@ class SuperadminController extends Controller
                 $PASSWORD = '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';
                 $SHOP_URL = 'cityshop-company-store.myshopify.com';
             }
-
 
 
 //            $API_KEY = 'fd46f1bf9baedd514ed7075097c53995';
@@ -1044,7 +1045,9 @@ class SuperadminController extends Controller
         $this->shopifyUploadeImage($product->id,$shopify_product_id);
 		//$this->linkProductToCollection($shopify_product_id,$store->collections_ids);
 		ProductInfo::where('product_id', $product->id)->update(['price_status' => '0']);
+
         }
+
         else if($product->status==2)
         {
             $category=Category::find($product->category);

@@ -16,7 +16,7 @@
 
     <section class="section dashboard">
       <div class="row">
-        <div class="col-8 ">
+        <div class="col-12 ">
             <div class="card fullorders">
                 @php
                     $status=$data->status;
@@ -40,9 +40,15 @@
                               <div class="card-body bg-white border-light">
                                   <div class="row">
 
-                                      @php $price=0; $items=0; $discount=0; @endphp
+                                      @php $price=0; $items=0; $discount=0;
+                                      $usd_price_total=0;
+                                         @endphp
                                       @foreach($items_data as $item)
-                                          @php $price=$price+$item->price; @endphp
+                                          @php $price=$price+$item->price;
+                                                if($item->has_variant){
+                                              $usd_price_total=$item->has_variant->price_usd;
+                                                }
+                                          @endphp
                                           @php $items++; @endphp
                                           @php $discount=$discount+$item->discount; @endphp
 
@@ -57,12 +63,13 @@
 
 
 
-                                          <div class="col-md-7">
+                                          <div class="col-md-3">
                                               <strong> {{$item->product_name}}</strong>
                                               <br>
-
+                                                    @if($item->has_variant)
                                               {{$item->has_variant->varient_value}}
                                               <br>
+                                              @endif
                                               @if($item->sku!=null)
                                                   <b>SKU:</b>{{$item->sku}}
                                               @endif
@@ -71,16 +78,29 @@
                                           </div>
                                           @php
                                               $lineitem_total=$item->price*$item->quantity;
-
+                                                if($item->has_variant){
+                                              $usd_lineitem_total=$item->has_variant->price_usd*$item->quantity;
+                                            }
                                           @endphp
 
 
                                           <div class="col-md-2">
-                                              {{$item->price}}x{{$item->quantity}}
+                                            INR {{$item->price}}x{{$item->quantity}}
+
+
+
+                                          </div>
+                                          <div class="col-md-2">
+
+                                            @if($item->has_variant)
+                                              ${{number_format($item->has_variant->price_usd, 2)}}x{{$item->quantity}}
+                                                @endif
+
 
                                           </div>
 
-                                          <div class="col-md-2 text-right"> {{$lineitem_total}}</div>
+                                          <div class="col-md-2 text-right"> INR {{$lineitem_total}}</div>
+                                          <div class="col-md-2 text-right"> ${{number_format($usd_lineitem_total,2)}}</div>
                                           <hr>
                                           <br>
                                       @endforeach
@@ -96,13 +116,15 @@
                                   <div class="row">
                                       <div class="col-md-3">Subtotal</div>
                                       <div class="col-md-3" style="text-align:right">{{count($items_data)}} Items</div>
-                                      <div class="col-md-6 text-right" style="text-align:right"> {{$price}}</div>
+                                      <div class="col-md-3 text-right" style="text-align:right"> INR {{$price}}</div>
+                                      <div class="col-md-3 text-right" style="text-align:center"> ${{number_format($usd_price_total,2)}}</div>
 
 
 
 
                                       <div class="col-md-6 mt-2" ><strong>Total</strong></div>
-                                      <div class="col-md-6 mt-2 text-right" style="text-align:right">{{$price}} </div>
+                                      <div class="col-md-3 mt-2 text-right" style="text-align:right">INR{{$price}} </div>
+                                      <div class="col-md-3 mt-2 text-right" style="text-align:center">${{number_format($usd_price_total,2)}} </div>
                                   </div>
                               </div>
 

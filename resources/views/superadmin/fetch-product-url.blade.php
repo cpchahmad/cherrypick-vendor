@@ -16,7 +16,7 @@
                        <h5>{{ $message }}</h5>
                      </div>
                  @endif
-     
+
     <section class="section up-banner">
         <form class="add-product-form" method="post" id="yourFormId" action="{{route('fetch-product-url')}}" enctype="multipart/form-data" >
           @csrf
@@ -28,7 +28,7 @@
                            </div>
                     </div>
                      <div class="col-12">
-                            <label for="inputNanme4" class="form-label">Venodr Name</label>
+                            <label for="inputNanme4" class="form-label">Vendor Name</label>
                             <input type="text" class="form-control" placeholder="Venodr Name" name="username" required>
 							<span style="color:red;">
                       @error('username')
@@ -36,9 +36,9 @@
                        @enderror
                      </span>
                            </div>
-                   
+
 					<div class="col-12">
-                            <label for="inputNanme4" class="form-label">Passwor</label>
+                            <label for="inputNanme4" class="form-label">Password</label>
                             <input type="text" class="form-control" placeholder="Password" name="password" required>
 							<span style="color:red;">
                       @error('password')

@@ -253,6 +253,7 @@ class OrdersController extends Controller
     }
     public function allOrders(Request $request)
     {
+
         $vendor_id=Helpers::VendorID();
         $sql=Order::where('vendor',$vendor_id);
         if($request->query('order') != ""){
@@ -267,6 +268,10 @@ class OrdersController extends Controller
         }
 		if($request->query('flag') != "" && $request->query('flag') == "month"){
           $sql->whereBetween('order_date',[Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->lastOfMonth()->toDateString()]);
+        }
+
+        if($request->query('status') !=""){
+            $sql->where('status',$request->query('status'));
         }
         $data=$sql->orderBy('shopify_order_id', 'desc')->paginate(30);
         return view('subadmin.orders',compact('data'));

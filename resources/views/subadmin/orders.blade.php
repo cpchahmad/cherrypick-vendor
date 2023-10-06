@@ -1,4 +1,9 @@
 @extends('layouts.admin')
+<style>
+    .seprate input, select.form-select{
+        height:38px !important;
+    }
+</style>
 @section('main')
 <main id="main" class="main">
    <div class="home-flex">
@@ -6,46 +11,57 @@
        <h1>All Orders</h1>
     </div><!-- End Page Title -->
    </div>
-   
+
     <section class="section dashboard">
       <div class="row">
         <!-- Left side columns -->
         <div class="col-lg-12 dash-text">
-         
+
           <div class="row">
-            <form class="search-form d-flex align-items-center" method="get" action="">
-            <div class="sort-by">
-              <div class="member-plan-search header onetime-search">
-			  
-                <div class="search-bar search-form d-flex align-items-center">
-                    <label>&nbsp</label>
-                      <input type="text" name="order"  id="order" value="{{ request()->get('order') }}" placeholder="Search Orders" title="Enter search keyword">
-                      <button type="submit" title="Search"><i class="bi bi-search"></i></button>
-                    
+              <form class="search-form" method="get" action="">
+                  <div class="row align-items-center">
+                      <div class="col-md-3">
+                          <div class="mb-3">
+                              <label for="order" class="form-label">Search Orders</label>
+                              <input type="text" name="order" id="order" value="{{ request()->get('order') }}" class="form-control" placeholder="Search Orders" title="Enter search keyword">
+                          </div>
+                      </div>
+
+                      <div class="col-md-3">
+                          <div class="mb-3">
+                              <label for="status" class="form-label">Select Status</label>
+                              <select class="form-select" id="status" aria-label="Select Status" name="status">
+                                  <option value='' selected="">Select Status</option>
+                                  <option value="0" {{ Request::get('status') == "0" ? 'selected' : '' }}>New</option>
+                                  <option value="1" {{ Request::get('status') == "1" ? 'selected' : '' }}>Ready for Pickup</option>
+                                  <option value="2" {{ Request::get('status') == "2" ? 'selected' : '' }}>Completed</option>
+                              </select>
+                          </div>
+                      </div>
+
+                      <div class="col-md-3">
+                          <div class="mb-3">
+                              <label for="sdate" class="form-label">Start Date</label>
+                              <input type="date" name="sdate" id="sdate" value="{{ request()->get('sdate') }}" class="form-control" placeholder="YYYY-MM-DD" aria-label="Start Date">
+                          </div>
+                      </div>
+
+                      <div class="col-md-3">
+                          <div class="mb-3">
+                              <label for="edate" class="form-label">End Date</label>
+                              <input type="date" name="edate" id="edate" value="{{ request()->get('edate') }}" class="form-control" placeholder="YYYY-MM-DD" aria-label="End Date">
+                          </div>
+                      </div>
+
+                      <div class="col-md-3">
+                          <div class="mb-3">
+                              <button class="btn btn-primary" type="submit">Submit</button>
+                          </div>
+                      </div>
                   </div>
-                 
-               </div>
-			   <div class="sale-date">
-			   <label>&nbsp;&nbsp;&nbsp;&nbsp;Strat Date</label>
-                <div class="input-group">
-				
-                  <input type="date" name="sdate" value="{{ request()->get('sdate') }}" class="datepicker_input form-control datepicker-input" placeholder="YYYY-MM-DD" aria-label="Date">
-                </div>
-              </div>
-              <div class="sale-date">
-			  <label>&nbsp;&nbsp;&nbsp;&nbsp;End Date</label>
-                <div class="input-group">
-				
-                  <input type="date" name="edate" value="{{ request()->get('edate') }}" class="datepicker_input form-control datepicker-input" placeholder="YYYY-MM-DD" aria-label="Date">
-                </div>
-              </div>
-              <div class="create-plan">
-			  <label>&nbsp;&nbsp;</label>
-                <button class="btn btn-primary" type="submit">Submit</button>
-              </div>
-            </div>
-            </form>
-           <div class="col-md-12">
+              </form>
+
+              <div class="col-md-12">
             <div class="card-body show-plan collections">
               <!-- Bordered Table -->
               <div class="table-responsive">
@@ -86,14 +102,14 @@
                                 $product_count=\App\Models\Orderitem::where(['shopify_orders_id' =>$row['shopify_order_id'], 'vendor_id' =>App\Helpers\Helpers::VendorID()])->count();
                                @endphp
                                <td>{{$product_count}} items</td>
-                               <td><span class="fulfill">{{$row['otp']}}</span></td> 
+                               <td><span class="fulfill">{{$row['otp']}}</span></td>
                                <td>@if($row['status']=='0') <span class="en-dismissed"></span>{{'New'}} @elseif($row['status']=='1') <span class="en-in-progress"></span>{{'Ready For Pickup'}} @else <span class="en-recovered"></span>{{'Completed'}} @endif</td>
                                <td class="icon-action">
                                   <a href="{{url('order-details')}}/{{$row['id']}}"><i class="bi bi-eye"></i></a>
-                                  
+
                                </td>
                             </tr>
-                            @endforeach                
+                            @endforeach
                          </tbody>
                       </table>
                    </div>
@@ -122,4 +138,3 @@
 });
 </script>
 @stop
-  

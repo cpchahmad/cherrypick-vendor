@@ -21,14 +21,14 @@
   <link href="{{url('subadmin/assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/vendor/datepicker/datepicker.css')}}" rel="stylesheet">
-  
+
   <link href="{{url('subadmin/assets/vendor/quill/quill.snow.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/vendor/quill/quill.bubble.css')}}" rel="stylesheet">
- 
+
   <!-- Template Main CSS File -->
   <link href="{{url('subadmin/assets/css/style.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/css/custom.css')}}" rel="stylesheet">
-  
+
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/css/select2.min.css" rel="stylesheet"/>
 </head>
 
@@ -43,7 +43,7 @@
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
     </div><!-- End Logo -->
-  
+
     <nav class="header-nav ms-auto">
      <ul class="d-flex align-items-center">
         <li class="nav-item dropdown pe-3">
@@ -152,33 +152,40 @@
       </li>
       @endif
       @if(session('orders')==1 || Auth::user()->role=='Vendor')
-      <li class="nav-item">
-        <a class="nav-link  @if(request()->is('orders*') || request()->is('new-orders*') || request()->is('pickup-orders*') || request()->is('complete-orders*') || request()->is('order-details*')) {{''}} @else {{'collapsed'}} @endif" data-bs-target="#order-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-cart3"></i><span>Orders</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="order-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{{url('orders')}}">
-              <span>All Order</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{url('new-orders')}}">
-              <span>New Order</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{url('pickup-orders')}}">
-              <span>Orders ready for pickup</span>
-            </a>
-          </li>
-          <li>
-            <a href="{{url('complete-orders')}}">
-              <span>Complete Orders</span>
-            </a>
-          </li>
-        </ul>
-      </li>
+{{--      <li class="nav-item">--}}
+{{--        <a class="nav-link  @if(request()->is('orders*') || request()->is('new-orders*') || request()->is('pickup-orders*') || request()->is('complete-orders*') || request()->is('order-details*')) {{''}} @else {{'collapsed'}} @endif" data-bs-target="#order-nav" data-bs-toggle="collapse" href="#">--}}
+{{--          <i class="bi bi-cart3"></i><span>Orders</span><i class="bi bi-chevron-down ms-auto"></i>--}}
+{{--        </a>--}}
+{{--        <ul id="order-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">--}}
+{{--          <li>--}}
+{{--            <a href="{{url('orders')}}">--}}
+{{--              <span>All Order</span>--}}
+{{--            </a>--}}
+{{--          </li>--}}
+{{--          <li>--}}
+{{--            <a href="{{url('new-orders')}}">--}}
+{{--              <span>New Order</span>--}}
+{{--            </a>--}}
+{{--          </li>--}}
+{{--          <li>--}}
+{{--            <a href="{{url('pickup-orders')}}">--}}
+{{--              <span>Orders ready for pickup</span>--}}
+{{--            </a>--}}
+{{--          </li>--}}
+{{--          <li>--}}
+{{--            <a href="{{url('complete-orders')}}">--}}
+{{--              <span>Complete Orders</span>--}}
+{{--            </a>--}}
+{{--          </li>--}}
+{{--        </ul>--}}
+{{--      </li>--}}
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{url('orders')}}">
+                    <i class="bi bi-cart3"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
       @endif
       @if(session('marketing')==1 || Auth::user()->role=='Vendor')
       <li class="nav-item">
@@ -195,7 +202,7 @@
             <a href="{{url('manage-discount')}}">
               <span>Discount Code</span>
             </a>
-          </li>	-->	  
+          </li>	-->
           <li>
             <a href="{{route('admin.banner')}}">
               <span>Manage Banner</span>
@@ -210,7 +217,7 @@
           <i class="bi bi-file-earmark-bar-graph"></i>
           <span>Documents</span>
         </a>
-      </li>      
+      </li>
       <li class="nav-item">
         <a class="nav-link @if(request()->is('users/create*') || request()->is('users*') || request()->is('users-edit/*') || request()->is('user-role*') || request()->is('role-edit/*') || request()->is('user-role-create*')) {{''}} @else {{'collapsed'}} @endif" data-bs-target="#userrole-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-people"></i><span>User Roles</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -256,7 +263,7 @@
   <script src="{{url('subadmin/assets/vendor/chart.js/chart.min.js')}}"></script>
   <script src="{{url('subadmin/assets/vendor/echarts/echarts.min.js')}}"></script>
   <script src="{{url('subadmin/assets/vendor/quill/quill.min.js')}}"></script>
-  
+
  <script src="{{url('subadmin/assets/vendor/tinymce/tinymce.min.js')}}"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 <script src="{{url('subadmin/assets/js/main.js')}}"></script>
@@ -298,7 +305,7 @@
       });
     });
     $('.sidebar-nav .nav-link:not(.collapsed) ~ .nav-content').addClass('show');
-  
+
     jQuery(function($) {
      var path = window.location.href; // because the 'href' property of the DOM element is the absolute path
      $('ul a').each(function() {
@@ -323,7 +330,7 @@
     });
 
   </script>
- 
+
 @yield('js')
 </body>
 

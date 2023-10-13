@@ -83,6 +83,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 	  Route::post('bulk-reject-product',[SuperadminController::class,'bulkRejectProduct'])->name('superadmin.bulk-reject-product');
       Route::get('store-configuration',[SuperadminController::class,'vendorlist'])->name('superadmin.store-configuration');
       Route::get('products-details/{id}',[SuperadminController::class,'productDetails'])->name('superadmin.productdetails');
+    Route::get('orders',[SuperadminController::class,'orderlist'])->name('superadmin.allorders');
 
 
       //zain
@@ -90,6 +91,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::post('save-settings',[SuperadminController::class,'SaveSettings'])->name('superadmin.save_settings');
 
 
+    Route::get('logs',[SuperadminController::class,'Logs'])->name('superadmin.logs');
 
 
     //15-06-2023
@@ -104,7 +106,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 	  Route::get('updateprice',[SuperadminController::class,'updateAllProductPrices']);
 	  Route::get('store-amount',[SuperadminController::class,'storeAmount'])->name('superadmin.store-amount');
 	  Route::get('store-amount-history/{id}',[SuperadminController::class,'storeOrdersAmount']);
-	  Route::get('order-details/{id}',[SuperadminController::class,'storeOrdersDetails']);
+	  Route::get('order-details/{id}',[SuperadminController::class,'storeOrdersDetails'])->name('superadmin.orderdetail');
       Route::get('conversion-rate',[SuperadminController::class,'conversionRate']);
 	  Route::post('update-conversion-rate',[SuperadminController::class,'updateConversionRate']);
 	  Route::get('shipingchagres/{id}',[SuperadminController::class,'shipingCharges']);
@@ -131,6 +133,17 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 
 	  Route::get('uploade-product-form',function(){ return view('superadmin.uploade-product-form');});
 	  Route::post('uploade-bulk-products',[SuperadminController::class,'uploadeBulkProducts']);
+
+
+    Route::get('vendors',[SuperadminController::class,'vendors'])->name('vendors');
+    Route::get('vendor-setting/{id}',[SuperadminController::class,'vendorSetting'])->name('vendor.setting');
+    Route::post('update-hsn-code',[SuperadminController::class,'updatehsncode'])->name('superadmin.update.hsncode');
+    Route::post('update-record',[SuperadminController::class,'updaterecord'])->name('superadmin.update.record');
+    Route::post('update-record',[SuperadminController::class,'updaterecord'])->name('superadmin.update.record');
+
+    Route::post('vendor-setting',[SuperadminController::class,'Vendorbaseweightupdate'])->name('superadmin.baseweight.update');
+    Route::post('update-market-bulkprice',[SuperadminController::class,'updatemarketbulkprice'])->name('superadmin.update.market-bulkprice');
+
 });
 Route::group(['middleware'=>'products'],function(){
      Route::get('product-list',[ProductController::class,'productlist'])->name('product-list');

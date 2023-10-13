@@ -258,7 +258,7 @@ class OrdersController extends Controller
         $vendor_id=Helpers::VendorID();
         $sql=Order::where('vendor',$vendor_id);
         if($request->query('order') != ""){
-          $sql->where('shopify_order_id' , $request->query('order'));
+          $sql->where('shopify_order_id' , 'like', '%' . $request->query('order') . '%');
         }
         if($request->query('sdate') != "" && $request->query('edate') != ""){
           $sql->where('order_date' , '>=', $request->query('sdate'));

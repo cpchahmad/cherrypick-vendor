@@ -108,10 +108,54 @@
                     //whereNull('variant_ids')
 		    //echo "<pre>"; print_r($images);
                   @endphp
-                  @foreach($images as $prd)
-                  <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image}}" height="120px" width='120px'></div>
-                  @endforeach
-                  </div>
+{{--                  @foreach($images as $prd)--}}
+
+{{--                  <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image}}" height="120px" width='120px'></div>--}}
+{{--                    @if($prd->image2)--}}
+{{--                  <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image2}}" height="120px" width='120px'></div>--}}
+{{--                        @endif--}}
+{{--                        @if($prd->image3)--}}
+{{--                  <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image3}}" height="120px" width='120px'></div>--}}
+{{--                  @endif--}}
+{{--                        @if($prd->image4)--}}
+{{--                            <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image4}}" height="120px" width='120px'></div>--}}
+{{--                  @endif--}}
+{{--                        @if($prd->image5)--}}
+{{--                            <div id='img_{{$prd->id}}' class="col-3"><img src="{{$prd->image5}}" height="120px" width='120px'></div>--}}
+{{--                    @endif--}}
+{{--                  @endforeach--}}
+
+
+                    <div class="row">
+                        @foreach($images as $prd)
+                            <div class="col-3 mb-3">
+                                <img src="{{$prd->image}}" class="img-fluid" alt="Image 1">
+                            </div>
+                            @if($prd->image2)
+                                <div class="col-3 mb-3">
+                                    <img src="{{$prd->image2}}" class="img-fluid" alt="Image 2">
+                                </div>
+                            @endif
+                            @if($prd->image3)
+                                <div class="col-3 mb-3">
+                                    <img src="{{$prd->image3}}" class="img-fluid" alt="Image 3">
+                                </div>
+                            @endif
+                            @if($prd->image4)
+                                <div class="col-3 mb-3">
+                                    <img src="{{$prd->image4}}" class="img-fluid" alt="Image 4">
+                                </div>
+                            @endif
+                            @if($prd->image5)
+                                <div class="col-3 mb-3">
+                                    <img src="{{$prd->image5}}" class="img-fluid" alt="Image 5">
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+
+
+                </div>
 
 
 

@@ -123,6 +123,13 @@
           <span>Out of Stock Items</span>
         </a>
       </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{{url('superadmin/orders')}}">
+                <i class="bi bi-cart3"></i>
+                <span>Orders</span>
+            </a>
+        </li>
 	  <li class="nav-item">
         <a class="nav-link @if(request()->is('superadmin/conversion-rate*') || request()->is('superadmin/shipingchagres/*')) {{''}} @else {{'collapsed'}} @endif" data-bs-target="#setting-nav1" data-bs-toggle="collapse" href="#">
           <i class="bi bi-archive"></i><span>Price&Shiping Setting</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -175,6 +182,21 @@
           </li>
         </ul>
       </li>
+
+
+        <li class="nav-item @if(request()->is('superadmin/vendors')) active @endif">
+            <a class="nav-link collapsed" href="{{url('superadmin/vendors')}}">
+                <i class="bi bi-bag"></i>
+                <span>Vendors</span>
+            </a>
+        </li>
+
+        <li class="nav-item @if(request()->is('superadmin/logs')) active @endif">
+            <a class="nav-link collapsed" href="{{url('superadmin/logs')}}">
+                <i class="bi bi-bag"></i>
+                <span>Logs</span>
+            </a>
+        </li>
         <li class="nav-item @if(request()->is('superadmin/settings')) active @endif">
             <a class="nav-link collapsed" href="{{url('superadmin/settings')}}">
                 <i class="bi bi-bag"></i>
@@ -280,6 +302,38 @@ $('#product_val').val(product_id);
 });
 });
 </script>
+
+
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+  <script>
+      toastr.options =
+          {
+              "closeButton" : true,
+              "progressBar" : false,
+              "positionClass": "toast-bottom-center",
+
+          }
+      @if(Session::has('success'))
+
+      toastr.success("{{ session('success') }}");
+      @endif
+
+          @if(Session::has('error'))
+
+      toastr.error("{{ session('error') }}");
+      @endif
+
+          @if(Session::has('info'))
+
+      toastr.info("{{ session('info') }}");
+      @endif
+
+          @if(Session::has('warning'))
+
+      toastr.warning("{{ session('warning') }}");
+      @endif
+  </script>
 @yield('js')
 </body>
 

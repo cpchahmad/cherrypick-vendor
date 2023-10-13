@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\BluckProductImport;
+use App\Jobs\UploadBulkProducts;
 use App\Models\ProductChange;
+use App\Models\ProductImagesNew;
 use App\Models\Setting;
 use App\Models\VariantChange;
 use Illuminate\Http\Request;
@@ -25,8 +28,29 @@ use Carbon\Carbon;
 
 class ProductController extends Controller
 {
+
+
+
 	public function demoTestProduct()
 	{
+
+
+
+
+        $p_w=new ProductImagesNew();
+        $p_w->product_id=2;
+        $p_w->save();
+
+        dd($p_w);
+
+        $product_img = new ProductImages();
+        $product_img->image = 'dsds';
+        $product_img->product_id = 2;
+        $product_img->save();
+        dd($product_img);
+
+
+
 		echo "hiii";
 		$products_price=1039;
 		$products_grams=200;
@@ -715,9 +739,22 @@ class ProductController extends Controller
             'file'=>'required|mimes:xlsx,csv',
         ]);
 
-        Excel::import(new ProductImport,request()->file('file'));
+        if(\Illuminate\Support\Facades\Auth::user()->role=='Vendor')
+            $vid=\Illuminate\Support\Facades\Auth::user()->id;
+        else
+            $vid=\Illuminate\Support\Facades\Auth::user()->vendor_id;
 
-        return back()->with('success', 'Excel file imported successfully!');
+
+        $file=request()->file('file');
+        $name = str_replace(' ', '', $file->getClientOriginalName());
+        $name = "vendor_file". $name;
+        $file->move(public_path() . '/', $name);
+        $hashName =  public_path($name);
+        UploadBulkProducts::dispatch($hashName,$vid);
+//        Excel::import(new ProductImport,request()->file('file'));
+
+                return redirect()->back()->with('success', 'Import In Progress');
+//        return back()->with('success', 'Excel file imported successfully!');
     }
     public function importInventory()
     {

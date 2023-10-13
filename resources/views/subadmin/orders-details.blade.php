@@ -30,7 +30,6 @@
                 </h4>
 
 
-
               <div class="row ">
 
                   <div class="row">
@@ -46,7 +45,7 @@
                                       @foreach($items_data as $item)
                                           @php $price=$price+$item->price;
                                                 if($item->has_variant){
-                                              $usd_price_total=$item->has_variant->price_usd;
+                                              $usd_price_total=$item->has_variant->price_usd +$usd_price_total;
                                                 }
                                           @endphp
                                           @php $items++; @endphp
@@ -57,7 +56,7 @@
                                               @if(isset($item->has_variant->has_image->image) && $item->has_variant->has_image->image!='')
                                                   <img src="{{$item->has_variant->has_image->image}}" style="width: 100%">
                                               @else
-                                                  <img src="{{asset('empty.jpg')}}" style="width: 100%">
+                                                  <img src="{{asset('public/empty.jpg')}}" style="width: 100%">
                                               @endif
                                           </div>
 
@@ -78,6 +77,7 @@
                                           </div>
                                           @php
                                               $lineitem_total=$item->price*$item->quantity;
+                                              $usd_lineitem_total=0;
                                                 if($item->has_variant){
                                               $usd_lineitem_total=$item->has_variant->price_usd*$item->quantity;
                                             }

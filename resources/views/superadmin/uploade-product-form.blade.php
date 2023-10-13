@@ -13,7 +13,7 @@
 		<h4><i class="icon fa fa-ban"></i> Error!</h4>
 		@foreach($errors->all() as $error)
 		{{ $error }} <br>
-		@endforeach      
+		@endforeach
 		</div>
 		</div>
 		</div>
@@ -23,12 +23,33 @@
 		<h5>{{ $message }}</h5>
 		</div>
 		@endif
-     
+
     <section class="section up-banner">
         <form class="add-product-form" method="post" action="{{url('superadmin/uploade-bulk-products')}}" enctype="multipart/form-data">
           @csrf
             <div class="card store-config">
                      <div class="row">
+
+                         <div class="col-12">
+                             <label for="inputNanme4" class="form-label">Vendor Name</label>
+                             <input type="text" class="form-control" placeholder="Venodr Name" name="username" required>
+                             <span style="color:red;">
+                      @error('username')
+                                 {{$message}}
+                                 @enderror
+                     </span>
+                         </div>
+
+                         <div class="col-12">
+                             <label for="inputNanme4" class="form-label">Password</label>
+                             <input type="text" class="form-control" placeholder="Password" name="password" required>
+                             <span style="color:red;">
+                      @error('password')
+                                 {{$message}}
+                                 @enderror
+                     </span>
+                         </div>
+                     </div>
                     <div class="col-12">
                         <label for="inputNanme4" class="form-label">Select Excel File</label>
                         <input type="file" class="form-control" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
@@ -47,6 +68,6 @@
         </form>
     </section>
    </main>
-@endsection   
+@endsection
 
-  
+

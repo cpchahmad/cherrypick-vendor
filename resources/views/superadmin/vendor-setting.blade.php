@@ -31,7 +31,7 @@
                         <div class="card-body">
                             <div class="tab-content">
                                 <div class="tab-pane active show" id="tabs-home-7">
-                                    @if(count($vendor_product_types) > 0)
+                                    @if(count($markets) > 0)
                                         <table class="table table-bordered table-white">
                                             <thead>
                                             <tr>

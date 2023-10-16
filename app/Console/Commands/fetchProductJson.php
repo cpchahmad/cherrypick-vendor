@@ -379,6 +379,7 @@ class fetchProductJson extends Command
                 $product->body_html = $description;
                 $product->vendor = $store_id;
                 $product->tags = $tags;
+                $product->orignal_vendor = $vendor;
                 $product->category = $category_id;
                 $product->product_type_id=$product_type->id;
                 $product->save();
@@ -451,10 +452,12 @@ class fetchProductJson extends Command
             }
             else  //Existing Product
             {
+                $vendor=$row['vendor'];
                 $data['title']=$row['title'];
                 $data['body_html']=$row['body_html'];
                 $data['tags']=implode(",",$row['tags']);
                 $data['product_type_id']=$product_type->id;
+                $data['orignal_vendor'] = $vendor;
                 Product::where('id',$product_check->id)->update($data);
                 $product_id=$product_check->id;
                 $i=0;

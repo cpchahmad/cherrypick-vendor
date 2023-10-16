@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Log;
 use App\Models\ProductImagesNew;
+use App\Models\ProductType;
 use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\Product;
@@ -182,6 +183,23 @@ class approveProducts extends Command
                         ]);
                     }
 
+                    $tags=$product->tags;
+                    if($product->orignal_vendor) {
+                        $result = strcmp($vendor->name, $product->orignal_vendor);
+                        if ($result != 0) {
+                            $tags = $product->tags . ',' . $product->orignal_vendor;
+                        }
+
+                    }
+                    if($product->product_type_id){
+                        $product_type_check=ProductType::find($product->product_type_id);
+                        if($product_type_check){
+                            if($product_type_check->hsn_code) {
+                                $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
+                            }
+                        }
+                    }
+
                     $products_array = array(
                         "product" => array(
                             "title" => $product->title,
@@ -189,7 +207,7 @@ class approveProducts extends Command
                             "vendor" => $vendor->name,
                             "product_type" => $category->category ?? '',
                             "published" => true,
-                            "tags" => explode(",", $product->tags),
+                            "tags" => explode(",", $tags),
                             "variants" => $variants,
                             "options" => $options_array,
                             "metafields" => $metafield_data

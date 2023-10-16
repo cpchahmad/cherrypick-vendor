@@ -906,9 +906,9 @@ class SuperadminController extends Controller
      $data = Product::find($id);
      $items = ProductInfo::where('product_id',$id)->get();
      $vendor = Store::where('id',$data->vendor)->first();
-     $change_products=ProductChange::where('product_id',$id)->get();
-     $change_variants=VariantChange::where('product_id',$id)->get();
-     return view('superadmin.products-details',compact('data','items','vendor','change_products','change_variants'));
+//     $change_products=ProductChange::where('product_id',$id)->get();
+//     $change_variants=VariantChange::where('product_id',$id)->get();
+     return view('superadmin.products-details',compact('data','items','vendor'));
     }
     public function outofstockProduct(){
         $data = DB::table('products_variants')
@@ -954,6 +954,7 @@ class SuperadminController extends Controller
 
 
         $product = Product::find($id);
+
 
 		$store = Store::find($product->vendor);
 
@@ -1025,7 +1026,20 @@ class SuperadminController extends Controller
             $groupedData1 = [];
             foreach($product_info as $index=> $v)
             {
+                $grams=0;
+                if($store->base_weight){
+                    $grams=$store->base_weight;
+                }
+                if($product->product_type_id){
+                    $product_type=ProductType::find($product->product_type_id);
+                    if($product_type){
+                        $grams=$product_type->base_weight;
+                    }
+                }
 
+                if($v->grams){
+                    $grams=$v->grams;
+                }
 
                 $variants[]=array(
 //                    "title" => $v->varient_name,
@@ -1033,7 +1047,7 @@ class SuperadminController extends Controller
                     "option2" => $v->varient1_value,
                     "sku"     => $v->sku,
                     "price"   => $v->price_usd,
-                    "grams"   => $v->grams,
+                    "grams"   => $grams,
                     "taxable" => false,
                     "inventory_management" => ($v->stock ? "shopify" :null),
                     "inventory_quantity" => $v->stock
@@ -1103,8 +1117,21 @@ class SuperadminController extends Controller
 //		else
 //			$opt[]=array('name' => 'Title');
 
-
-
+            $tags=$product->tags;
+            if($product->orignal_vendor) {
+                $result = strcmp($store->name, $product->orignal_vendor);
+                if ($result != 0) {
+                    $tags = $product->tags . ',' . $product->orignal_vendor;
+                }
+            }
+            if($product->product_type_id){
+                $product_type_check=ProductType::find($product->product_type_id);
+                if($product_type_check){
+                    if($product_type_check->hsn_code) {
+                        $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
+                    }
+                }
+            }
 
 
         $products_array = array(
@@ -1115,7 +1142,7 @@ class SuperadminController extends Controller
                 //"product_type" => $category->category,
 				"product_type" => $category->category??'',
                 "published"    => true ,
-                "tags"         => explode(",",$product->tags),
+                "tags"         => explode(",",$tags),
                 "variants"     =>$variants,
 				"options"     =>  $options_array,
                 "metafields"=>$metafield_data
@@ -1557,11 +1584,26 @@ class SuperadminController extends Controller
                 ]);
             }
 
+            $tags=$product->tags;
+            if($product->orignal_vendor){
+                $result = strcmp($store->name, $product->orignal_vendor);
+                if ($result != 0) {
+                    $tags = $product->tags . ',' . $product->orignal_vendor;
+                }
+            }
+            if($product->product_type_id){
+                $product_type_check=ProductType::find($product->product_type_id);
+                if($product_type_check){
+                    if($product_type_check->hsn_code) {
+                        $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
+                    }
+                }
+            }
 
             $data['product']=array(
                     "id" => $shopify_id,
                     "title" => $product->title,
-                    "tags"   => $product->tags,
+                    "tags"   => $tags,
                     "product_type" => $category->category,
                 "options"     =>  $options_array,
                 "metafields"=>$metafield_data
@@ -1608,6 +1650,23 @@ class SuperadminController extends Controller
                         $productController->updateVarianatLiveStore($product_info->id);
                         ///create new varient
                         $invid = $product_info->inventory_id;
+
+                        $grams=0;
+                        if($store->base_weight){
+                            $grams=$store->base_weight;
+                        }
+                        if($product->product_type_id){
+                            $product_type=ProductType::find($product->product_type_id);
+                            if($product_type){
+                                $grams=$product_type->base_weight;
+                            }
+                        }
+
+                        if($product_info->grams){
+                            $grams=$product_info->grams;
+                        }
+
+
                         if ($product_info->varient_name != '' && $product_info->varient_value != '') {
                             $data['variant'] = array(
                                 "id" => $invid,
@@ -1616,7 +1675,7 @@ class SuperadminController extends Controller
                                 "sku" => $product_info->sku,
                                 "price" => $product_info->price_usd,
                                 "compare_at_price" => $product_info->price_usd,
-                                "grams" => $product_info->grams,
+                                "grams" => $grams,
                                 "taxable" => false,
                                 "inventory_management" => ($product_info->stock) ? "shopify" : null,
                             );
@@ -1630,7 +1689,7 @@ class SuperadminController extends Controller
                                 "sku" => $product_info->sku,
                                 "price" => $product_info->price_usd,
                                 "compare_at_price" => $product_info->price_usd,
-                                "grams" => $product_info->grams,
+                                "grams" => $grams,
                                 "taxable" => false,
                                 "inventory_management" => ($product_info->stock) ? "shopify" : null,
                             );
@@ -2242,6 +2301,7 @@ class SuperadminController extends Controller
 				$product->title = $title;
 				$product->body_html = $description;
 				$product->vendor = $store_id;
+				$product->orignal_vendor = $vendor;
 				$product->tags = $tags;
 				$product->category = $category_id;
                 $product->product_type_id=$product_type->id;
@@ -2315,10 +2375,12 @@ class SuperadminController extends Controller
 			}
 			else  //Existing Product
 			{
+                $vendor=$row['vendor'];
 				$data['title']=$row['title'];
 				$data['body_html']=$row['body_html'];
 				$data['tags']=implode(",",$row['tags']);
                 $data['product_type_id']=$product_type->id;
+                $data['orignal_vendor'] = $vendor;
 				Product::where('id',$product_check->id)->update($data);
 				$product_id=$product_check->id;
 			$i=0;
@@ -2562,10 +2624,10 @@ class SuperadminController extends Controller
 
 	$product = Product::find($product_id);
 
-	$product->title=$request->post('new_title');
-	$product->body_html=$request->post('new_body');
-	$product->tags=$request->post('tags');
-	$product->save();
+//	$product->title=$request->post('new_title');
+//	$product->body_html=$request->post('new_body');
+//	$product->tags=$request->post('tags');
+//	$product->save();
 
 
 
@@ -2702,5 +2764,21 @@ class SuperadminController extends Controller
     $market_vendor->vendor_id=$request->vendor_id;
     $market_vendor->save();
         return json_encode(array('status'=>'success'));
+    }
+
+
+    public function updateproductdetail(Request $request){
+
+        $id=$request->post('variant_id');
+        $product_id=$request->post('product_id');
+
+        $product = Product::find($product_id);
+
+
+	$product->title=$request->post('new_title');
+	$product->body_html=$request->post('description');
+	$product->tags=$request->post('tags');
+	$product->save();
+        return redirect()->back()->with('success', 'Update Successfully');
     }
 }

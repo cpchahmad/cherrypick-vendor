@@ -143,6 +143,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 
     Route::post('vendor-setting',[SuperadminController::class,'Vendorbaseweightupdate'])->name('superadmin.baseweight.update');
     Route::post('update-market-bulkprice',[SuperadminController::class,'updatemarketbulkprice'])->name('superadmin.update.market-bulkprice');
+    Route::post('update-product-detail',[SuperadminController::class,'updateproductdetail'])->name('superadmin.updateproductdetails');
 
 });
 Route::group(['middleware'=>'products'],function(){

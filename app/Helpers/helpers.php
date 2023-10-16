@@ -1382,113 +1382,123 @@ class Helpers{
 			$price_ger_final=round(($price_ger_final  * 1.04), 2);
         }
 
-		$decimal_part_usd = ltrim(number_format(($Variant_Price - floor($Variant_Price)),2),"0.");
-        $decimal_part_gbp = ltrim(number_format(($price_gbp_final - floor($price_gbp_final)),2),"0.");
-        $decimal_part_nld = ltrim(number_format(($price_nld_final - floor($price_nld_final)),2),"0.");
-        $decimal_part_inr = ltrim(number_format(($price_inr_final - floor($price_inr_final)),2),"0.");
-        $decimal_part_cad = ltrim(number_format(($price_cad_final - floor($price_cad_final)),2),"0.");
-        $decimal_part_aud = ltrim(number_format(($price_aud_final - floor($price_aud_final)),2),"0.");
-		$decimal_part_irl = ltrim(number_format(($price_irl_final - floor($price_irl_final)),2),"0.");
-		$decimal_part_ger= ltrim(number_format(($price_ger_final - floor($price_ger_final)),2),"0.");
-        if($decimal_part_usd < 25)
-        {
-            $Variant_Price=floor($Variant_Price);
-        }
-        elseif($decimal_part_usd > 50)
-        {
-            $Variant_Price=ceil($Variant_Price);
-        }
-        else
-        {
-            $Variant_Price=floor($Variant_Price).".5";
-        }
+        $Variant_Price = ceil($Variant_Price * 4) / 4;
+        $price_gbp_final = ceil($price_gbp_final * 4) / 4;
+        $price_nld_final = ceil($price_nld_final * 4) / 4;
+        $price_inr_final = ceil($price_inr_final * 4) / 4;
+        $price_cad_final = ceil($price_cad_final * 4) / 4;
+        $price_aud_final = ceil($price_aud_final * 4) / 4;
+        $price_irl_final = ceil($price_irl_final * 4) / 4;
+        $price_ger_final = ceil($price_ger_final * 4) / 4;
 
-        if($decimal_part_gbp < 25)
-        {
-            $price_gbp_final=floor($price_gbp_final);
-        }
-        elseif($decimal_part_gbp > 50)
-        {
-            $price_gbp_final=ceil($price_gbp_final);
-        }
-        else
-        {
-            $price_gbp_final=floor($price_gbp_final).".5";
-        }
 
-        if($decimal_part_nld < 25)
-        {
-            $price_nld_final=floor($price_nld_final);
-        }
-        elseif($decimal_part_nld > 50)
-        {
-            $price_nld_final=ceil($price_nld_final);
-        }
-        else
-        {
-            $price_nld_final=floor($price_nld_final).".5";
-        }
-
-		if($decimal_part_irl < 25)
-        {
-            $price_irl_final=floor($price_irl_final);
-        }
-        elseif($decimal_part_irl > 50)
-        {
-            $price_irl_final=ceil($price_irl_final);
-        }
-        else
-        {
-            $price_irl_final=floor($price_irl_final).".5";
-        }
-
-		if($decimal_part_ger < 25)
-        {
-            $price_ger_final=floor($price_ger_final);
-        }
-        elseif($decimal_part_ger > 50)
-        {
-            $price_ger_final=ceil($price_ger_final);
-        }
-        else
-        {
-            $price_ger_final=floor($price_ger_final).".5";
-        }
-
-        if($decimal_part_inr < 50)
-        {
-            $price_inr_final=floor($price_inr_final);
-        }
-        elseif($decimal_part_inr >= 50)
-        {
-            $price_inr_final=ceil($price_inr_final);
-        }
-
-        if($decimal_part_cad < 25)
-        {
-            $price_cad_final=floor($price_cad_final);
-        }
-        elseif($decimal_part_cad > 50)
-        {
-            $price_cad_final=ceil($price_cad_final);
-        }
-        else
-        {
-            $price_cad_final=floor($price_cad_final).".5";
-        }
-
-        if($decimal_part_aud < 25)
-        {
-            $price_aud_final=floor($price_aud_final);
-        }
-        elseif($decimal_part_aud > 50)
-        {
-            $price_aud_final=ceil($price_aud_final);
-        }
-        else
-        {
-            $price_aud_final=floor($price_aud_final).".5";
-        }
+//		$decimal_part_usd = ltrim(number_format(($Variant_Price - floor($Variant_Price)),2),"0.");
+//        $decimal_part_gbp = ltrim(number_format(($price_gbp_final - floor($price_gbp_final)),2),"0.");
+//        $decimal_part_nld = ltrim(number_format(($price_nld_final - floor($price_nld_final)),2),"0.");
+//        $decimal_part_inr = ltrim(number_format(($price_inr_final - floor($price_inr_final)),2),"0.");
+//        $decimal_part_cad = ltrim(number_format(($price_cad_final - floor($price_cad_final)),2),"0.");
+//        $decimal_part_aud = ltrim(number_format(($price_aud_final - floor($price_aud_final)),2),"0.");
+//		$decimal_part_irl = ltrim(number_format(($price_irl_final - floor($price_irl_final)),2),"0.");
+//		$decimal_part_ger= ltrim(number_format(($price_ger_final - floor($price_ger_final)),2),"0.");
+//        if($decimal_part_usd < 25)
+//        {
+//            $Variant_Price=floor($Variant_Price);
+//        }
+//        elseif($decimal_part_usd > 50)
+//        {
+//            $Variant_Price=ceil($Variant_Price);
+//        }
+//        else
+//        {
+//            $Variant_Price=floor($Variant_Price).".5";
+//        }
+//
+//        if($decimal_part_gbp < 25)
+//        {
+//            $price_gbp_final=floor($price_gbp_final);
+//        }
+//        elseif($decimal_part_gbp > 50)
+//        {
+//            $price_gbp_final=ceil($price_gbp_final);
+//        }
+//        else
+//        {
+//            $price_gbp_final=floor($price_gbp_final).".5";
+//        }
+//
+//        if($decimal_part_nld < 25)
+//        {
+//            $price_nld_final=floor($price_nld_final);
+//        }
+//        elseif($decimal_part_nld > 50)
+//        {
+//            $price_nld_final=ceil($price_nld_final);
+//        }
+//        else
+//        {
+//            $price_nld_final=floor($price_nld_final).".5";
+//        }
+//
+//		if($decimal_part_irl < 25)
+//        {
+//            $price_irl_final=floor($price_irl_final);
+//        }
+//        elseif($decimal_part_irl > 50)
+//        {
+//            $price_irl_final=ceil($price_irl_final);
+//        }
+//        else
+//        {
+//            $price_irl_final=floor($price_irl_final).".5";
+//        }
+//
+//		if($decimal_part_ger < 25)
+//        {
+//            $price_ger_final=floor($price_ger_final);
+//        }
+//        elseif($decimal_part_ger > 50)
+//        {
+//            $price_ger_final=ceil($price_ger_final);
+//        }
+//        else
+//        {
+//            $price_ger_final=floor($price_ger_final).".5";
+//        }
+//
+//        if($decimal_part_inr < 50)
+//        {
+//            $price_inr_final=floor($price_inr_final);
+//        }
+//        elseif($decimal_part_inr >= 50)
+//        {
+//            $price_inr_final=ceil($price_inr_final);
+//        }
+//
+//        if($decimal_part_cad < 25)
+//        {
+//            $price_cad_final=floor($price_cad_final);
+//        }
+//        elseif($decimal_part_cad > 50)
+//        {
+//            $price_cad_final=ceil($price_cad_final);
+//        }
+//        else
+//        {
+//            $price_cad_final=floor($price_cad_final).".5";
+//        }
+//
+//        if($decimal_part_aud < 25)
+//        {
+//            $price_aud_final=floor($price_aud_final);
+//        }
+//        elseif($decimal_part_aud > 50)
+//        {
+//            $price_aud_final=ceil($price_aud_final);
+//        }
+//        else
+//        {
+//            $price_aud_final=floor($price_aud_final).".5";
+//        }
 
 
 

@@ -2679,7 +2679,7 @@ class SuperadminController extends Controller
 
     public function Logs(){
 
-        $logs=Log::paginate(30);
+        $logs=Log::orderBy('id','desc')->paginate(30);
         return view('superadmin.logs',compact('logs'));
     }
 

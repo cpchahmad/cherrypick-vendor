@@ -14,7 +14,6 @@
                         <table class="table table-borderless view-productd">
                             <thead>
                             <tr>
-                                <th scope="col">#</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Date</th>
                                 <th scope="col">Status</th>
@@ -25,7 +24,7 @@
                             @php $i=0; @endphp
                             @foreach($logs as $index=> $log)
                                 <tr>
-                                    <td>{{ ++$i }}</td>
+
                                     <td>{{ $log->name }}</td>
                                     <td>{{ $log->date }}</td>
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @else ($log->status=='Failed') <span class="en-dismissed"></span>{{'Failed'}} @endif</td>

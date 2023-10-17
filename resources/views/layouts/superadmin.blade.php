@@ -28,6 +28,9 @@
   <!-- Template Main CSS File -->
   <link href="{{url('superadmin/assets/css/style.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/css/custom.css')}}" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="{{asset('dist/css/dropify.min.css')}}">
 </head>
 
 <body>
@@ -229,6 +232,7 @@
 
   <script src="{{url('superadmin/assets/vendor/tinymce/tinymce.min.js')}}"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <script src="{{asset('dist/js/dropify.min.js')}}"></script>
 
   <!-- Template Main JS File -->
  <script src="{{url('superadmin/assets/js/main.js')}}"></script>

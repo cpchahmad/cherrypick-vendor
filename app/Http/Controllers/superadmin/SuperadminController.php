@@ -2051,7 +2051,7 @@ class SuperadminController extends Controller
 			{
 				$str=file_get_contents("https://".$url."/collections/all/products.json?page=".$i."&limit=250", false, $context);
                 $arr=json_decode($str,true);
-dd(count($arr['products']));
+
 				if(count($arr['products']) < 250)
 				{
 					$this->saveStoreFetchProductsFromJson($arr['products'],$vid,$tag_url);
@@ -2742,6 +2742,15 @@ dd(count($arr['products']));
         $store=Store::find($request->vendor_id);
         if($store){
             $store->base_weight=$request->base_weight;
+            if ($request->hasFile('file')) {
+                $file=$request->hasFile('file');
+                $name = str_replace(' ', '', $file->getClientOriginalName());
+                $name = "size_chart". $name .time();
+                $file->move(public_path() . '/size-chart-images/', $name);
+                $image = '/size-chart-images/' . $name;
+                $store->size_chart_image=$image;
+            }
+            $store->size_chart_html=$request->html;
             $store->save();
             return redirect()->back()->with('success', 'Setting Saved Successfully');
         }

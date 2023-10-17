@@ -126,7 +126,7 @@
                                 </div>
 
                                 <div class="tab-pane" id="tabs-profile-8">
-                                    <form class="add-product-form" method="post" action="{{url('superadmin/vendor-setting')}}" >
+                                    <form class="add-product-form" method="post" action="{{url('superadmin/vendor-setting')}}"  enctype="multipart/form-data" >
                                         @csrf
                                         <div class="card">
                                             <div class="row">
@@ -142,6 +142,34 @@
                      </span>
 
                                                 </div>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="row">
+                                                <h4>Size Chart</h4>
+
+
+                                                <div class="col-12 mt-2">
+                                                    <label for="inputNanme4" class="form-label">HTML</label>
+
+                                                    <div>
+                                                        <textarea style="width: 100% !important;" name="html" id="editor1" class="form-control tooltip_logo_text" rows="3"> </textarea>
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 mt-2">
+                                                    <label for="inputNanme4" class="form-label">Image</label>
+                                                    <div>
+                                                        <input name="file" type="file" class="dropify" data-height="100" />
+                                                    </div>
+                                                    </div>
+                                                </div>
+
+
+
 
                                             </div>
                                         </div>
@@ -162,6 +190,10 @@
         </section>
     </main>
 @endsection
+
+@section('js')
+<script src="https://cdn.ckeditor.com/4.11.3/standard/ckeditor.js"></script>
+
 
 
 
@@ -221,4 +253,17 @@
     }
 </script>
 
+<script>
+    $(document).ready(function(){
 
+        $('.dropify').dropify();
+        $('.tooltip_logo_text').each(function () {
+            CKEDITOR.replace($(this).prop('id'));
+
+        });
+
+
+    });
+</script>
+
+@endsection

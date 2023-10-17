@@ -529,6 +529,7 @@ class fetchProductJson extends Command
                 {
                     Product::where('id', $product_id)->update(['is_variants' => 1]);
                 }
+
                 foreach($row['images'] as $img_val)
                 {
                     $imgCheck=ProductImages::where('image_id',$img_val['id'])->exists();

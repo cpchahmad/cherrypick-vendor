@@ -2319,7 +2319,7 @@ class SuperadminController extends Controller
 
 				if ($check==null)
 				{
-					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
 					$product_info->sku = $var['sku'];
@@ -2391,7 +2391,7 @@ class SuperadminController extends Controller
 				$check_info=ProductInfo::where('sku',$var['sku'])->first();
 				if (!$check_info)
 				{
-					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
 					$product_info->sku = $var['sku'];
@@ -2422,7 +2422,7 @@ class SuperadminController extends Controller
 				}
 				else   //update variants
 				{
-					$prices=Helpers::calc_price_fetched_products($var['price'],$var['grams']);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
 					$info_id=$check_info->id;
 					$info['price']=$prices['inr'];
 					$info['price_usd']=$prices['usd'];

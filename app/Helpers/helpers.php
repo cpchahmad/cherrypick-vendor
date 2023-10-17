@@ -346,6 +346,225 @@ class Helpers{
 		$market_price=['usd' => $usd, 'gbp' => $gbp, 'nld' => $nld, 'inr' => $inr, 'cad' => $cad, 'aud' => $aud, 'base_price' => $base_price];
         return $market_price;
 	}
+
+//added by Zain
+	public static function calc_price_fetched_products_by_vendor($vid,$products_price,$products_grams)
+	{
+		$conversionPrice=ConversionRate::first();
+		//$usd=$products_price;
+
+
+        $price_inr_usd=$price_inr_euro_nld=$price_inr_euro_irl=$price_inr_euro_ger=$price_inr_gbp=$price_inr_aud=$price_inr_cad=$price_inr = $products_price;
+        $market_vendors=MarketVendor::where('vendor_id',$vid)->get();
+
+        foreach ($market_vendors as $market_vendor){
+
+            if($market_vendor->market_id==1){
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_usd /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_usd=$price_inr_usd + $amount;
+                }else{
+                    $price_inr_usd=$price_inr_usd - $amount;
+                }
+
+            }
+
+            elseif($market_vendor->market_id==2){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_gbp /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_gbp=$price_inr_gbp + $amount;
+                }else{
+                    $price_inr_gbp=$price_inr_gbp - $amount;
+                }
+            }
+
+            elseif($market_vendor->market_id==3){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_euro_nld /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_euro_nld=$price_inr_euro_nld + $amount;
+                }else{
+                    $price_inr_euro_nld=$price_inr_euro_nld - $amount;
+                }
+            }
+
+            elseif($market_vendor->market_id==4){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr=$price_inr + $amount;
+                }else{
+                    $price_inr=$price_inr - $amount;
+                }
+            }
+
+            elseif($market_vendor->market_id==5){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_cad /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_cad=$price_inr_cad + $amount;
+                }else{
+                    $price_inr_cad=$price_inr_cad - $amount;
+                }
+            }
+
+            elseif($market_vendor->market_id==6){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_aud /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_aud=$price_inr_aud + $amount;
+                }else{
+                    $price_inr_aud=$price_inr_aud - $amount;
+                }
+            }
+
+            elseif($market_vendor->market_id==7){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_euro_irl /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_euro_irl=$price_inr_euro_irl + $amount;
+                }else{
+                    $price_inr_euro_irl=$price_inr_euro_irl - $amount;
+                }
+            }
+
+            elseif($market_vendor->market_id==8){
+                $cal_price=0;
+                $amount=$market_vendor->value;
+                if($market_vendor->type=='percentage'){
+                    $amount=($price_inr_euro_ger /100) * $amount;
+                }
+                if($market_vendor->status=='increase'){
+                    $price_inr_euro_ger=$price_inr_euro_ger + $amount;
+                }else{
+                    $price_inr_euro_ger=$price_inr_euro_ger - $amount;
+                }
+            }
+
+        }
+
+
+//comment by zain
+
+//        $inr=round($products_price,2);
+//		$usd=round(($products_price/$conversionPrice->usd_inr),2);
+//		$gbp=round(($inr/$conversionPrice->gbp_inr),2);
+//		$nld=round(($inr/$conversionPrice->euro_inr),2);
+//		$cad=round(($inr/$conversionPrice->cad_inr),2);
+//		$aud=round(($inr/$conversionPrice->aud_inr),2);
+
+
+        //new add by zain
+        $inr=round($price_inr,2);
+        $inr=ceil($inr * 4) / 4;
+
+        $usd=round(($price_inr_usd/$conversionPrice->usd_inr),2);
+        $usd=ceil($usd * 4) / 4;
+
+        $gbp=round(($price_inr_gbp/$conversionPrice->gbp_inr),2);
+        $gbp=ceil($gbp * 4) / 4;
+
+        $nld=round(($price_inr_euro_nld/$conversionPrice->euro_inr),2);
+        $nld=ceil($nld * 4) / 4;
+
+        $cad=round(($price_inr_cad/$conversionPrice->cad_inr),2);
+        $cad=ceil($cad * 4) / 4;
+
+        $aud=round(($price_inr_aud/$conversionPrice->aud_inr),2);
+        $aud=ceil($aud * 4) / 4;
+
+
+
+		///IND
+		$ind_ship=ShipingCharges::where('market', 4)->first();
+		$ind_shipping_50gms = $ind_ship->gms_50;
+        $ind_shipping_100gms = $ind_ship->gms_100;
+        $ind_shipping_150gms = $ind_ship->gms_150;
+        $ind_shipping_200gms = $ind_ship->gms_200;
+        $ind_shipping_250gms = $ind_ship->gms_250;
+        $ind_shipping_300gms = $ind_ship->gms_300;
+        $ind_shipping_400gms = $ind_ship->gms_400;
+        $ind_shipping_500gms = $ind_ship->gms_500;
+        $ind_shipping_750gms = $ind_ship->gms_750;
+        $ind_shipping_1000gms = $ind_ship->gms_1000;
+        $ind_shipping_5000gms = $ind_ship->gms_5000;
+
+		$weight_in_gms=$products_grams;
+        if($weight_in_gms <= 50)
+        {
+            $base_price = round(($inr - $ind_shipping_50gms), 2);
+        }
+        elseif($weight_in_gms <= 100)
+        {
+            $base_price = round(($inr - $ind_shipping_100gms), 2);
+        }
+        elseif($weight_in_gms <= 150)
+        {
+            $base_price = round(($inr - $ind_shipping_150gms), 2);
+        }
+        elseif($weight_in_gms <= 200)
+        {
+            $base_price = round(($inr - $ind_shipping_200gms), 2);
+        }
+        elseif($weight_in_gms <= 250)
+        {
+            $base_price = round(($inr - $ind_shipping_250gms), 2);
+        }
+        elseif($weight_in_gms <= 300)
+        {
+            $base_price = round(($inr - $ind_shipping_300gms), 2);
+        }
+        elseif($weight_in_gms <= 400)
+        {
+            $base_price = round(($inr - $ind_shipping_400gms), 2);
+        }
+        elseif($weight_in_gms <= 500)
+        {
+            $base_price = round(($inr - $ind_shipping_500gms), 2);
+        }
+        elseif($weight_in_gms <= 750)
+        {
+            $base_price = round(($inr - $ind_shipping_750gms), 2);
+        }
+        elseif($weight_in_gms <= 1000)
+        {
+            $base_price = round(($inr - $ind_shipping_1000gms), 2);
+        }
+        else
+        {
+         $base_price = round(($inr - $ind_shipping_5000gms), 2);
+			//$base_price = round(($inr - ($weight_in_gms * 0.016)), 2);
+        }
+		$market_price=['usd' => $usd, 'gbp' => $gbp, 'nld' => $nld, 'inr' => $inr, 'cad' => $cad, 'aud' => $aud, 'base_price' => $base_price];
+        return $market_price;
+	}
+
+
+
+
+
     public static function calc_price($products_price,$products_grams,$is_saree,$is_furniture,$volumetric_Weight)
     {
 		$conversionPrice=ConversionRate::first();

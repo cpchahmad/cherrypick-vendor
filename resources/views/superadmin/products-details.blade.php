@@ -217,7 +217,7 @@
                                 <div class="col-lg-4 col-md-4 col-sm-4">
                                     <div class="card border-light border-0 mt-3  shadow-sm">
                                         <div class="card-header  text-dark">
-                                            <h4>Vendor Detail</h4>
+                                            <strong>Vendor Detail</strong>
                                         </div>
 
                                         <div class="card-body bg-white">
@@ -244,7 +244,7 @@
                                     <div class="mt-1">
                                         <div class="card border-light border-0 mt-3  shadow-sm">
                                             <div class="card-header  text-dark">
-                                                <h4>Product organization</h4>
+                                                <strong>Product organization</strong>
                                             </div>
 
                                             <div class="card-body bg-white">

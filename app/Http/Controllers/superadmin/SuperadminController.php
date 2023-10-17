@@ -2051,7 +2051,7 @@ class SuperadminController extends Controller
 			{
 				$str=file_get_contents("https://".$url."/collections/all/products.json?page=".$i."&limit=250", false, $context);
                 $arr=json_decode($str,true);
-
+dd(count($arr['products']));
 				if(count($arr['products']) < 250)
 				{
 					$this->saveStoreFetchProductsFromJson($arr['products'],$vid,$tag_url);

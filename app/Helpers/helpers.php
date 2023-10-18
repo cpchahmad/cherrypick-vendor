@@ -352,9 +352,300 @@ class Helpers{
 	{
 		$conversionPrice=ConversionRate::first();
 		//$usd=$products_price;
+        $inr=round($products_price,2);
+        ///US
+        $usa_ship=ShipingCharges::where('market', 1)->first();
+        $usa_shipping_50gms = $usa_ship->gms_50;
+        $usa_shipping_100gms = $usa_ship->gms_100;
+        $usa_shipping_150gms = $usa_ship->gms_150;
+        $usa_shipping_200gms = $usa_ship->gms_200;
+        $usa_shipping_250gms = $usa_ship->gms_250;
+        $usa_shipping_300gms = $usa_ship->gms_300;
+        $usa_shipping_400gms = $usa_ship->gms_400;
+        $usa_shipping_500gms = $usa_ship->gms_500;
+        $usa_shipping_750gms = $usa_ship->gms_750;
+        $usa_shipping_1000gms = $usa_ship->gms_1000;
+        $usa_shipping_5000gms = $usa_ship->gms_5000;
+
+        $usa_shipping_50gms_savory = $usa_ship->savory_gms_50;
+        $usa_shipping_100gms_savory = $usa_ship->savory_gms_100;
+        $usa_shipping_150gms_savory = $usa_ship->savory_gms_150;
+        $usa_shipping_200gms_savory = $usa_ship->savory_gms_200;
+        $usa_shipping_250gms_savory = $usa_ship->savory_gms_250;
+        $usa_shipping_300gms_savory = $usa_ship->savory_gms_300;
+        $usa_shipping_400gms_savory = $usa_ship->savory_gms_400;
+        $usa_shipping_500gms_savory = $usa_ship->savory_gms_500;
+        $usa_shipping_750gms_savory = $usa_ship->savory_gms_750;
+        $usa_shipping_1000gms_savory = $usa_ship->savory_gms_1000;
+        $usa_shipping_5000gms_savory = $usa_ship->savory_gms_5000;
+
+        $usa_saree = $usa_ship->saree;
+        $usa_furniture = $usa_ship->furniture;
 
 
-        $price_inr_usd=$price_inr_euro_nld=$price_inr_euro_irl=$price_inr_euro_ger=$price_inr_gbp=$price_inr_aud=$price_inr_cad=$price_inr = $products_price;
+        ///UK
+        $uk_ship=ShipingCharges::where('market', 2)->first();
+        $uk_shipping_50gms = $uk_ship->gms_50;
+        $uk_shipping_100gms = $uk_ship->gms_100;
+        $uk_shipping_150gms = $uk_ship->gms_150;
+        $uk_shipping_200gms = $uk_ship->gms_200;
+        $uk_shipping_250gms = $uk_ship->gms_250;
+        $uk_shipping_300gms = $uk_ship->gms_300;
+        $uk_shipping_400gms = $uk_ship->gms_400;
+        $uk_shipping_500gms = $uk_ship->gms_500;
+        $uk_shipping_750gms = $uk_ship->gms_750;
+        $uk_shipping_1000gms = $uk_ship->gms_1000;
+        $uk_shipping_5000gms = $uk_ship->gms_5000;
+
+        $uk_shipping_50gms_savory = $uk_ship->savory_gms_50;
+        $uk_shipping_100gms_savory = $uk_ship->savory_gms_100;
+        $uk_shipping_150gms_savory = $uk_ship->savory_gms_150;
+        $uk_shipping_200gms_savory = $uk_ship->savory_gms_200;
+        $uk_shipping_250gms_savory = $uk_ship->savory_gms_250;
+        $uk_shipping_300gms_savory = $uk_ship->savory_gms_300;
+        $uk_shipping_400gms_savory = $uk_ship->savory_gms_400;
+        $uk_shipping_500gms_savory = $uk_ship->savory_gms_500;
+        $uk_shipping_750gms_savory = $uk_ship->savory_gms_750;
+        $uk_shipping_1000gms_savory = $uk_ship->savory_gms_1000;
+        $uk_shipping_5000gms_savory = $uk_ship->savory_gms_5000;
+
+        $uk_saree = $uk_ship->saree;
+        $uk_furniture = $uk_ship->furniture;
+
+
+        ///NLD
+        $nld_ship=ShipingCharges::where('market', 3)->first();
+        $nld_shipping_50gms = $nld_ship->gms_50;
+        $nld_shipping_100gms = $nld_ship->gms_100;
+        $nld_shipping_150gms = $nld_ship->gms_150;
+        $nld_shipping_200gms = $nld_ship->gms_200;
+        $nld_shipping_250gms = $nld_ship->gms_250;
+        $nld_shipping_300gms = $nld_ship->gms_300;
+        $nld_shipping_400gms = $nld_ship->gms_400;
+        $nld_shipping_500gms = $nld_ship->gms_500;
+        $nld_shipping_750gms = $nld_ship->gms_750;
+        $nld_shipping_1000gms = $nld_ship->gms_1000;
+        $nld_shipping_5000gms = $nld_ship->gms_5000;
+
+        $nld_shipping_50gms_savory = $nld_ship->savory_gms_50;
+        $nld_shipping_100gms_savory = $nld_ship->savory_gms_100;
+        $nld_shipping_150gms_savory = $nld_ship->savory_gms_150;
+        $nld_shipping_200gms_savory = $nld_ship->savory_gms_200;
+        $nld_shipping_250gms_savory = $nld_ship->savory_gms_250;
+        $nld_shipping_300gms_savory = $nld_ship->savory_gms_300;
+        $nld_shipping_400gms_savory = $nld_ship->savory_gms_400;
+        $nld_shipping_500gms_savory = $nld_ship->savory_gms_500;
+        $nld_shipping_750gms_savory = $nld_ship->savory_gms_750;
+        $nld_shipping_1000gms_savory = $nld_ship->savory_gms_1000;
+        $nld_shipping_5000gms_savory = $nld_ship->savory_gms_5000;
+
+        $nld_saree = $nld_ship->saree;
+        $nld_furniture = $nld_ship->furniture;
+
+
+
+
+
+        ///IND
+        $ind_ship=ShipingCharges::where('market', 4)->first();
+        $ind_shipping_50gms = $ind_ship->gms_50;
+        $ind_shipping_100gms = $ind_ship->gms_100;
+        $ind_shipping_150gms = $ind_ship->gms_150;
+        $ind_shipping_200gms = $ind_ship->gms_200;
+        $ind_shipping_250gms = $ind_ship->gms_250;
+        $ind_shipping_300gms = $ind_ship->gms_300;
+        $ind_shipping_400gms = $ind_ship->gms_400;
+        $ind_shipping_500gms = $ind_ship->gms_500;
+        $ind_shipping_750gms = $ind_ship->gms_750;
+        $ind_shipping_1000gms = $ind_ship->gms_1000;
+        $ind_shipping_5000gms = $ind_ship->gms_5000;
+
+
+
+        $ind_shipping_50gms_savory = $ind_ship->savory_gms_50;
+        $ind_shipping_100gms_savory = $ind_ship->savory_gms_100;
+        $ind_shipping_150gms_savory = $ind_ship->savory_gms_150;
+        $ind_shipping_200gms_savory = $ind_ship->savory_gms_200;
+        $ind_shipping_250gms_savory = $ind_ship->savory_gms_250;
+        $ind_shipping_300gms_savory = $ind_ship->savory_gms_300;
+        $ind_shipping_400gms_savory = $ind_ship->savory_gms_400;
+        $ind_shipping_500gms_savory = $ind_ship->savory_gms_500;
+        $ind_shipping_750gms_savory = $ind_ship->savory_gms_750;
+        $ind_shipping_1000gms_savory = $ind_ship->savory_gms_1000;
+        $ind_shipping_5000gms_savory = $ind_ship->savory_gms_5000;
+
+        $ind_saree = $ind_ship->saree;
+        $ind_furniture = $ind_ship->furniture;
+
+
+
+        ///CAD
+        $cad_ship=ShipingCharges::where('market', 5)->first();
+        $cad_shipping_50gms = $cad_ship->gms_50;
+        $cad_shipping_100gms = $cad_ship->gms_100;
+        $cad_shipping_150gms = $cad_ship->gms_150;
+        $cad_shipping_200gms = $cad_ship->gms_200;
+        $cad_shipping_250gms = $cad_ship->gms_250;
+        $cad_shipping_300gms = $cad_ship->gms_300;
+        $cad_shipping_400gms = $cad_ship->gms_400;
+        $cad_shipping_500gms = $cad_ship->gms_500;
+        $cad_shipping_750gms = $cad_ship->gms_750;
+        $cad_shipping_1000gms = $cad_ship->gms_1000;
+        $cad_shipping_5000gms = $cad_ship->gms_5000;
+
+        $cad_shipping_50gms_savory = $cad_ship->savory_gms_50;
+        $cad_shipping_100gms_savory = $cad_ship->savory_gms_100;
+        $cad_shipping_150gms_savory = $cad_ship->savory_gms_150;
+        $cad_shipping_200gms_savory = $cad_ship->savory_gms_200;
+        $cad_shipping_250gms_savory = $cad_ship->savory_gms_250;
+        $cad_shipping_300gms_savory = $cad_ship->savory_gms_300;
+        $cad_shipping_400gms_savory = $cad_ship->savory_gms_400;
+        $cad_shipping_500gms_savory = $cad_ship->savory_gms_500;
+        $cad_shipping_750gms_savory = $cad_ship->savory_gms_750;
+        $cad_shipping_1000gms_savory = $cad_ship->savory_gms_1000;
+        $cad_shipping_5000gms_savory = $cad_ship->savory_gms_5000;
+
+        $cad_saree = $cad_ship->saree;
+        $cad_furniture = $cad_ship->furniture;
+
+
+
+        ///AU
+        $au_ship=ShipingCharges::where('market', 6)->first();
+        $au_shipping_50gms = $au_ship->gms_50;
+        $au_shipping_100gms = $au_ship->gms_100;
+        $au_shipping_150gms = $au_ship->gms_150;
+        $au_shipping_200gms = $au_ship->gms_200;
+        $au_shipping_250gms = $au_ship->gms_250;
+        $au_shipping_300gms = $au_ship->gms_300;
+        $au_shipping_400gms = $au_ship->gms_400;
+        $au_shipping_500gms = $au_ship->gms_500;
+        $au_shipping_750gms = $au_ship->gms_750;
+        $au_shipping_1000gms = $au_ship->gms_1000;
+        $au_shipping_5000gms = $au_ship->gms_5000;
+
+        $au_shipping_50gms_savory = $au_ship->savory_gms_50;
+        $au_shipping_100gms_savory = $au_ship->savory_gms_100;
+        $au_shipping_150gms_savory = $au_ship->savory_gms_150;
+        $au_shipping_200gms_savory = $au_ship->savory_gms_200;
+        $au_shipping_250gms_savory = $au_ship->savory_gms_250;
+        $au_shipping_300gms_savory = $au_ship->savory_gms_300;
+        $au_shipping_400gms_savory = $au_ship->savory_gms_400;
+        $au_shipping_500gms_savory = $au_ship->savory_gms_500;
+        $au_shipping_750gms_savory = $au_ship->savory_gms_750;
+        $au_shipping_1000gms_savory = $au_ship->savory_gms_1000;
+        $au_shipping_5000gms_savory = $au_ship->savory_gms_5000;
+
+        $au_saree = $au_ship->saree;
+        $au_furniture = $au_ship->furniture;
+
+
+        ///Irlend
+        $irl_ship=ShipingCharges::where('market', 7)->first();
+        $irl_shipping_50gms = $irl_ship->gms_50;
+        $irl_shipping_100gms = $irl_ship->gms_100;
+        $irl_shipping_150gms = $irl_ship->gms_150;
+        $irl_shipping_200gms = $irl_ship->gms_200;
+        $irl_shipping_250gms = $irl_ship->gms_250;
+        $irl_shipping_300gms = $irl_ship->gms_300;
+        $irl_shipping_400gms = $irl_ship->gms_400;
+        $irl_shipping_500gms = $irl_ship->gms_500;
+        $irl_shipping_750gms = $irl_ship->gms_750;
+        $irl_shipping_1000gms = $irl_ship->gms_1000;
+        $irl_shipping_5000gms = $irl_ship->gms_5000;
+
+        $irl_shipping_50gms_savory = $irl_ship->savory_gms_50;
+        $irl_shipping_100gms_savory = $irl_ship->savory_gms_100;
+        $irl_shipping_150gms_savory = $irl_ship->savory_gms_150;
+        $irl_shipping_200gms_savory = $irl_ship->savory_gms_200;
+        $irl_shipping_250gms_savory = $irl_ship->savory_gms_250;
+        $irl_shipping_300gms_savory = $irl_ship->savory_gms_300;
+        $irl_shipping_400gms_savory = $irl_ship->savory_gms_400;
+        $irl_shipping_500gms_savory = $irl_ship->savory_gms_500;
+        $irl_shipping_750gms_savory = $irl_ship->savory_gms_750;
+        $irl_shipping_1000gms_savory = $irl_ship->savory_gms_1000;
+        $irl_shipping_5000gms_savory = $irl_ship->savory_gms_5000;
+
+        $irl_saree = $irl_ship->saree;
+        $irl_furniture = $irl_ship->furniture;
+
+        ///Germany
+        $ger_ship=ShipingCharges::where('market', 8)->first();
+        $ger_shipping_50gms = $ger_ship->gms_50;
+        $ger_shipping_100gms = $ger_ship->gms_100;
+        $ger_shipping_150gms = $ger_ship->gms_150;
+        $ger_shipping_200gms = $ger_ship->gms_200;
+        $ger_shipping_250gms = $ger_ship->gms_250;
+        $ger_shipping_300gms = $ger_ship->gms_300;
+        $ger_shipping_400gms = $ger_ship->gms_400;
+        $ger_shipping_500gms = $ger_ship->gms_500;
+        $ger_shipping_750gms = $ger_ship->gms_750;
+        $ger_shipping_1000gms = $ger_ship->gms_1000;
+        $ger_shipping_5000gms = $ger_ship->gms_5000;
+
+        $ger_shipping_50gms_savory = $ger_ship->savory_gms_50;
+        $ger_shipping_100gms_savory = $ger_ship->savory_gms_100;
+        $ger_shipping_150gms_savory = $ger_ship->savory_gms_150;
+        $ger_shipping_200gms_savory = $ger_ship->savory_gms_200;
+        $ger_shipping_250gms_savory = $ger_ship->savory_gms_250;
+        $ger_shipping_300gms_savory = $ger_ship->savory_gms_300;
+        $ger_shipping_400gms_savory = $ger_ship->savory_gms_400;
+        $ger_shipping_500gms_savory = $ger_ship->savory_gms_500;
+        $ger_shipping_750gms_savory = $ger_ship->savory_gms_750;
+        $ger_shipping_1000gms_savory = $ger_ship->savory_gms_1000;
+        $ger_shipping_5000gms_savory = $ger_ship->savory_gms_5000;
+
+        $ger_saree = $ger_ship->saree;
+        $ger_furniture = $ger_ship->furniture;
+
+                $weight_in_gms=$products_grams;
+        if($weight_in_gms <= 50)
+        {
+            $base_price = round(($inr - $ind_shipping_50gms), 2);
+        }
+        elseif($weight_in_gms <= 100)
+        {
+            $base_price = round(($inr - $ind_shipping_100gms), 2);
+        }
+        elseif($weight_in_gms <= 150)
+        {
+            $base_price = round(($inr - $ind_shipping_150gms), 2);
+        }
+        elseif($weight_in_gms <= 200)
+        {
+            $base_price = round(($inr - $ind_shipping_200gms), 2);
+        }
+        elseif($weight_in_gms <= 250)
+        {
+            $base_price = round(($inr - $ind_shipping_250gms), 2);
+        }
+        elseif($weight_in_gms <= 300)
+        {
+            $base_price = round(($inr - $ind_shipping_300gms), 2);
+        }
+        elseif($weight_in_gms <= 400)
+        {
+            $base_price = round(($inr - $ind_shipping_400gms), 2);
+        }
+        elseif($weight_in_gms <= 500)
+        {
+            $base_price = round(($inr - $ind_shipping_500gms), 2);
+        }
+        elseif($weight_in_gms <= 750)
+        {
+            $base_price = round(($inr - $ind_shipping_750gms), 2);
+        }
+        elseif($weight_in_gms <= 1000)
+        {
+            $base_price = round(($inr - $ind_shipping_1000gms), 2);
+        }
+        else
+        {
+            $base_price = round(($inr - $ind_shipping_5000gms), 2);
+            //$base_price = round(($inr - ($weight_in_gms * 0.016)), 2);
+        }
+
+        $price_inr_usd=$price_inr_euro_nld=$price_inr_euro_irl=$price_inr_euro_ger=$price_inr_gbp=$price_inr_aud=$price_inr_cad=$price_inr = $base_price;
         $market_vendors=MarketVendor::where('vendor_id',$vid)->get();
 
         foreach ($market_vendors as $market_vendor){
@@ -478,86 +769,189 @@ class Helpers{
 
         //new add by zain
         $inr=round($price_inr,2);
-        $inr=ceil($inr * 4) / 4;
+        $price_inr_final=$inr;
+
 
         $usd=round(($price_inr_usd/$conversionPrice->usd_inr),2);
-        $usd=ceil($usd * 4) / 4;
+        $price_usd=$usd;
+
 
         $gbp=round(($price_inr_gbp/$conversionPrice->gbp_inr),2);
-        $gbp=ceil($gbp * 4) / 4;
+        $price_gbp=$gbp;
+
 
         $nld=round(($price_inr_euro_nld/$conversionPrice->euro_inr),2);
-        $nld=ceil($nld * 4) / 4;
+        $price_euro_nld=$nld;
+
 
         $cad=round(($price_inr_cad/$conversionPrice->cad_inr),2);
-        $cad=ceil($cad * 4) / 4;
+        $price_cad=$cad;
+
 
         $aud=round(($price_inr_aud/$conversionPrice->aud_inr),2);
-        $aud=ceil($aud * 4) / 4;
+        $price_aud=$aud;
 
 
 
-		///IND
-		$ind_ship=ShipingCharges::where('market', 4)->first();
-		$ind_shipping_50gms = $ind_ship->gms_50;
-        $ind_shipping_100gms = $ind_ship->gms_100;
-        $ind_shipping_150gms = $ind_ship->gms_150;
-        $ind_shipping_200gms = $ind_ship->gms_200;
-        $ind_shipping_250gms = $ind_ship->gms_250;
-        $ind_shipping_300gms = $ind_ship->gms_300;
-        $ind_shipping_400gms = $ind_ship->gms_400;
-        $ind_shipping_500gms = $ind_ship->gms_500;
-        $ind_shipping_750gms = $ind_ship->gms_750;
-        $ind_shipping_1000gms = $ind_ship->gms_1000;
-        $ind_shipping_5000gms = $ind_ship->gms_5000;
 
-		$weight_in_gms=$products_grams;
-        if($weight_in_gms <= 50)
+
+
+
+
+            if($weight_in_gms <= 50)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_50gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_50gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_50gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_50gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_50gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_50gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_50gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_50gms), 2);
+            }
+            elseif($weight_in_gms <= 100)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_100gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_100gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_100gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_100gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_100gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_100gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_100gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_100gms), 2);
+            }
+            elseif($weight_in_gms <= 150)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_150gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_150gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_150gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_150gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_150gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_150gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_150gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_150gms), 2);
+            }
+            elseif($weight_in_gms <= 200)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_200gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_200gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_200gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_200gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_200gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_200gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_200gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_200gms), 2);
+            }
+            elseif($weight_in_gms <= 250)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_250gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_250gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_250gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_250gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_250gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_250gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_250gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_250gms), 2);
+            }
+            elseif($weight_in_gms <= 300)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_300gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_300gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_300gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_300gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_300gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_300gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_300gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_300gms), 2);
+            }
+            elseif($weight_in_gms <= 400)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_400gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_400gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_400gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_400gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_400gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_400gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_400gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_400gms), 2);
+            }
+            elseif($weight_in_gms <= 500)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_500gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_500gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_500gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_500gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_500gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_500gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_500gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_500gms), 2);
+            }
+            elseif($weight_in_gms <= 750)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_750gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_750gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_750gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_750gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_750gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_750gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_750gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_750gms), 2);
+            }
+            elseif($weight_in_gms <= 1000)
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_1000gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_1000gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_1000gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_1000gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_1000gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_1000gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_1000gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_1000gms), 2);
+            }
+            else
+            {
+                $Variant_Price = round(($price_usd + $usa_shipping_5000gms), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_5000gms), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_5000gms), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_5000gms), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_5000gms), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_5000gms), 2);
+//                $price_irl_final = round(($price_euro_irl + $irl_shipping_5000gms), 2);
+//                $price_ger_final = round(($price_euro_ger + $ger_shipping_5000gms), 2);
+
+                /*$Variant_Price = round(($price_usd + ($weight_in_gms * 0.016)), 2);
+                $price_gbp_final = round(($price_gbp + ($weight_in_gms * 0.011)), 2);
+                $price_nld_final = round(($price_euro + ($weight_in_gms * 0.012)), 2);
+                $price_inr_final = round(($price_inr + ($weight_in_gms * 0.016)), 2);
+                $price_cad_final = round(($price_cad + ($weight_in_gms * 0.016)), 2);
+                $price_aud_final = round(($price_aud + ($weight_in_gms * 0.016)), 2);*/
+            }
+
+$store=Store::find($vid);
+        if($store && $store->premium==1)
         {
-            $base_price = round(($inr - $ind_shipping_50gms), 2);
+            $Variant_Price=round(($Variant_Price  * 1.05), 2);
+            $price_gbp_final=round(($price_gbp_final * 1.05 ), 2);
+            $price_nld_final=round(($price_nld_final * 1.05 ), 2);
+            $price_inr_final=round(($price_inr_final * 1.05 * 1.04), 2);
+            $price_cad_final=round(($price_cad_final * 1.05 * 1.04), 2);
+            $price_aud_final=round(($price_aud_final * 1.05 * 1.04), 2);
+//            $price_irl_final=round(($price_irl_final * 1.05 * 1.04), 2);
+//            $price_ger_final=round(($price_ger_final * 1.05 * 1.04), 2);
         }
-        elseif($weight_in_gms <= 100)
-        {
-            $base_price = round(($inr - $ind_shipping_100gms), 2);
-        }
-        elseif($weight_in_gms <= 150)
-        {
-            $base_price = round(($inr - $ind_shipping_150gms), 2);
-        }
-        elseif($weight_in_gms <= 200)
-        {
-            $base_price = round(($inr - $ind_shipping_200gms), 2);
-        }
-        elseif($weight_in_gms <= 250)
-        {
-            $base_price = round(($inr - $ind_shipping_250gms), 2);
-        }
-        elseif($weight_in_gms <= 300)
-        {
-            $base_price = round(($inr - $ind_shipping_300gms), 2);
-        }
-        elseif($weight_in_gms <= 400)
-        {
-            $base_price = round(($inr - $ind_shipping_400gms), 2);
-        }
-        elseif($weight_in_gms <= 500)
-        {
-            $base_price = round(($inr - $ind_shipping_500gms), 2);
-        }
-        elseif($weight_in_gms <= 750)
-        {
-            $base_price = round(($inr - $ind_shipping_750gms), 2);
-        }
-        elseif($weight_in_gms <= 1000)
-        {
-            $base_price = round(($inr - $ind_shipping_1000gms), 2);
-        }
-        else
-        {
-         $base_price = round(($inr - $ind_shipping_5000gms), 2);
-			//$base_price = round(($inr - ($weight_in_gms * 0.016)), 2);
-        }
-		$market_price=['usd' => $usd, 'gbp' => $gbp, 'nld' => $nld, 'inr' => $inr, 'cad' => $cad, 'aud' => $aud, 'base_price' => $base_price];
+
+
+        $Variant_Price = ceil($Variant_Price * 4) / 4;
+        $price_gbp_final = ceil($price_gbp_final * 4) / 4;
+        $price_nld_final = ceil($price_nld_final * 4) / 4;
+        $price_inr_final = ceil($price_inr_final * 4) / 4;
+        $price_cad_final = ceil($price_cad_final * 4) / 4;
+        $price_aud_final = ceil($price_aud_final * 4) / 4;
+//        $price_irl_final = ceil($price_irl_final * 4) / 4;
+//        $price_ger_final = ceil($price_ger_final * 4) / 4;
+
+
+		$market_price=['usd' => $Variant_Price, 'gbp' => $price_gbp_final, 'nld' => $price_nld_final, 'inr' => $price_inr_final, 'cad' => $price_cad_final, 'aud' => $price_aud_final, 'base_price' => $base_price];
         return $market_price;
 	}
 
@@ -1580,8 +1974,8 @@ class Helpers{
         if($store->premium==1)
         {
             $Variant_Price=round(($Variant_Price  * 1.05), 2);
-            $price_gbp_final=round(($price_gbp_final * 1.05 * 1.04), 2);
-            $price_nld_final=round(($price_nld_final * 1.05 * 1.04), 2);
+            $price_gbp_final=round(($price_gbp_final * 1.05 ), 2);
+            $price_nld_final=round(($price_nld_final * 1.05 ), 2);
             $price_inr_final=round(($price_inr_final * 1.05 * 1.04), 2);
             $price_cad_final=round(($price_cad_final * 1.05 * 1.04), 2);
             $price_aud_final=round(($price_aud_final * 1.05 * 1.04), 2);
@@ -1591,13 +1985,13 @@ class Helpers{
         else
         {
             $Variant_Price=round($Variant_Price, 2);
-            $price_gbp_final=round(($price_gbp_final  * 1.04), 2);
-            $price_nld_final=round(($price_nld_final  * 1.04), 2);
-            $price_inr_final=round(($price_inr_final  * 1.04), 2);
-            $price_cad_final=round(($price_cad_final  * 1.04), 2);
-            $price_aud_final=round(($price_aud_final  * 1.04), 2);
-			$price_irl_final=round(($price_irl_final  * 1.04), 2);
-			$price_ger_final=round(($price_ger_final  * 1.04), 2);
+            $price_gbp_final=round(($price_gbp_final  ), 2);
+            $price_nld_final=round(($price_nld_final  ), 2);
+            $price_inr_final=round(($price_inr_final ), 2);
+            $price_cad_final=round(($price_cad_final  ), 2);
+            $price_aud_final=round(($price_aud_final ), 2);
+			$price_irl_final=round(($price_irl_final ), 2);
+			$price_ger_final=round(($price_ger_final  ), 2);
         }
 
         $Variant_Price = ceil($Variant_Price * 4) / 4;

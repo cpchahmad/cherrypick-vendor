@@ -1026,20 +1026,7 @@ class SuperadminController extends Controller
             $groupedData1 = [];
             foreach($product_info as $index=> $v)
             {
-                $grams=0;
-                if($store->base_weight){
-                    $grams=$store->base_weight;
-                }
-                if($product->product_type_id){
-                    $product_type=ProductType::find($product->product_type_id);
-                    if($product_type){
-                        $grams=$product_type->base_weight;
-                    }
-                }
 
-                if($v->grams){
-                    $grams=$v->grams;
-                }
 
                 $variants[]=array(
 //                    "title" => $v->varient_name,
@@ -1047,7 +1034,7 @@ class SuperadminController extends Controller
                     "option2" => $v->varient1_value,
                     "sku"     => $v->sku,
                     "price"   => $v->price_usd,
-                    "grams"   => $grams,
+                    "grams"   => $v->grams,
                     "taxable" => false,
                     "inventory_management" => ($v->stock ? "shopify" :null),
                     "inventory_quantity" => $v->stock
@@ -1651,20 +1638,7 @@ class SuperadminController extends Controller
                         ///create new varient
                         $invid = $product_info->inventory_id;
 
-                        $grams=0;
-                        if($store->base_weight){
-                            $grams=$store->base_weight;
-                        }
-                        if($product->product_type_id){
-                            $product_type=ProductType::find($product->product_type_id);
-                            if($product_type){
-                                $grams=$product_type->base_weight;
-                            }
-                        }
 
-                        if($product_info->grams){
-                            $grams=$product_info->grams;
-                        }
 
 
                         if ($product_info->varient_name != '' && $product_info->varient_value != '') {
@@ -1675,7 +1649,7 @@ class SuperadminController extends Controller
                                 "sku" => $product_info->sku,
                                 "price" => $product_info->price_usd,
                                 "compare_at_price" => $product_info->price_usd,
-                                "grams" => $grams,
+                                "grams" => $product_info->grams,
                                 "taxable" => false,
                                 "inventory_management" => ($product_info->stock) ? "shopify" : null,
                             );
@@ -1689,7 +1663,7 @@ class SuperadminController extends Controller
                                 "sku" => $product_info->sku,
                                 "price" => $product_info->price_usd,
                                 "compare_at_price" => $product_info->price_usd,
-                                "grams" => $grams,
+                                "grams" => $product_info->grams,
                                 "taxable" => false,
                                 "inventory_management" => ($product_info->stock) ? "shopify" : null,
                             );
@@ -2310,16 +2284,42 @@ class SuperadminController extends Controller
 
 			$i=0;
 
+
+
+                $grams=0;
+                $store=Store::find($vid);
+                if($store->base_weight){
+                    $grams=$store->base_weight;
+                }
+                    if($product_type && $product_type->base_weight){
+                        $grams=$product_type->base_weight;
+                    }
+                    $grams_selected=0;
+                    if($row['variants'][0]['grams'] > 0){
+                        $grams_selected=1;
+                        $grams=$row['variants'][0]['grams'];
+                    }else {
+                        foreach ($row['variants'] as $var) {
+                            if ($var['grams'] > 0 && $grams_selected==0) {
+                                $grams_selected=1;
+                                $grams = $var['grams'];
+                            }
+                        }
+                    }
+
 			foreach($row['variants'] as $var)
 			{
+
+                $variant_grams=($var['grams'] > 0) ? $var['grams'] :$grams;
 
 				$i++;
 				$check=ProductInfo::where('sku',$var['sku'])->where('product_id',$product_id)->first();
 
 
+
 				if ($check==null)
 				{
-					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
 					$product_info->sku = $var['sku'];
@@ -2332,7 +2332,7 @@ class SuperadminController extends Controller
 					$product_info->price_irl = $prices['nld'];
 					$product_info->price_ger = $prices['nld'];
 					$product_info->base_price = $prices['base_price'];
-					$product_info->grams = $var['grams'];
+					$product_info->grams = $variant_grams;
 					$product_info->stock = $var['available'];
 					$product_info->vendor_id = $store_id;
 					$product_info->dimensions = '0-0-0';
@@ -2385,13 +2385,37 @@ class SuperadminController extends Controller
 				$product_id=$product_check->id;
 			$i=0;
 
+
+                $grams=0;
+                $store=Store::find($vid);
+                if($store->base_weight){
+                    $grams=$store->base_weight;
+                }
+                if($product_type && $product_type->base_weight){
+                    $grams=$product_type->base_weight;
+                }
+                $grams_selected=0;
+                if($row['variants'][0]['grams'] > 0){
+                    $grams_selected=1;
+                    $grams=$row['variants'][0]['grams'];
+                }else {
+                    foreach ($row['variants'] as $var) {
+                        if ($var['grams'] > 0 && $grams_selected==0) {
+                            $grams_selected=1;
+                            $grams = $var['grams'];
+                        }
+                    }
+                }
+
 			foreach($row['variants'] as $var)
 			{
+
+                $variant_grams=($var['grams'] > 0) ? $var['grams'] :$grams;
 				$i++;
 				$check_info=ProductInfo::where('sku',$var['sku'])->first();
 				if (!$check_info)
 				{
-					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
 					$product_info->sku = $var['sku'];
@@ -2404,7 +2428,7 @@ class SuperadminController extends Controller
 					$product_info->price_irl = $prices['nld'];
 					$product_info->price_ger = $prices['nld'];
 					$product_info->base_price = $prices['base_price'];
-					$product_info->grams = $var['grams'];
+					$product_info->grams = $variant_grams;
 					$product_info->stock = $var['available'];
 					$product_info->vendor_id = $vid;
 					$product_info->dimensions = '0-0-0';
@@ -2422,7 +2446,7 @@ class SuperadminController extends Controller
 				}
 				else   //update variants
 				{
-					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
 					$info_id=$check_info->id;
 					$info['price']=$prices['inr'];
 					$info['price_usd']=$prices['usd'];
@@ -2433,7 +2457,7 @@ class SuperadminController extends Controller
 					$info['price_irl']=$prices['nld'];
 					$info['price_ger']=$prices['nld'];
 					$info['base_price']=$prices['base_price'];
-					$info['grams']=$var['grams'];
+					$info['grams']=$variant_grams;
 					$info['stock']=$var['available'];
 
 
@@ -2720,8 +2744,9 @@ class SuperadminController extends Controller
 
         $vendor=Store::find($id);
         $vendor_product_types=ProductType::where('vendor_id',$vendor->id)->get();
+        $payment = Payment::where('vendor_id',$id)->first();
         $markets=Markets::all();
-        return view('superadmin.vendor-setting',compact('vendor','vendor_product_types','markets'));
+        return view('superadmin.vendor-setting',compact('vendor','vendor_product_types','markets','payment'));
     }
 
 
@@ -2743,15 +2768,16 @@ class SuperadminController extends Controller
         if($store){
             $store->base_weight=$request->base_weight;
             if ($request->hasFile('file')) {
-                $file=$request->hasFile('file');
+                $file=$request->file('file');
                 $name = str_replace(' ', '', $file->getClientOriginalName());
-                $name = "size_chart". $name .time();
+                $name = "size_chart_".time().'_'.$name;
                 $file->move(public_path() . '/size-chart-images/', $name);
-                $image = '/size-chart-images/' . $name;
+                $image = asset('/size-chart-images').'/' . $name;
                 $store->size_chart_image=$image;
             }
             $store->size_chart_html=$request->html;
             $store->save();
+            $this->CreateUpdateMetafield($store->id);
             return redirect()->back()->with('success', 'Setting Saved Successfully');
         }
 
@@ -2761,10 +2787,13 @@ class SuperadminController extends Controller
 
     public function updatemarketbulkprice(Request $request){
 
+
+
     $market_vendor=MarketVendor::where('market_id',$request->id)->where('vendor_id',$request->vendor_id)->first();
     if($market_vendor==null){
         $market_vendor=new MarketVendor();
     }
+
 
     $market_vendor->status=$request->status;
     $market_vendor->type=$request->type;
@@ -2772,6 +2801,15 @@ class SuperadminController extends Controller
     $market_vendor->market_id=$request->id;
     $market_vendor->vendor_id=$request->vendor_id;
     $market_vendor->save();
+
+
+        if($request->status==null){
+            $market_vendor=MarketVendor::where('market_id',$request->id)->where('vendor_id',$request->vendor_id)->first();
+            if($market_vendor){
+                $market_vendor->delete();
+            }
+        }
+
         return json_encode(array('status'=>'success'));
     }
 
@@ -2789,5 +2827,97 @@ class SuperadminController extends Controller
 	$product->tags=$request->post('tags');
 	$product->save();
         return redirect()->back()->with('success', 'Update Successfully');
+    }
+
+
+    public function updateProductTypeSizechart(Request $request){
+        $product_type=ProductType::find($request->product_type_id);
+        if($product_type){
+
+            if ($request->hasFile('product_type_file')) {
+                $file=$request->file('product_type_file');
+                $name = str_replace(' ', '', $file->getClientOriginalName());
+                $name = "size_chart_".time().'_'.$name;
+                $file->move(public_path() . '/size-chart-images/', $name);
+                $image = asset('/size-chart-images').'/' . $name;
+                $product_type->size_chart_image=$image;
+            }
+            $product_type->size_chart_html=$request->product_type_html;
+            $product_type->save();
+
+            $this->CreateUpdateMetafield($product_type->vendor_id);
+            return redirect()->back()->with('success', 'Setting Saved Successfully');
+        }
+    }
+
+
+
+    public function CreateUpdateMetafield($id){
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+        $store=Store::find($id);
+        $product_type_array=array();
+
+        $product_types=ProductType::where('vendor_id',$id)->get();
+        foreach ($product_types as $product_type){
+
+            $data['product_type']=$product_type->product_type;
+            $data['sizechart_html'] = $product_type->size_chart_html;
+            $data['sizechart_file'] = $product_type->size_chart_image;
+
+            array_push($product_type_array,$data);
+        }
+
+        $values = [
+            'base_sizechart_html' => ($store->size_chart_html) ? $store->size_chart_html:'' ,
+            'base_sizechart_file' => ($store->size_chart_image) ? $store->size_chart_image:'' ,
+            'product_types' => $product_type_array
+        ];
+
+        $metafield_data=[
+            "metafield" =>
+                [
+                    "key" => 'records',
+                    "value" => json_encode($values),
+                    "type" => "json_string",
+                    "namespace" => "sizechart",
+
+                ]
+        ];
+
+        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/smart_collections/$store->collections_ids/metafields.json";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+        $headers = array(
+            "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+            "Content-Type: application/json",
+            "charset: utf-8"
+        );
+        curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_VERBOSE, 0);
+        //curl_setopt($curl, CURLOPT_HEADER, 1);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_data));
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+        $response = curl_exec ($curl);
+
+        curl_close ($curl);
+
+
     }
 }

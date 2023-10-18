@@ -387,16 +387,39 @@ class fetchProductJson extends Command
 
                 $i=0;
 
+                $grams=0;
+                $store=Store::find($vid);
+                if($store->base_weight){
+                    $grams=$store->base_weight;
+                }
+                if($product_type && $product_type->base_weight){
+                    $grams=$product_type->base_weight;
+                }
+                $grams_selected=0;
+                if($row['variants'][0]['grams'] > 0){
+                    $grams_selected=1;
+                    $grams=$row['variants'][0]['grams'];
+                }else {
+                    foreach ($row['variants'] as $var) {
+                        if ($var['grams'] > 0 && $grams_selected==0) {
+                            $grams_selected=1;
+                            $grams = $var['grams'];
+                        }
+                    }
+                }
+
+
                 foreach($row['variants'] as $var)
                 {
 
                     $i++;
+                    $variant_grams=($var['grams'] > 0) ? $var['grams'] :$grams;
                     $check=ProductInfo::where('sku',$var['sku'])->where('product_id',$product_id)->first();
 
 
                     if ($check==null)
                     {
-                        $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
+                        $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
                         $product_info = new ProductInfo;
                         $product_info->product_id = $product_id;
                         $product_info->sku = $var['sku'];
@@ -409,7 +432,7 @@ class fetchProductJson extends Command
                         $product_info->price_irl = $prices['nld'];
                         $product_info->price_ger = $prices['nld'];
                         $product_info->base_price = $prices['base_price'];
-                        $product_info->grams = $var['grams'];
+                        $product_info->grams = $variant_grams;
                         $product_info->stock = $var['available'];
                         $product_info->vendor_id = $store_id;
                         $product_info->dimensions = '0-0-0';
@@ -462,13 +485,36 @@ class fetchProductJson extends Command
                 $product_id=$product_check->id;
                 $i=0;
 
+                $grams=0;
+                $store=Store::find($vid);
+                if($store->base_weight){
+                    $grams=$store->base_weight;
+                }
+                if($product_type && $product_type->base_weight){
+                    $grams=$product_type->base_weight;
+                }
+                $grams_selected=0;
+                if($row['variants'][0]['grams'] > 0){
+                    $grams_selected=1;
+                    $grams=$row['variants'][0]['grams'];
+                }else {
+                    foreach ($row['variants'] as $var) {
+                        if ($var['grams'] > 0 && $grams_selected==0) {
+                            $grams_selected=1;
+                            $grams = $var['grams'];
+                        }
+                    }
+                }
+
                 foreach($row['variants'] as $var)
                 {
                     $i++;
+                    $variant_grams=($var['grams'] > 0) ? $var['grams'] :$grams;
+
                     $check_info=ProductInfo::where('sku',$var['sku'])->first();
                     if (!$check_info)
                     {
-                        $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
+                        $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
                         $product_info = new ProductInfo;
                         $product_info->product_id = $product_id;
                         $product_info->sku = $var['sku'];
@@ -480,8 +526,8 @@ class fetchProductJson extends Command
                         $product_info->price_aud = $prices['aud'];
                         $product_info->price_irl = $prices['nld'];
                         $product_info->price_ger = $prices['nld'];
-                        $product_info->base_price = $prices['base_price'];
-                        $product_info->grams = $var['grams'];
+                        $product_info->base_price =$var['price'];
+                        $product_info->grams = $variant_grams;
                         $product_info->stock = $var['available'];
                         $product_info->vendor_id = $vid;
                         $product_info->dimensions = '0-0-0';
@@ -499,7 +545,7 @@ class fetchProductJson extends Command
                     }
                     else   //update variants
                     {
-                        $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$var['grams']);
+                        $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
                         $info_id=$check_info->id;
                         $info['price']=$prices['inr'];
                         $info['price_usd']=$prices['usd'];
@@ -510,7 +556,7 @@ class fetchProductJson extends Command
                         $info['price_irl']=$prices['nld'];
                         $info['price_ger']=$prices['nld'];
                         $info['base_price']=$prices['base_price'];
-                        $info['grams']=$var['grams'];
+                        $info['grams']=$variant_grams;
                         $info['stock']=$var['available'];
 
 

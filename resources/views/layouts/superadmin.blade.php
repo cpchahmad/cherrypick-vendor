@@ -103,11 +103,11 @@
               <span>Store Products</span>
             </a>
           </li>
-          <li>
-            <a href="{{url('superadmin/store-configuration')}}">
-              <span>Store Configuration</span>
-            </a>
-          </li>
+{{--          <li>--}}
+{{--            <a href="{{url('superadmin/store-configuration')}}">--}}
+{{--              <span>Store Configuration</span>--}}
+{{--            </a>--}}
+{{--          </li>--}}
 		  <li>
             <a href="{{url('superadmin/store-amount')}}">
               <span>Store/Vendors Payment</span>
@@ -190,7 +190,7 @@
         <li class="nav-item @if(request()->is('superadmin/vendors')) active @endif">
             <a class="nav-link collapsed" href="{{url('superadmin/vendors')}}">
                 <i class="bi bi-bag"></i>
-                <span>Vendors</span>
+                <span>Stores</span>
             </a>
         </li>
 

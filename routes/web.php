@@ -145,6 +145,8 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::post('update-market-bulkprice',[SuperadminController::class,'updatemarketbulkprice'])->name('superadmin.update.market-bulkprice');
     Route::post('update-product-detail',[SuperadminController::class,'updateproductdetail'])->name('superadmin.updateproductdetails');
 
+    Route::post('update-product-type-sizechart',[SuperadminController::class,'updateProductTypeSizechart'])->name('superadmin.update-product-type-sizechart');
+
 });
 Route::group(['middleware'=>'products'],function(){
      Route::get('product-list',[ProductController::class,'productlist'])->name('product-list');

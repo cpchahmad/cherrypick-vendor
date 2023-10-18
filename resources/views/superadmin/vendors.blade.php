@@ -4,7 +4,7 @@
     <main id="main" class="main">
         <div class="home-flex">
             <div class="pagetitle">
-                <h1>Vendors</h1>
+                <h1>Stores</h1>
             </div><!-- End Page Title -->
             <a class="btn btn-primary" href="{{url('superadmin/updateprice')}}">Update Product Prices</a>
         </div>
@@ -19,8 +19,11 @@
                                 <thead>
                                 <tr>
                                     <th scope="col">S.No</th>
-                                    <th scope="col">Vendor Name</th>
-                                    <th scope="col">Vendor Email</th>
+                                    <th scope="col">Store Name</th>
+                                    <th scope="col">Store Email</th>
+                                    <th scope="col">Store Discount</th>
+                                    <th scope="col">Premium Status</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col">Action</th>
                                 </tr>
                                 </thead>
@@ -31,8 +34,18 @@
                                         <td>{{$i++}}</td>
                                         <td>{{$vendor->name}}</td>
                                         <td>{{$vendor->email}}</td>
+                                        <td><input type="text" class="float-number" id="dis_{{$vendor->id}}" value="{{$vendor->vendor_discount}}"><button onclick="updateDiscount({{$vendor->id}})">Save</button></td>
+                                        <td class="icon-action">
+                  <span class="form-switch">
+                      <input class="form-check-input" type="checkbox" id="premium_{{$vendor->id}}" onclick="premiumStatus({{$vendor->id}})" @if($vendor->premium=='1') {{'checked'}} @endif>
+                     </span>
+                                        </td>
+                                        <td><span class="@if($vendor->status=='Active') {{'en-recovered'}} @else {{'en-dismissed'}} @endif"></span> {{$vendor->status}}</td>
                                         <td class="icon-action">
                                             <a href="{{route('vendor.setting',$vendor->id)}}"><i class="bi bi-eye"></i></a>
+                                            <span class="form-switch">
+                      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault_{{$vendor->id}}" onclick="changeStoreStatus({{$vendor->id}})" @if($vendor->status=='Active') {{'checked'}} @endif>
+                     </span>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -72,8 +85,9 @@
                 var json = $.parseJSON(response);
                 if(json.status=='success')
                 {
-                    alert("Premium Status Updated Successfully!!")
-                    window.location.href="store-configuration";
+                    // alert("Premium Status Updated Successfully!!")
+                    toastr.success("Premium Status Updated Successfully!!");
+                    window.location.href="vendors";
                 }
             }
         });
@@ -90,8 +104,9 @@
                 var json = $.parseJSON(response);
                 if(json.status=='success')
                 {
-                    alert("Status Updated Successfully!!")
-                    window.location.href="store-configuration";
+                    toastr.success("Status Updated Successfully!!");
+                    // alert("Status Updated Successfully!!")
+                    window.location.href="vendors";
                 }
             }
         });
@@ -111,7 +126,8 @@
                     var json = $.parseJSON(response);
                     if(json.status=='success')
                     {
-                        alert("Discount Updated Successfully!!")
+                        toastr.success("Discount Updated Successfully!!");
+                        // alert("Discount Updated Successfully!!")
                     }
                 }
             });

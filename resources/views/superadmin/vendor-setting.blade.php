@@ -9,28 +9,232 @@
     <main id="main" class="main">
         <div class="subpagetitle fit-title">
             <h1>{{$vendor->name}}</h1>
-            <p><a href="{{url('vendors')}}">Vendor</a> / <b>Vendor Setting</b></p>
+            <p><a href="{{url('superadmin/vendors')}}">Store</a> / <b>Store Setting</b></p>
         </div>
         <section class="section up-banner">
             <div class="row">
                 <div class="col-12 ">
                     <div class="card fullorders">
                         <ul class="nav nav-tabs" data-bs-toggle="tabs">
+
                             <li class="nav-item">
-                                <a href="#tabs-home-7" class="nav-link active" data-bs-toggle="tab">Bulk Price Update</a>
+                                <a href="#tabs-profile-6" class="nav-link active" data-bs-toggle="tab">General Configuration</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#tabs-profile-9" class="nav-link " data-bs-toggle="tab">Update Product Tags</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#tabs-profile-10" class="nav-link " data-bs-toggle="tab">Store Front Configuration</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#tabs-profile-11" class="nav-link " data-bs-toggle="tab">Payment Configuration</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="#tabs-home-7" class="nav-link " data-bs-toggle="tab">Bulk Price Update</a>
                             </li>
                             <li class="nav-item">
                                 <a href="#tabs-profile-7" class="nav-link" data-bs-toggle="tab">HSN and Weight</a>
                             </li>
                             <li class="nav-item">
-                                <a href="#tabs-profile-8" class="nav-link" data-bs-toggle="tab">Setting</a>
+                                <a href="#tabs-profile-8" class="nav-link" data-bs-toggle="tab">Settings</a>
                             </li>
 
 
                         </ul>
                         <div class="card-body">
                             <div class="tab-content">
-                                <div class="tab-pane active show" id="tabs-home-7">
+                                <div class="tab-pane active show" id="tabs-profile-6">
+
+                                            <form class="add-product-form" method="post" action="{{route('genralconfiguration.update',$vendor->id)}}">
+                                                @csrf
+                                                <div class="gen-config">
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="row">
+                                                                <div class="col-6 field">
+                                                                    <label for="inputNanme4" class="form-label">Email</label>
+                                                                    <input type="email" class="form-control" id="" value="{{$vendor->email}}" placeholder="Enter Email" name="email">
+                                                                    <span style="color:red;">
+                                      @error('email')
+                                        <span style="color:red;">Please enter valid email address.</span>
+                                      @enderror
+                                    </span>
+                                                                </div>
+                                                                <div class="col-6 field">
+                                                                    <label for="inputNanme4" class="form-label">Contact Number</label>
+                                                                    <input type="text" class="form-control" id="mobile" placeholder="Enter Mobile Number" name="mobile" value="{{$vendor->mobile}}">
+                                                                    <span style="color:red;">
+                                    @error('mobile')
+                                                                        {{$message}}
+                                                                        @enderror
+                                  </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row mt-3">
+                                                                <div class="col-6 field">
+                                                                    <label for="inputNanme4" class="form-label">Address </label>
+                                                                    <input type="text" class="form-control" id="" placeholder="Enter Address" name="address" value="{{$vendor->address}}">
+                                                                    <span style="color:red;">
+                                    @error('address')
+                                                                        {{$message}}
+                                                                        @enderror
+                                  </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mt-3">
+                                                                <button type="submit" style="float:right" class="btn btn-primary">Update</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </form>
+                                </div>
+                                <div class="tab-pane" id="tabs-profile-9">
+                                    <form action="{{route('update.vendor.tag',$vendor->id)}}" method="POST">
+                                        @csrf
+                                        <div class="mb-2">
+                                            <input type="text" class="form-control" value="" name="tags" placeholder="Add Tags">
+                                            @error('tags')
+                                            <div class="error text-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <button type="submit" class="btn btn-danger btn-sm">Add Tag</button>
+                                    </form>
+                                </div>
+
+                                <div class="tab-pane" id="tabs-profile-10">
+                                    <form class="add-product-form" method="post" action="{{route('storeFront.update',$vendor->id)}}" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="store-config">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    @if($vendor->logo!='')
+                                                        <div class="col-3"><img src="{{asset('uploads/logo/'.$vendor->logo)}}" height="120px" width='120px'></div>
+                                                    @endif
+                                                    <label for="inputNanme4" class="form-label">Store Logo</label>
+                                                    <input type="file" class="form-control" accept="image/png, image/gif, image/jpeg, image/jpg" name="logo">
+                                                    <span style="color:red;">
+                          @error('logo')
+                                                        {{$message}}
+                                                        @enderror
+                          </span>
+                                                </div>
+                                                <div class="col-12 mt-3">
+                                                    <label for="inputNanme4" class="form-label">About the Store </label>
+                                                    <textarea class="form-control" name="about_store" id="" placeholder="About the Store ">{{$vendor->about_store}}</textarea>
+                                                    <span style="color:red;">
+                            @error('about_store')
+                                                        {{$message}}
+                                                        @enderror
+                          </span>
+                                                </div>
+                                                <div class="col-12 mt-3">
+                                                    <label for="inputNanme4" class="form-label">What products does the store carry?</label>
+                                                    <textarea name="store_carry" class="form-control" id="" placeholder="What products does the store carry?">{{$vendor->store_carry}}</textarea>
+                                                </div>
+                                                <span style="color:red;">
+                         @error('store_carry')
+                                                    {{$message}}
+                                                    @enderror
+                     </span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <button type="submit" style="float:right" class="btn btn-primary">Update</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="tab-pane" id="tabs-profile-11">
+                                    @if($payment)
+                                        <form class="add-product-form edit-back-info" method="post" action="{{route('paymentDetails.update',$payment->id)}}">
+                                            @csrf
+                                            <div class="">
+                                                <h5>Edit Bank Info</h5>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <label for="inputNanme4" class="form-label">Account No</label>
+                                                        <input type="text" class="form-control" id="account" value="@if(isset($payment->account_no)){{$payment->account_no}} @else {{old('account_no')}} @endif" placeholder="Enter account No" name="account_no">
+                                                        <span style="color:red;">
+                         @error('account_no')
+                                                            {{$message}}
+                                                            @enderror
+                     </span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label for="inputNanme4" class="form-label">Bank Name</label>
+                                                        <input type="text" class="form-control" id="name" placeholder="Enter bank name" name="bank_name" value="@if(isset($payment->bank_name)){{$payment->bank_name}} @else {{old('name')}} @endif">
+                                                        <span style="color:red;">
+                         @error('bank_name')
+                                                            {{$message}}
+                                                            @enderror
+                     </span>
+                                                    </div>
+                                                    <div class="col-6 mt-3">
+                                                        <label for="inputNanme4" class="form-label">IFSC</label>
+                                                        <input type="text" class="form-control" id="" placeholder="Enter IFSC" name="ifsc" value="@if(isset($payment->ifsc)){{$payment->ifsc}}@endif">
+                                                        <span style="color:red;">
+                         @error('ifsc')
+                                                            {{$message}}
+                                                            @enderror
+                     </span>
+                                                    </div>
+                                                    <div class="col-6 mt-3">
+                                                        <label for="inputNanme4" class="form-label">GST</label>
+                                                        <input type="text" class="form-control" id="" placeholder="Enter GST" name="gst" value="@if(isset($payment->gst)){{$payment->gst}} @else {{old('gst')}} @endif">
+                                                        <span style="color:red;">
+                         @error('gst')
+                                                            {{$message}}
+                                                            @enderror
+                     </span>
+                                                    </div>
+                                                    <div class="col-6 mt-3">
+                                                        <label for="inputNanme4" class="form-label">Account Type</label>
+                                                        <select class="form-control" name='account_type'>
+                                                            <option value="current"@if(isset($payment->account_type) && $payment->account_type=='current'){{'selected'}}@endif>Current</option>
+                                                            <option value="saving"@if(isset($payment->account_type) && $payment->account_type=='saving'){{'selected'}}@endif>Saving</option>
+                                                        </select>
+                                                        <span style="color:red;">
+                         @error('account_type')
+                                                            {{$message}}
+                                                            @enderror
+                     </span>
+                                                    </div>
+                                                    <div class="col-12 mt-3">
+                                                        <label for="inputNanme4" class="form-label">Address</label>
+                                                        <textarea name="address" class="form-control" id="" value="" placeholder="Address">@if(isset($payment->address)){{$payment->address}} @else {{old('address')}} @endif</textarea>
+                                                        <span style="color:red;">
+                         @error('address')
+                                                            {{$message}}
+                                                            @enderror
+                     </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <!-- <button type="reset" class="btn btn-secondary">Cancel</button> -->
+                                                <button type="submit" style="float:right" class="btn btn-primary">Update</button>
+                                            </div>
+                                        </form>
+
+                                    @elseif($payment=='')
+                                        <div class="order-items">
+                                            <p><b>Account No  </b><span></span></p>
+                                            <p><b>Bank Name  </b><span></span></p>
+                                            <p><b>IFSC </b><span></span></p>
+                                            <p><b>GST  </b><span></span></p>
+                                            <p><b>Bank Address  </b><span></span></p>
+                                        </div>
+
+                                    @endif
+                                </div>
+
+                                <div class="tab-pane " id="tabs-home-7">
                                     @if(count($markets) > 0)
                                         <table class="table table-bordered table-white">
                                             <thead>
@@ -95,10 +299,10 @@
                                         <table class="table table-bordered table-white">
                                             <thead>
                                             <tr>
-                                                <th scope="col">S.No</th>
                                                 <th scope="col">Product Type</th>
                                                 <th scope="col">HSN Code</th>
                                                 <th scope="col">Base Weight</th>
+                                                <th scope="col">Size Chart</th>
                                                 <th scope="col">Action</th>
                                             </tr>
                                             </thead>
@@ -107,12 +311,62 @@
 
                                             @foreach($vendor_product_types as $vendor_product_type)
                                                 <tr>
-                                                    <td>{{$i++}}</td>
+
                                                     <td>{{$vendor_product_type->product_type}}</td>
 
                                                     <td><input type="text" class="float-number" id="hsn_{{$vendor_product_type->id}}" value="{{$vendor_product_type->hsn_code}}"></td>
                                                     <td><input type="text" class="float-number" id="weight_{{$vendor_product_type->id}}" value="{{$vendor_product_type->base_weight}}"></td>
+                                                  <td><a href="#" data-bs-toggle="modal" data-bs-target="#basicModal_{{$vendor_product_type->id}}">Add Size Chart</a></td>
                                                     <td><button class="btn btn-primary" onclick="updateRecord({{$vendor_product_type->id}})">Save</button></td>
+
+                                                    <div class="modal fade" id="basicModal_{{$vendor_product_type->id}}" tabindex="-1" aria-hidden="true" style="display: none;">
+                                                        <div class="modal-dialog modal-lg">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Size Chart</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+
+                                                                    <form role="form" method="POST" action="{{route('superadmin.update-product-type-sizechart')}}" enctype="multipart/form-data">
+
+                                                                        @csrf
+                                                                        @method('post')
+
+                                                                        <input type="hidden" name="product_type_id" value="{{$vendor_product_type->id}}">
+                                                                        <div class="col-12 mt-2">
+                                                                            <label for="inputNanme4" class="form-label">HTML</label>
+
+                                                                            <div>
+                                                                                <textarea style="width: 100% !important;" name="product_type_html" id="editor_id_{{$vendor_product_type->id}}" class="form-control editor_{{$vendor_product_type->id}}" rows="3">@if(isset($vendor_product_type->size_chart_html)){{$vendor_product_type->size_chart_html}}@endif </textarea>
+
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="col-12 mt-2">
+                                                                            <label for="inputNanme4" class="form-label">Image</label>
+                                                                            <div>
+{{--                                                                                <input name="product_type_file" type="file" data-default-file="@if(isset($vendor_product_type->size_chart_image)){{$vendor_product_type->size_chart_image}}@endif" class="dropify_{{$vendor_product_type->id}}" data-height="100" />--}}
+                                                                                <input name="product_type_file" type="file" src="@if(isset($vendor_product_type->size_chart_image)){{$vendor_product_type->size_chart_image}}@endif" class="form-control" data-height="100" />
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="modal-footer">
+
+                                                                            <div class="form-group">
+                                                                                <div>
+
+                                                                                    <button type="submit" class="btn btn-info btn-block">Add</button>
+                                                                                </div>
+                                                                            </div>
+
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </tr>
                                             @endforeach
 
@@ -155,7 +409,7 @@
                                                     <label for="inputNanme4" class="form-label">HTML</label>
 
                                                     <div>
-                                                        <textarea style="width: 100% !important;" name="html" id="editor1" class="form-control tooltip_logo_text" rows="3"> </textarea>
+                                                        <textarea style="width: 100% !important;" name="html" id="editor1" class="form-control tooltip_logo_text" rows="3">@if(isset($vendor->size_chart_html)){{$vendor->size_chart_html}}@endif </textarea>
 
                                                     </div>
                                                 </div>
@@ -163,7 +417,7 @@
                                                 <div class="col-12 mt-2">
                                                     <label for="inputNanme4" class="form-label">Image</label>
                                                     <div>
-                                                        <input name="file" type="file" class="dropify" data-height="100" />
+                                                        <input name="file" type="file" data-default-file="@if(isset($vendor->size_chart_image)){{$vendor->size_chart_image}}@endif" class="dropify" data-height="100" />
                                                     </div>
                                                     </div>
                                                 </div>
@@ -172,7 +426,7 @@
 
 
                                             </div>
-                                        </div>
+
                                         <div class="timer-btns">
                                             <button type="submit" class="btn btn-primary">Submit</button>
                                         </div>
@@ -235,7 +489,7 @@
         var vendor_id={{$vendor->id}};
         var v_token = "{{csrf_token()}}";
 
-        if(status_val && type_val && value) {
+        // if(status_val && type_val && value) {
             $.ajax({
                 type: 'post',
                 data: {id: id, status: status_val, type: type_val, value: value, vendor_id: vendor_id},
@@ -249,7 +503,7 @@
                     }
                 }
             });
-        }
+        // }
     }
 </script>
 
@@ -257,11 +511,28 @@
     $(document).ready(function(){
 
         $('.dropify').dropify();
+
+
+        {{--$('#basicModal_{{$vendor_product_types[0]->id}}').on('shown.bs.modal', function () {--}}
+        {{--    $('.dropify_{{$vendor_product_types[0]->id}}').dropify();--}}
+        {{--});--}}
+
+        {{--$('.dropify{{$vendor_product_types[0]->id}}').dropify({--}}
+        {{--    Parent: $('#basicModal_{{$vendor_product_types[0]->id}}')--}}
+        {{--});--}}
+
         $('.tooltip_logo_text').each(function () {
             CKEDITOR.replace($(this).prop('id'));
 
         });
 
+        @foreach($vendor_product_types as $index=> $vendor_product_type)
+        {{--$('.dropify_{{$vendor_product_type->id}}').dropify();--}}
+
+        $('.editor_{{$vendor_product_type->id}}').each(function () {
+            CKEDITOR.replace($(this).prop('id'));
+        });
+        @endforeach
 
     });
 </script>

@@ -49,12 +49,14 @@ class updatePrice extends Command
 //		$data=ProductInfo::whereIn('vendor_id', [32,42])->where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
 
 		//zain
-        $data=ProductInfo::where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
+        $data=ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
 
         if(count($data) > 0) {
+            $currentTime = now();
                 $log = new Log();
-                $log->name = 'Update Price';
-                $log->date = date("F j, Y g:i a");
+                $log->name = 'Update Price in Shopify';
+            $log->date = $currentTime->format('F j, Y');
+            $log->start_time = $currentTime->toTimeString();
                 $log->status = 'In-Progress';
                 $log->save();
                 try {
@@ -143,6 +145,7 @@ class updatePrice extends Command
                         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
                         $response = curl_exec($curl);
                         curl_close($curl);
+
                         $res = json_decode($response, true);
 
                         foreach ($arr as $k => $v) {
@@ -183,6 +186,7 @@ class updatePrice extends Command
 
                             $response = curl_exec($curl);
                             curl_close($curl);
+
                         }
                         //This is for diffalut currency
                         // if($row->product_discount > 0) {
@@ -217,12 +221,15 @@ class updatePrice extends Command
                         ProductInfo::where('id', $row->id)->update(['price_status' => 1]);
                         //DB::table('tests')->insert(['name' => 'okk']);
                     }
-
-                    $log->date = date("F j, Y g:i a");
+                    $currentTime = now();
+                    $log->date = $currentTime->format('F j, Y');
+                    $log->end_time = $currentTime->toTimeString();
                     $log->status = 'Complete';
                     $log->save();
                 }catch (\Exception $exception){
-                    $log->date = date("F j, Y g:i a");
+                    $currentTime = now();
+                    $log->date = $currentTime->format('F j, Y');
+                    $log->end_time = $currentTime->toTimeString();
                     $log->status = 'Failed';
                     $log->message=json_encode($exception->getMessage());
                     $log->save();

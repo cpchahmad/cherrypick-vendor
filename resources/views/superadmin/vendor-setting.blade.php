@@ -4,12 +4,40 @@
     .form-select{
         width: auto !important;
     }
+
+    .image-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .delete-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: white;
+        padding: 0px 0px;
+        cursor: pointer;
+    }
+
+    .bi-x-circle{
+        font-size:20px;
+    }
 </style>
 @section('main')
     <main id="main" class="main">
         <div class="subpagetitle fit-title">
+            <div class="row">
+                <div class="col-6">
             <h1>{{$vendor->name}}</h1>
             <p><a href="{{url('superadmin/vendors')}}">Store</a> / <b>Store Setting</b></p>
+        </div>
+
+                <div class="col-6" style="text-align: right">
+                    <a class="btn btn-primary" href="{{route('update-price-by-vendor',$vendor->id)}}">Update Prices in Database</a>
+                    <a class="btn btn-primary" href="{{route('update-price-by-vendor-inshopify',$vendor->id)}}">Update Prices in Shopify</a>
+
+                </div>
+            </div>
         </div>
         <section class="section up-banner">
             <div class="row">
@@ -344,7 +372,21 @@
                                                                         </div>
 
                                                                         <div class="col-12 mt-2">
-                                                                            <label for="inputNanme4" class="form-label">Image</label>
+
+                                                                            @if(isset($vendor_product_type->size_chart_image))
+                                                                                <div class="col-3 mt-2">
+                                                                                    <div class="image-container">
+                                                                                        <img src="{{$vendor_product_type->size_chart_image}}" height="120px" width="120px">
+                                                                                        <div class="delete-button">
+
+                                                                                            <i class="bi bi-x-circle product_type_setting" data-id="{{$vendor_product_type->id}}"></i>
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                </div>
+                                                                            @endif
+
+                                                                            <label for="inputNanme4" class="form-label mt-2">Image</label>
                                                                             <div>
 {{--                                                                                <input name="product_type_file" type="file" data-default-file="@if(isset($vendor_product_type->size_chart_image)){{$vendor_product_type->size_chart_image}}@endif" class="dropify_{{$vendor_product_type->id}}" data-height="100" />--}}
                                                                                 <input name="product_type_file" type="file" src="@if(isset($vendor_product_type->size_chart_image)){{$vendor_product_type->size_chart_image}}@endif" class="form-control" data-height="100" />
@@ -415,9 +457,23 @@
                                                 </div>
 
                                                 <div class="col-12 mt-2">
-                                                    <label for="inputNanme4" class="form-label">Image</label>
+
+                                                    @if(isset($vendor->size_chart_image))
+                                                        <div class="col-3 mt-2">
+                                                            <div class="image-container setting_sizechart_img ">
+                                                                <img src="{{$vendor->size_chart_image}}" height="120px" width="120px">
+                                                                <div class="delete-button">
+
+                                                                    <i class="bi bi-x-circle setting_sizechart" data-id="{{$vendor->id}}"></i>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    @endif
+
+                                                    <label for="inputNanme4" class="form-label mt-2">Image</label>
                                                     <div>
-                                                        <input name="file" type="file" data-default-file="@if(isset($vendor->size_chart_image)){{$vendor->size_chart_image}}@endif" class="dropify" data-height="100" />
+                                                        <input name="file" type="file" src="@if(isset($vendor->size_chart_image)){{$vendor->size_chart_image}}@endif" class="form-control" data-height="100" />
                                                     </div>
                                                     </div>
                                                 </div>
@@ -510,7 +566,7 @@
 <script>
     $(document).ready(function(){
 
-        $('.dropify').dropify();
+        // $('.dropify').dropify();
 
 
         {{--$('#basicModal_{{$vendor_product_types[0]->id}}').on('shown.bs.modal', function () {--}}
@@ -534,6 +590,48 @@
         });
         @endforeach
 
+
+
+        $('.product_type_setting').click(function (){
+
+        var id=$(this).data('id');
+    $(this).parents('.modal-body').find('.image-container').css('display', 'none');
+
+
+    $.ajax({
+        type: 'get',
+        data: {id: id},
+        url: "{{ route('superadmin.delete.product-type-img') }}",
+        success: function (response) {
+            var json = $.parseJSON(response);
+            if (json.status == 'success') {
+
+                toastr.success("Image Deleted Successfully!!");
+            }
+        }
+    });
+})
+
+
+        $('.setting_sizechart').click(function (){
+
+            var id=$(this).data('id');
+            $('.setting_sizechart_img').css('display', 'none');
+
+
+            $.ajax({
+                type: 'get',
+                data: {id: id},
+                url: "{{ route('superadmin.delete.setting-img') }}",
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status == 'success') {
+
+                        toastr.success("Image Deleted Successfully!!");
+                    }
+                }
+            });
+        })
     });
 </script>
 

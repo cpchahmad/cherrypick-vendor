@@ -6,7 +6,7 @@
             <div class="pagetitle">
                 <h1>Stores</h1>
             </div><!-- End Page Title -->
-            <a class="btn btn-primary" href="{{url('superadmin/updateprice')}}">Update Product Prices</a>
+{{--            <a class="btn btn-primary" href="{{url('superadmin/updateprice')}}">Update Product Prices</a>--}}
         </div>
 
         <section class="section up-banner">

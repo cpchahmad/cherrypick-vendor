@@ -47,8 +47,10 @@ class approveProducts extends Command
         $product_data = Product::where('status', 1)->whereNull('shopify_id')->get();
         if(count($product_data) > 0) {
             $log = new Log();
+            $currentTime = now();
             $log->name = 'Approve Product Push';
-            $log->date = date("F j, Y g:i a");
+            $log->date = $currentTime->format('F j, Y');
+            $log->start_time = $currentTime->toTimeString();
             $log->status = 'In-Progress';
             $log->save();
             try {
@@ -113,7 +115,11 @@ class approveProducts extends Command
                     $groupedData = [];
                     $groupedData1 = [];
                     $options_array = [];
+                    $upload_product = 0;
                     foreach ($product_info as $v) {
+                        if ($v->stock) {
+                            $upload_product = 1;
+                        }
                         $variants[] = array(
                             "option1" => $v->varient_value,
                             "option2" => $v->varient1_value,
@@ -121,8 +127,8 @@ class approveProducts extends Command
                             "price" => $v->price_usd,
                             "grams" => $v->grams,
                             "taxable" => false,
-                            "inventory_management" => ($v->stock ? "shopify" : null),
-                            "inventory_quantity" => $v->stock
+                            "inventory_management" => ($v->stock ? null : "shopify"),
+//                            "inventory_quantity" => $v->stock
                         );
 
                         $varientName = $v->varient_name;
@@ -183,18 +189,18 @@ class approveProducts extends Command
                         ]);
                     }
 
-                    $tags=$product->tags;
-                    if($product->orignal_vendor) {
+                    $tags = $product->tags;
+                    if ($product->orignal_vendor) {
                         $result = strcmp($vendor->name, $product->orignal_vendor);
                         if ($result != 0) {
                             $tags = $product->tags . ',' . $product->orignal_vendor;
                         }
 
                     }
-                    if($product->product_type_id){
-                        $product_type_check=ProductType::find($product->product_type_id);
-                        if($product_type_check){
-                            if($product_type_check->hsn_code) {
+                    if ($product->product_type_id) {
+                        $product_type_check = ProductType::find($product->product_type_id);
+                        if ($product_type_check) {
+                            if ($product_type_check->hsn_code) {
                                 $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
                             }
                         }
@@ -226,103 +232,109 @@ class approveProducts extends Command
                         $SHOP_URL = 'cityshop-company-store.myshopify.com';
                     }
 
-                    $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products.json";
-                    $curl = curl_init();
-                    curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-                    $headers = array(
-                        "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
-                        "Content-Type: application/json",
-                        "charset: utf-8"
-                    );
-                    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($curl, CURLOPT_VERBOSE, 0);
-                    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-                    $response = curl_exec($curl);
-                    curl_close($curl);
-                    $result = json_decode($response, true);
-                    $shopify_product_id = $result['product']['id'];
-                    $shopify_handle = $result['product']['handle'];
-                    $variant_ids_array = array();
-                    Product::where('id', $product->id)->update(['shopify_id' => $shopify_product_id, 'handle' => $shopify_handle, 'status' => '1', 'approve_date' => Carbon::now()]);
-                    foreach ($result['product']['variants'] as $prd) {
-                        array_push($variant_ids_array, $prd['id']);
-                        ProductInfo::where('sku', $prd['sku'])->update(['inventory_item_id' => $prd['inventory_item_id'], 'inventory_id' => $prd['id']]);
-                        $location_id = Helpers::DiffalultLocation();
-                        ProductInventoryLocation::updateOrCreate(
-                            ['items_id' => $prd['inventory_item_id'], 'location_id' => $location_id],
-                            ['items_id' => $prd['inventory_item_id'], 'stock' => $prd['inventory_quantity'], 'location_id' => $location_id]
+                    if ($upload_product) {
+
+                        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products.json";
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                        $headers = array(
+                            "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                            "Content-Type: application/json",
+                            "charset: utf-8"
                         );
-                    }
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                        $response = curl_exec($curl);
+                        curl_close($curl);
+                        $result = json_decode($response, true);
+                        $shopify_product_id = $result['product']['id'];
+                        $shopify_handle = $result['product']['handle'];
+                        $variant_ids_array = array();
+                        Product::where('id', $product->id)->update(['shopify_id' => $shopify_product_id, 'handle' => $shopify_handle, 'status' => '1', 'approve_date' => Carbon::now()]);
+                        foreach ($result['product']['variants'] as $prd) {
+                            array_push($variant_ids_array, $prd['id']);
+                            ProductInfo::where('sku', $prd['sku'])->update(['inventory_item_id' => $prd['inventory_item_id'], 'inventory_id' => $prd['id']]);
+                            $location_id = Helpers::DiffalultLocation();
+                            ProductInventoryLocation::updateOrCreate(
+                                ['items_id' => $prd['inventory_item_id'], 'location_id' => $location_id],
+                                ['items_id' => $prd['inventory_item_id'], 'stock' => $prd['inventory_quantity'], 'location_id' => $location_id]
+                            );
+                        }
 
-                    $values = array();
-                    foreach ($product_info as $index => $v) {
+                        $values = array();
+                        foreach ($product_info as $index => $v) {
 
-                        $value = [
-                            "hex_code" => $v->hex_code,
-                            "swatch_image" => $v->swatch_image,
-                            "volume" => $v->volume,
-                            'dimensions' => $v->dimensions_text,
-                            'shelf_life' => $v->shelf_life,
-                            'temp_require' => $v->temp_require,
-                            'height' => $v->height,
-                            'width' => $v->width,
-                            'length' => $v->length,
-                            'sku' => $v->sku
+                            $value = [
+                                "hex_code" => $v->hex_code,
+                                "swatch_image" => $v->swatch_image,
+                                "volume" => $v->volume,
+                                'dimensions' => $v->dimensions_text,
+                                'shelf_life' => $v->shelf_life,
+                                'temp_require' => $v->temp_require,
+                                'height' => $v->height,
+                                'width' => $v->width,
+                                'length' => $v->length,
+                                'sku' => $v->sku
+                            ];
+                            array_push($values, $value);
+                        }
+
+
+                        $metafield_variant_data = [
+                            "metafield" =>
+                                [
+                                    "key" => 'detail',
+                                    "value" => json_encode($values),
+                                    "type" => "json_string",
+                                    "namespace" => "variants",
+
+                                ]
                         ];
-                        array_push($values, $value);
+
+
+                        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_product_id/metafields.json";
+
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                        $headers = array(
+                            "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                            "Content-Type: application/json",
+                            "charset: utf-8"
+                        );
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                        //curl_setopt($curl, CURLOPT_HEADER, 1);
+                        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                        //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_variant_data));
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+                        $response1 = curl_exec($curl);
+
+                        curl_close($curl);
+                        $this->shopifyUploadeImage($product->id, $shopify_product_id, $variant_ids_array);
+                        $this->linkProductToCollection($shopify_product_id, $vendor->collections_ids);
+
+
                     }
-
-
-                    $metafield_variant_data = [
-                        "metafield" =>
-                            [
-                                "key" => 'detail',
-                                "value" => json_encode($values),
-                                "type" => "json_string",
-                                "namespace" => "variants",
-
-                            ]
-                    ];
-
-
-                    $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_product_id/metafields.json";
-
-                    $curl = curl_init();
-                    curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-                    $headers = array(
-                        "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
-                        "Content-Type: application/json",
-                        "charset: utf-8"
-                    );
-                    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($curl, CURLOPT_VERBOSE, 0);
-                    //curl_setopt($curl, CURLOPT_HEADER, 1);
-                    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-                    //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_variant_data));
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-
-                    $response1 = curl_exec($curl);
-
-                    curl_close($curl);
-                    $this->shopifyUploadeImage($product->id, $shopify_product_id, $variant_ids_array);
-                    $this->linkProductToCollection($shopify_product_id, $vendor->collections_ids);
-
-
                 }
-
-                $log->date = date("F j, Y g:i a");
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Complete';
+                $log->end_time = $currentTime->toTimeString();
                 $log->save();
             }catch (\Exception $exception){
-                $log->date = date("F j, Y g:i a");
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
+                $log->end_time = $currentTime->toTimeString();
                 $log->message=json_encode($exception->getMessage());
                 $log->save();
 

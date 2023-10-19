@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
 //		$schedule->command('update:otp')->everyFiveMinutes();
 		$schedule->command('update:price')->everyMinute();
 		$schedule->command('products:approve')->everyMinute();
-		$schedule->command('fetch:jsonproduct')->everySixHours();
+		$schedule->command('fetch:jsonproduct')->everySixHours()->withoutOverlapping();
         $schedule->command('update:priceConversionRate')->everyMinute();
     }
 

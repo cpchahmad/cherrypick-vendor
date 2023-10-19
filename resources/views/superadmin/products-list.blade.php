@@ -1,11 +1,24 @@
 @extends('layouts.superadmin')
 @section('main')
   <main id="main" class="main">
-   <div class="home-flex">
-    <div class="pagetitle">
-       <h1>Product List</h1>
+
+    <div class="subpagetitle fit-title">
+        <div class="row">
+            <div class="col-6">
+                <h1>Product List</h1>
+            </div>
+            <div class="col-6" style="text-align: right;margin-bottom: 6px;">
+                <button class="btn btn-success btn-sm approve_all" href="">Approve All</button>
+                <button class="btn btn-danger btn-sm deny_all" href="">Deny All</button>
+            </div>
+
+        </div>
+
     </div><!-- End Page Title -->
-   </div>
+
+
+
+
     <section class="section up-banner">
       <p><strong>Search and filter by products, vendor and date.</strong></p>
       <div class="sort-by">
@@ -247,3 +260,63 @@
 };
 
 </script>
+
+@section('js')
+<script>
+
+    $(document).ready(function () {
+
+        $('.approve_all').click(function (){
+
+                var search='{{Request::get('search')}}';
+                var vendor='{{Request::get('vendor')}}';
+                console.log(vendor);
+                var date='{{Request::get('date')}}';
+                var status='{{Request::get('status')}}';
+            $.ajax({
+                type: 'GET',
+                url: "{{ route('superadmin.approve-selected-products') }}",
+                data: {
+                    search: search,
+                    vendor: vendor,
+                    date: date,
+                    status: status,
+                },
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status === 'success') {
+                        window.location.href = 'products';
+                    }
+                }
+            });
+
+        });
+
+        $('.deny_all').click(function (){
+
+            var search='{{Request::get('search')}}';
+            var vendor='{{Request::get('vendor')}}';
+            console.log(vendor);
+            var date='{{Request::get('date')}}';
+            var status='{{Request::get('status')}}';
+            $.ajax({
+                type: 'GET',
+                url: "{{ route('superadmin.deny-selected-products') }}",
+                data: {
+                    search: search,
+                    vendor: vendor,
+                    date: date,
+                    status: status,
+                },
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status === 'success') {
+                        window.location.href = 'products';
+                    }
+                }
+            });
+
+        });
+    });
+</script>
+@endsection

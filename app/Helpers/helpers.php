@@ -933,9 +933,9 @@ $store=Store::find($vid);
             $Variant_Price=round(($Variant_Price  * 1.05), 2);
             $price_gbp_final=round(($price_gbp_final * 1.05 ), 2);
             $price_nld_final=round(($price_nld_final * 1.05 ), 2);
-            $price_inr_final=round(($price_inr_final * 1.05 * 1.04), 2);
-            $price_cad_final=round(($price_cad_final * 1.05 * 1.04), 2);
-            $price_aud_final=round(($price_aud_final * 1.05 * 1.04), 2);
+            $price_inr_final=round(($price_inr_final * 1.05 ), 2);
+            $price_cad_final=round(($price_cad_final * 1.05 ), 2);
+            $price_aud_final=round(($price_aud_final * 1.05 ), 2);
 //            $price_irl_final=round(($price_irl_final * 1.05 * 1.04), 2);
 //            $price_ger_final=round(($price_ger_final * 1.05 * 1.04), 2);
         }
@@ -1976,11 +1976,11 @@ $store=Store::find($vid);
             $Variant_Price=round(($Variant_Price  * 1.05), 2);
             $price_gbp_final=round(($price_gbp_final * 1.05 ), 2);
             $price_nld_final=round(($price_nld_final * 1.05 ), 2);
-            $price_inr_final=round(($price_inr_final * 1.05 * 1.04), 2);
-            $price_cad_final=round(($price_cad_final * 1.05 * 1.04), 2);
-            $price_aud_final=round(($price_aud_final * 1.05 * 1.04), 2);
-			$price_irl_final=round(($price_irl_final * 1.05 * 1.04), 2);
-			$price_ger_final=round(($price_ger_final * 1.05 * 1.04), 2);
+            $price_inr_final=round(($price_inr_final * 1.05 ), 2);
+            $price_cad_final=round(($price_cad_final * 1.05 ), 2);
+            $price_aud_final=round(($price_aud_final * 1.05 ), 2);
+			$price_irl_final=round(($price_irl_final * 1.05 ), 2);
+			$price_ger_final=round(($price_ger_final * 1.05 ), 2);
         }
         else
         {

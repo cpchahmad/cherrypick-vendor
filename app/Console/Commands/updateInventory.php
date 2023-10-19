@@ -47,9 +47,11 @@ class updateInventory extends Command
        //$product_inv = ProductInfo::where('stock', '>', 0)->whereNotNull('inventory_item_id')->get();
 	   $product_inv = ProductInfo::where('inventory_status', 1)->whereNotNull('inventory_item_id')->get();
        if(count($product_inv) > 0) {
+           $currentTime = now();
            $log = new Log();
            $log->name = 'Update Inventory';
-           $log->date = date("F j, Y g:i a");
+           $log->date = $currentTime->format('F j, Y');
+           $log->start_time = $currentTime->toTimeString();
            $log->status = 'In-Progress';
            $log->save();
            try {
@@ -80,12 +82,16 @@ class updateInventory extends Command
                    curl_close($curl);
                    ProductInfo::where('id', $row->id)->update(['inventory_status' => 0]);
                }
-               $log->date = date("F j, Y g:i a");
+               $currentTime = now();
+               $log->date = $currentTime->format('F j, Y');
+               $log->end_time = $currentTime->toTimeString();
                $log->status = 'Complete';
                $log->save();
            }catch (\Exception $exception){
-               $log->date = date("F j, Y g:i a");
+               $currentTime = now();
+               $log->date = $currentTime->format('F j, Y');
                $log->status = 'Failed';
+               $log->end_time = $currentTime->toTimeString();
                $log->message=json_encode($exception->getMessage());
                $log->save();
            }

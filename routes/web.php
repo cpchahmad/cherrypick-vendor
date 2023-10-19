@@ -104,6 +104,9 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 	  Route::get('/download/{file}',[SuperadminController::class,'download'])->name('download');
 	  Route::get('/download_logo/{file}',[SuperadminController::class,'download_logo'])->name('download_logo');
 	  Route::get('updateprice',[SuperadminController::class,'updateAllProductPrices']);
+    Route::get('updatepricebyvendor/{id}',[SuperadminController::class,'updateProductPricesByVendor'])->name('update-price-by-vendor');
+    Route::get('updatepricebyvendorinshopify/{id}',[SuperadminController::class,'updateProductPricesInShopify'])->name('update-price-by-vendor-inshopify');
+
 	  Route::get('store-amount',[SuperadminController::class,'storeAmount'])->name('superadmin.store-amount');
 	  Route::get('store-amount-history/{id}',[SuperadminController::class,'storeOrdersAmount']);
 	  Route::get('order-details/{id}',[SuperadminController::class,'storeOrdersDetails'])->name('superadmin.orderdetail');
@@ -146,6 +149,14 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::post('update-product-detail',[SuperadminController::class,'updateproductdetail'])->name('superadmin.updateproductdetails');
 
     Route::post('update-product-type-sizechart',[SuperadminController::class,'updateProductTypeSizechart'])->name('superadmin.update-product-type-sizechart');
+
+    Route::get('delete-producttype-img',[SuperadminController::class,'deleteProductTypeImage'])->name('superadmin.delete.product-type-img');
+    Route::get('delete-setting-img',[SuperadminController::class,'deleteSettingImage'])->name('superadmin.delete.setting-img');
+
+
+    Route::get('approve-selected-products',[SuperadminController::class,'approveSelectedProducts'])->name('superadmin.approve-selected-products');
+    Route::get('deny-selected-products',[SuperadminController::class,'denySelectedProducts'])->name('superadmin.deny-selected-products');
+
 
 });
 Route::group(['middleware'=>'products'],function(){

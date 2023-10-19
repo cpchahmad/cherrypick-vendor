@@ -16,6 +16,8 @@
                             <tr>
                                 <th scope="col">Name</th>
                                 <th scope="col">Date</th>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Time</th>
                                 <th scope="col">Status</th>
 
                             </tr>
@@ -27,6 +29,8 @@
 
                                     <td>{{ $log->name }}</td>
                                     <td>{{ $log->date }}</td>
+                                    <td>{{ $log->start_time }}</td>
+                                    <td>{{ $log->end_time }}</td>
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @else ($log->status=='Failed') <span class="en-dismissed"></span>{{'Failed'}} @endif</td>
 
                                 </tr>

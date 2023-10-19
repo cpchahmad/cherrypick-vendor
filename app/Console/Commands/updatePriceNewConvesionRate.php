@@ -40,10 +40,11 @@ class updatePriceNewConvesionRate extends Command
        ProductInfo::where('price_conversion_update_status', 1)->update(['price_conversion_update_status'=> 0]);
 
         if(count($data) > 0) {
-
+            $currentTime = now();
             $log=new Log();
-            $log->name='Update Price Conversion';
-            $log->date=date("F j, Y g:i a");
+            $log->name='Update Product Price in Database';
+            $log->date = $currentTime->format('F j, Y');
+            $log->start_time = $currentTime->toTimeString();
             $log->status='In-Progress';
             $log->save();
             try {
@@ -60,13 +61,16 @@ class updatePriceNewConvesionRate extends Command
                     }
 
                 }
-                $log->date=date("F j, Y g:i a");
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
+                $log->end_time = $currentTime->toTimeString();
                 $log->status='Complete';
                 $log->save();
             }catch (\Exception $exception){
-
-                $log->date = date("F j, Y g:i a");
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
+                $log->end_time = $currentTime->toTimeString();
                 $log->message=json_encode($exception->getMessage());
                 $log->save();
             }

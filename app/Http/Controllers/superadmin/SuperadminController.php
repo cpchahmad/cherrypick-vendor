@@ -857,6 +857,19 @@ class SuperadminController extends Controller
 		ProductInfo::where('price_conversion_update_status', 0)->update(['price_conversion_update_status' => 1]);
 		return back()->with('success','Product price updated successfully');
 	}
+
+    public function updateProductPricesByVendor($id)
+    {
+        ProductInfo::where('vendor_id',$id)->where('price_conversion_update_status', 0)->update(['price_conversion_update_status' => 1]);
+        return back()->with('success','Product price updated successfully');
+    }
+
+    public function updateProductPricesInShopify($id)
+    {
+        ProductInfo::where('vendor_id',$id)->whereNotNull('inventory_id')->update(['price_status' => 0]);
+        return back()->with('success','Product price updated in Shopify successfully');
+    }
+
 	public function rejectProductList(Request $request){
      $res = Product::where('status',3);
       if($request->search != ""){
@@ -1024,9 +1037,15 @@ class SuperadminController extends Controller
             $option1_value=[];
             $groupedData = [];
             $groupedData1 = [];
+
+
+            $upload_product=0;
             foreach($product_info as $index=> $v)
             {
 
+                if($v->stock){
+                    $upload_product=1;
+                }
 
                 $variants[]=array(
 //                    "title" => $v->varient_name,
@@ -1036,8 +1055,8 @@ class SuperadminController extends Controller
                     "price"   => $v->price_usd,
                     "grams"   => $v->grams,
                     "taxable" => false,
-                    "inventory_management" => ($v->stock ? "shopify" :null),
-                    "inventory_quantity" => $v->stock
+                    "inventory_management" => ($v->stock ? null :"shopify"),
+//                    "inventory_quantity" => $v->stock
                 );
 
                 $varientName = $v->varient_name;
@@ -1156,107 +1175,110 @@ class SuperadminController extends Controller
 //            $SHOP_URL = 'cherrpick-zain.myshopify.com';
 
 
-        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2023-01/products.json";
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-        $headers = array(
-            "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
-            "Content-Type: application/json",
-            "X-Shopify-Api-Features: include-presentment-prices",
-            "charset: utf-8"
-        );
-        curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_VERBOSE, 0);
-        //curl_setopt($curl, CURLOPT_HEADER, 1);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+            if($upload_product) {
+                $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2023-01/products.json";
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "X-Shopify-Api-Features: include-presentment-prices",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                //curl_setopt($curl, CURLOPT_HEADER, 1);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
-        $response = curl_exec ($curl);
-        curl_close ($curl);
-        $result=json_decode($response, true);
+                $response = curl_exec($curl);
+                curl_close($curl);
+                $result = json_decode($response, true);
 
 
-            $shopify_product_id=$result['product']['id'];
-            $shopify_handle=$result['product']['handle'];
-        //echo "<pre>"; print_r($result); die();
+                $shopify_product_id = $result['product']['id'];
+                $shopify_handle = $result['product']['handle'];
+                //echo "<pre>"; print_r($result); die();
 
-            $variant_ids_array=array();
-        Product::where('id', $product->id)->update(['shopify_id' => $shopify_product_id, 'handle' => $shopify_handle, 'status' => '1', 'approve_date' => Carbon::now()]);
-        foreach($result['product']['variants'] as $prd)
-        {
-            array_push($variant_ids_array,$prd['id']);
-            ProductInfo::where('sku', $prd['sku'])->update(['inventory_item_id' => $prd['inventory_item_id'], 'inventory_id' => $prd['id'], 'price_status' => '0']);
-            $location_id=Helpers::DiffalultLocation();
-            ProductInventoryLocation::updateOrCreate(
-                                ['items_id' => $prd['inventory_item_id'], 'location_id' => $location_id],
-                                ['items_id' => $prd['inventory_item_id'], 'stock' => $prd['inventory_quantity'], 'location_id' => $location_id]
-                            );
+                $variant_ids_array = array();
+                Product::where('id', $product->id)->update(['shopify_id' => $shopify_product_id, 'handle' => $shopify_handle, 'status' => '1', 'approve_date' => Carbon::now()]);
+                foreach ($result['product']['variants'] as $prd) {
+                    array_push($variant_ids_array, $prd['id']);
+                    ProductInfo::where('sku', $prd['sku'])->update(['inventory_item_id' => $prd['inventory_item_id'], 'inventory_id' => $prd['id'], 'price_status' => '0']);
+                    $location_id = Helpers::DiffalultLocation();
+                    ProductInventoryLocation::updateOrCreate(
+                        ['items_id' => $prd['inventory_item_id'], 'location_id' => $location_id],
+                        ['items_id' => $prd['inventory_item_id'], 'stock' => $prd['inventory_quantity'], 'location_id' => $location_id]
+                    );
 
-        }
-        $this->shopifyUploadeImage($product->id,$shopify_product_id,$variant_ids_array);
+                }
+                $this->shopifyUploadeImage($product->id, $shopify_product_id, $variant_ids_array);
 
-            $values = array();
-            foreach($product_info as $index=> $v){
+                $values = array();
+                foreach ($product_info as $index => $v) {
 
-                $value = [
-                    "hex_code" => $v->hex_code,
-                    "swatch_image" => $v->swatch_image,
-                    "volume" => $v->volume,
-                    'dimensions' => $v->dimensions_text,
-                    'shelf_life' => $v->shelf_life,
-                    'temp_require' => $v->temp_require,
-                    'height' => $v->height,
-                    'width' => $v->width,
-                    'length' => $v->length,
-                    'sku'=>$v->sku
+                    $value = [
+                        "hex_code" => $v->hex_code,
+                        "swatch_image" => $v->swatch_image,
+                        "volume" => $v->volume,
+                        'dimensions' => $v->dimensions_text,
+                        'shelf_life' => $v->shelf_life,
+                        'temp_require' => $v->temp_require,
+                        'height' => $v->height,
+                        'width' => $v->width,
+                        'length' => $v->length,
+                        'sku' => $v->sku
+                    ];
+                    array_push($values, $value);
+                }
+
+
+                $metafield_variant_data = [
+                    "metafield" =>
+                        [
+                            "key" => 'detail',
+                            "value" => json_encode($values),
+                            "type" => "json_string",
+                            "namespace" => "variants",
+
+                        ]
                 ];
-                array_push($values, $value);
+
+
+                $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_product_id/metafields.json";
+
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                //curl_setopt($curl, CURLOPT_HEADER, 1);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_variant_data));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+                $response1 = curl_exec($curl);
+
+                curl_close($curl);
+
+
+                //$this->linkProductToCollection($shopify_product_id,$store->collections_ids);
+                ProductInfo::where('product_id', $product->id)->update(['price_status' => '0']);
             }
-
-
-            $metafield_variant_data=[
-                "metafield" =>
-                    [
-                        "key" => 'detail',
-                        "value" => json_encode($values),
-                        "type" => "json_string",
-                        "namespace" => "variants",
-
-                    ]
-            ];
-
-
-            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_product_id/metafields.json";
-
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-            $headers = array(
-                "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
-                "Content-Type: application/json",
-                "charset: utf-8"
-            );
-            curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_VERBOSE, 0);
-            //curl_setopt($curl, CURLOPT_HEADER, 1);
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-            //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_variant_data));
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-
-            $response1 = curl_exec ($curl);
-
-            curl_close ($curl);
-
-
-		//$this->linkProductToCollection($shopify_product_id,$store->collections_ids);
-		ProductInfo::where('product_id', $product->id)->update(['price_status' => '0']);
-
+            else{
+                return redirect()->to('superadmin/approved-products/all')->with('error','Product Out of Stock.');
+            }
         }
 
         else if($product->status==2)
@@ -1651,7 +1673,7 @@ class SuperadminController extends Controller
                                 "compare_at_price" => $product_info->price_usd,
                                 "grams" => $product_info->grams,
                                 "taxable" => false,
-                                "inventory_management" => ($product_info->stock) ? "shopify" : null,
+                                "inventory_management" => ($product_info->stock) ? null : "shopify",
                             );
 
 
@@ -1665,7 +1687,7 @@ class SuperadminController extends Controller
                                 "compare_at_price" => $product_info->price_usd,
                                 "grams" => $product_info->grams,
                                 "taxable" => false,
-                                "inventory_management" => ($product_info->stock) ? "shopify" : null,
+                                "inventory_management" => ($product_info->stock) ? null : "shopify",
                             );
                         }
 
@@ -2038,6 +2060,142 @@ class SuperadminController extends Controller
 				}
 				//echo "<pre>"; print_r($arr['products']); die();
 			}
+
+
+       $setting=Setting::first();
+       if($setting){
+           $API_KEY =$setting->api_key;
+           $PASSWORD = $setting->password;
+           $SHOP_URL =$setting->shop_url;
+
+       }else{
+           $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+           $PASSWORD = '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';
+           $SHOP_URL = 'cityshop-company-store.myshopify.com';
+       }
+
+       $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->get();
+       $update_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',1)->get();
+
+
+       $data['product']=array(
+           "status" =>'draft',
+       );
+
+       foreach ($draft_products as $draft_product){
+
+
+
+           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
+           $curl = curl_init();
+           curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+           $headers = array(
+               "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+               "Content-Type: application/json",
+               "charset: utf-8"
+           );
+           curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+           curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+           curl_setopt($curl, CURLOPT_VERBOSE, 0);
+           //curl_setopt($curl, CURLOPT_HEADER, 1);
+           curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+           //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+           curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+           curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+           curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+           $response = curl_exec ($curl);
+           curl_close ($curl);
+       }
+
+       foreach ($update_products as $update_product){
+           $upload_product=0;
+           $product_variants=ProductInfo::where('product_id',$update_product->id)->get();
+           $variants=[];
+           foreach ($product_variants as $product_variant){
+               if($product_variant->stock) {
+                   $upload_product = 1;
+               }
+               $variants[]=array(
+                   "option1" => $product_variant->varient_value,
+                   "option2" => $product_variant->varient1_value,
+                   "sku"     => $product_variant->sku,
+                   "price"   => $product_variant->price_usd,
+                   "grams"   => $product_variant->grams,
+                   "taxable" => false,
+                   "inventory_management" => ($product_variant->stock ? null :"shopify"),
+               );
+           }
+
+           $products_array = array(
+               "product" => array(
+                   "status"=>'active',
+                   "variants"=>$variants,
+               )
+           );
+           if($upload_product) {
+
+               $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$update_product->shopify_id.json";
+               $curl = curl_init();
+               curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+               $headers = array(
+                   "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                   "Content-Type: application/json",
+                   "X-Shopify-Api-Features: include-presentment-prices",
+                   "charset: utf-8"
+               );
+               curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+               curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+               curl_setopt($curl, CURLOPT_VERBOSE, 0);
+               //curl_setopt($curl, CURLOPT_HEADER, 1);
+               curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+//                    curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+               curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+               curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+               curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+               $response = curl_exec($curl);
+               curl_close($curl);
+
+           }else{
+
+               $products_array = array(
+                   "product" => array(
+                       "status"=>'draft',
+                       "variants"=>$variants,
+
+                   )
+               );
+               $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$update_product->shopify_id.json";
+               $curl = curl_init();
+               curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+               $headers = array(
+                   "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                   "Content-Type: application/json",
+                   "X-Shopify-Api-Features: include-presentment-prices",
+                   "charset: utf-8"
+               );
+               curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+               curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+               curl_setopt($curl, CURLOPT_VERBOSE, 0);
+               //curl_setopt($curl, CURLOPT_HEADER, 1);
+               curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+//                    curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+               curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+               curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+               curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+               $response = curl_exec($curl);
+               curl_close($curl);
+           }
+
+
+       }
+
+
+       Product::where('vendor',$vid)->update(['is_updated_by_url'=>0]);
+
+
    }
 //    function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
 //	{
@@ -2918,6 +3076,74 @@ class SuperadminController extends Controller
 
         curl_close ($curl);
 
+    }
 
+
+    public function deleteProductTypeImage(Request $request){
+
+       $product_type= ProductType::find($request->id);
+       if($product_type) {
+           $product_type->size_chart_image = null;
+           $product_type->save();
+           $this->CreateUpdateMetafield($product_type->vendor_id);
+       }
+        return json_encode(array('status'=>'success'));
+    }
+
+    public function deleteSettingImage(Request $request){
+
+        $store= Store::find($request->id);
+        if($store) {
+            $store->size_chart_image = null;
+            $store->save();
+            $this->CreateUpdateMetafield($store->id);
+        }
+        return json_encode(array('status'=>'success'));
+    }
+
+
+    public function approveSelectedProducts(Request $request){
+
+        $res = Product::query();
+        if($request->search != ""){
+            $res->where('title' , 'LIKE', '%' . $request->search . '%');
+        }
+        if($request->vendor != ""){
+            $res->where('vendor' , $request->vendor);
+        }
+
+        if($request->date != "" && $request->date!='undefined'){
+            $request->date = str_replace('/', '-', $request->date);
+            $res->whereDate('created_at' , date('Y-m-d',strtotime($request->date)));
+        }
+        if($request->status!=""){
+            $res->where('status',$request->status);
+        }
+
+        $data = $res->update(['status'=>1,'approve_date' => Carbon::now()]);
+        return json_encode(array('status'=>'success'));
+
+    }
+
+    public function denySelectedProducts(Request $request){
+
+        $res = Product::query();
+        if($request->search != ""){
+            $res->where('title' , 'LIKE', '%' . $request->search . '%');
+        }
+        if($request->vendor != ""){
+            $res->where('vendor' , $request->vendor);
+        }
+
+        if($request->date != "" && $request->date!='undefined'){
+            $request->date = str_replace('/', '-', $request->date);
+            $res->whereDate('created_at' , date('Y-m-d',strtotime($request->date)));
+        }
+        if($request->status!=""){
+            $res->where('status',$request->status);
+        }
+
+        $data = $res->update(['status' => '3', 'approve_date' => Carbon::now()]);
+        return json_encode(array('status'=>'success'));
     }
 }

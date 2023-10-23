@@ -1288,6 +1288,10 @@ class SuperadminController extends Controller
 
 
                 //$this->linkProductToCollection($shopify_product_id,$store->collections_ids);
+
+                $product->shopify_status='Complete';
+                $product->save();
+
                 ProductInfo::where('product_id', $product->id)->update(['price_status' => '0']);
             }
             else{

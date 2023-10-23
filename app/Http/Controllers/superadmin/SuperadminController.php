@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\superadmin;
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
+use App\Jobs\ApproveAllProducts;
+use App\Jobs\DenyAllProducts;
 use App\Jobs\UploadBulkProducts;
 use App\Models\Log;
 use App\Models\Markets;
@@ -1082,26 +1085,30 @@ class SuperadminController extends Controller
                 }
 
 
+
+
                 if($varient1Name!=''|| $varient1Name!=null){
                     // Check if the varient_name already exists in the grouped data array
                     if (array_key_exists($varient1Name, $groupedData1)) {
                         // If it exists, add the varient_value to the existing array
-                        $grouped1Data[$varient1Name]['value'][] = $varient1Value;
+                        $groupedData1[$varient1Name]['value'][] = $varient1Value;
                     } else {
                         // If it doesn't exist, create a new entry with the varient_name and an array containing the varient_value
-                        $groupedData[$varient1Name] = [
+                        $groupedData1[$varient1Name] = [
                             'name' => $varient1Name,
                             'value' => [$varient1Value]
                         ];
                     }
                 }
 
+
             }
+
 
 // Convert the grouped data into a simple indexed array
             $result_options = array_values($groupedData);
             $result1_options = array_values($groupedData1);
-
+//        dd($result_options,$result1_options);
             foreach ($result_options as $index=>  $result_option) {
 
                     array_push($options_array, [
@@ -1196,6 +1203,8 @@ class SuperadminController extends Controller
                 curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
                 $response = curl_exec($curl);
+
+
                 curl_close($curl);
                 $result = json_decode($response, true);
 
@@ -2019,6 +2028,9 @@ class SuperadminController extends Controller
 			$store->username = $request->username;
 			$store->password = Hash::make($request->password);
 			$store->save();
+            $adminController=new AdminController();
+            $collection_id=$adminController->createCollection($request->username);
+            Store::where('id', $store->id)->update(['collections_ids' => $collection_id]);
 			$vid=$store->id;
 		}
 
@@ -2393,7 +2405,7 @@ class SuperadminController extends Controller
 		{
 
 
-            $product_check=Product::where('title',$row['title'])->where('vendor',$vid)->first();
+            $product_check=Product::where('reference_shopify_id',$row['id'])->where('vendor',$vid)->first();
 
             $product_type=ProductType::where('product_type',$row['product_type'])->where('vendor_id',$vid)->first();
             if($product_type==null){
@@ -2431,6 +2443,7 @@ class SuperadminController extends Controller
 
 				$product = new Product;
 				$product->title = $title;
+				$product->reference_shopify_id = $shopify_id;
 				$product->body_html = $description;
 				$product->vendor = $store_id;
 				$product->orignal_vendor = $vendor;
@@ -2498,7 +2511,7 @@ class SuperadminController extends Controller
                         $product_info->varient_name =$row['options'][0]['name'];
                     }
 
-                    if(isset($row['options']) && $row['options'][1]){
+                    if(isset($row['options']) && isset($row['options'][1])){
                         $product_info->varient1_name =$row['options'][1]['name'];
                     }
 					$product_info->varient_value = $var['option1'];
@@ -2594,7 +2607,7 @@ class SuperadminController extends Controller
                         $product_info->varient_name =$row['options'][0]['name'];
                     }
 
-                    if(isset($row['options']) && $row['options'][1]){
+                    if(isset($row['options']) &&  isset($row['options'][1])){
                         $product_info->varient1_name =$row['options'][1]['name'];
                     }
                     $product_info->varient_value = $var['option1'];
@@ -2622,7 +2635,7 @@ class SuperadminController extends Controller
                     if(isset($row['options'])) {
                         $info['varient_name'] = $row['options'][0]['name'];
                     }
-                    if(isset($row['options']) && $row['options'][1]){
+                    if(isset($row['options']) && isset($row['options'][1])){
                         $info['varient1_name'] =$row['options'][1]['name'];
                     }
 					$info['varient_value']=$var['option1'];
@@ -3104,7 +3117,7 @@ class SuperadminController extends Controller
 
     public function approveSelectedProducts(Request $request){
 
-        $res = Product::query();
+        $res = Product::whereNull('shopify_id');
         if($request->search != ""){
             $res->where('title' , 'LIKE', '%' . $request->search . '%');
         }
@@ -3119,15 +3132,17 @@ class SuperadminController extends Controller
         if($request->status!=""){
             $res->where('status',$request->status);
         }
+        $products=$res->get();
 
-        $data = $res->update(['status'=>1,'approve_date' => Carbon::now()]);
+        ApproveAllProducts::dispatch($products);
+
         return json_encode(array('status'=>'success'));
 
     }
 
     public function denySelectedProducts(Request $request){
 
-        $res = Product::query();
+        $res = Product::whereNull('shopify_id');
         if($request->search != ""){
             $res->where('title' , 'LIKE', '%' . $request->search . '%');
         }
@@ -3143,7 +3158,10 @@ class SuperadminController extends Controller
             $res->where('status',$request->status);
         }
 
-        $data = $res->update(['status' => '3', 'approve_date' => Carbon::now()]);
+        $products=$res->get();
+
+        DenyAllProducts::dispatch($products);
+
         return json_encode(array('status'=>'success'));
     }
 }

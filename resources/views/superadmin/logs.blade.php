@@ -18,6 +18,9 @@
                                 <th scope="col">Date</th>
                                 <th scope="col">Start Time</th>
                                 <th scope="col">End Time</th>
+                                <th scope="col">Total Products</th>
+                                <th scope="col">Products Pushed</th>
+                                <th scope="col">Products Left</th>
                                 <th scope="col">Status</th>
 
                             </tr>
@@ -31,6 +34,9 @@
                                     <td>{{ $log->date }}</td>
                                     <td>{{ $log->start_time }}</td>
                                     <td>{{ $log->end_time }}</td>
+                                    <td>{{ $log->total_product }}</td>
+                                    <td>{{ $log->product_left }}</td>
+                                    <td>{{ $log->product_pushed }}</td>
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @else ($log->status=='Failed') <span class="en-dismissed"></span>{{'Failed'}} @endif</td>
 
                                 </tr>

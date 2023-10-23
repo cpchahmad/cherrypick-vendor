@@ -8,7 +8,7 @@
                 <h1>Product List</h1>
             </div>
             <div class="col-6" style="text-align: right;margin-bottom: 6px;">
-                <button class="btn btn-success btn-sm approve_all" href="">Approve All</button>
+                <button class="btn btn-success btn-sm approve_all submit_loader" href="">Approve All</button>
                 <button class="btn btn-danger btn-sm deny_all" href="">Deny All</button>
             </div>
 
@@ -285,7 +285,9 @@
                 success: function (response) {
                     var json = $.parseJSON(response);
                     if (json.status === 'success') {
-                        window.location.href = 'products';
+
+                        toastr.success("Products are In-Progress for Approval");
+                        // window.location.href = 'products';
                     }
                 }
             });
@@ -311,7 +313,8 @@
                 success: function (response) {
                     var json = $.parseJSON(response);
                     if (json.status === 'success') {
-                        window.location.href = 'products';
+                        toastr.success("Products are In-Progress for Deny");
+                        // window.location.href = 'products';
                     }
                 }
             });

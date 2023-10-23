@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
+
   <title>Cherrypick</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
@@ -31,6 +32,8 @@
 
 
     <link rel="stylesheet" href="{{asset('dist/css/dropify.min.css')}}">
+
+
 </head>
 
 <body>
@@ -310,6 +313,9 @@ $('#product_val').val(product_id);
 
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+
+
   <script>
       toastr.options =
           {

@@ -482,7 +482,7 @@ class fetchProductJson extends Command
         {
 
 
-            $product_check=Product::where('title',$row['title'])->where('vendor',$vid)->first();
+            $product_check=Product::where('reference_shopify_id',$row['id'])->where('vendor',$vid)->first();
 
             $product_type=ProductType::where('product_type',$row['product_type'])->where('vendor_id',$vid)->first();
             if($product_type==null){
@@ -518,6 +518,7 @@ class fetchProductJson extends Command
 
                 $product = new Product;
                 $product->title = $title;
+                $product->reference_shopify_id = $shopify_id;
                 $product->body_html = $description;
                 $product->vendor = $store_id;
                 $product->tags = $tags;

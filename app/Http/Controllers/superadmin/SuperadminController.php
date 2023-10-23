@@ -558,6 +558,11 @@ class SuperadminController extends Controller
         $sql_out_of_stock=ProductInfo::where('stock', 0)->get()->toArray();
         $total_out_of_stock=count($sql_out_of_stock);
 
+
+        $shopify_products_pending=Product::where('shopify_status','Pending')->count();
+        $shopify_products_inprogress=Product::where('shopify_status','In-Progress')->count();
+        $shopify_products_complete=Product::where('shopify_status','Complete')->count();
+
         $data = DB::table('products_variants')
                 ->select(array(DB::raw('COUNT(products_variants.id) as products'),'stores.name','stores.email','stores.status','stores.id'))
                 ->where('products_variants.stock', '=', 0)
@@ -566,7 +571,7 @@ class SuperadminController extends Controller
                 ->get();
 
 
-    	return view('superadmin.index', compact('total_approval','total_pending_approval','total_today_approval','total_weekly_approval','total_month_approval','total_out_of_stock','data','total_deny'));
+    	return view('superadmin.index', compact('total_approval','total_pending_approval','total_today_approval','total_weekly_approval','total_month_approval','total_out_of_stock','data','total_deny','shopify_products_pending','shopify_products_inprogress','shopify_products_complete'));
     }
     public function changeVendorStatus(Request $request)
     {

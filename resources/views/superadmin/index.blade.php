@@ -29,7 +29,7 @@
                 </div>
 				</a>
               </div>
-			  
+
               <div class="col-xxl-4 col-md-4">
 			  <a href="{{url('superadmin/products')}}">
                 <div class="card info-card revenue-card">
@@ -64,7 +64,7 @@
                 </div>
 				</a>
               </div>
-			  
+
               </div>
               <div class="row">
               <div class="col-xxl-4 col-md-4">
@@ -141,7 +141,64 @@
             </div>
           </div>
           </div>
-           
+
+          <div class="row">
+              <p><b style="font-size: 14px;
+    color: #5f5f5f;">Shopify Summary</b></p>
+              <div class="col-xxl-4 col-md-4">
+                  <a href="#">
+                      <div class="card info-card revenue-card">
+                          <div class="card-body card-custom">
+                              <div class="d-flex align-items-center">
+                                  <div class="ps-3">
+                                      <h5><b>{{$shopify_products_pending}}</b></h5>
+                                      <p>Pending Products</p>
+                                  </div>
+                                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                      <i class="bi bi-clock-history"></i>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </a>
+              </div>
+              <div class="col-xxl-4 col-md-4">
+                  <a href="#">
+                      <div class="card info-card revenue-card">
+                          <div class="card-body card-custom">
+                              <div class="d-flex align-items-center">
+                                  <div class="ps-3">
+                                      <h5><b>{{$shopify_products_inprogress}}</b></h5>
+                                      <p>In-Progress Products</p>
+                                  </div>
+                                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                      <i class="bi bi-border-width"></i>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </a>
+              </div>
+              <div class="col-xxl-4 col-md-4">
+                  <a href="#">
+                      <div class="card info-card revenue-card">
+                          <div class="card-body card-custom">
+                              <div class="d-flex align-items-center">
+                                  <div class="ps-3">
+                                      <h5><b>{{$shopify_products_complete}}</b></h5>
+                                      <p>Pushed Products</p>
+                                  </div>
+                                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                      <i class="bi bi-border-width"></i>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </a>
+              </div>
+          </div>
+      </div>
+
            <div class="col-md-12">
             <P><b>Out of Stock Items</b></P>
             <div class="card-body show-plan collections">
@@ -172,15 +229,15 @@
                      </span>
                     </td>
                   </tr>
-                @endforeach  
-                
+                @endforeach
+
                 </tbody>
               </table>
               </div>
               <!-- End Bordered Table -->
             </div>
            </div>
-       
+
         </div>
       </div>
     </section>
@@ -191,7 +248,7 @@
  <script>
      function changeStoreStatus(id)
      {
-        var v_token = "{{csrf_token()}}";       
+        var v_token = "{{csrf_token()}}";
         $.ajax({
                 type:'post',
                 data:{id : id},
@@ -207,7 +264,7 @@
             });
      }
     $('.sidebar-nav .nav-link:not(.collapsed) ~ .nav-content').addClass('show');
-  
+
     jQuery(function($) {
      var path = window.location.href; // because the 'href' property of the DOM element is the absolute path
      $('ul a').each(function() {

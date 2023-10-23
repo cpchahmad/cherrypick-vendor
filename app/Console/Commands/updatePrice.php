@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Log;
+use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\ProductInfo;
@@ -33,25 +34,20 @@ class updatePrice extends Command
      */
     public function handle()
     {
-        $setting=Setting::first();
-        if($setting){
-            $API_KEY =$setting->api_key;
-            $PASSWORD = $setting->password;
-            $SHOP_URL =$setting->shop_url;
 
-        }else{
-            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-            $PASSWORD = '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';
-            $SHOP_URL = 'cityshop-company-store.myshopify.com';
-        }
-
-        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
 //		$data=ProductInfo::whereIn('vendor_id', [32,42])->where('price_status', 0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
 
-		//zain
-        $data=ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
 
-        if(count($data) > 0) {
+		//zain
+
+
+
+        $data_count=ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->count();
+
+
+//        $data=ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->orderBy('id', 'DESC')->get();
+
+        if($data_count > 0) {
             $currentTime = now();
                 $log = new Log();
                 $log->name = 'Update Price in Shopify';
@@ -59,7 +55,25 @@ class updatePrice extends Command
             $log->start_time = $currentTime->toTimeString();
                 $log->status = 'In-Progress';
                 $log->save();
+                $log_id=$log->id;
+            try{
+            $variant_data = ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->chunk(20, function ($data) use ($log_id) {
+
                 try {
+
+                    $setting=Setting::first();
+                    if($setting){
+                        $API_KEY =$setting->api_key;
+                        $PASSWORD = $setting->password;
+                        $SHOP_URL =$setting->shop_url;
+
+                    }else{
+                        $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                        $PASSWORD = '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';
+                        $SHOP_URL = 'cityshop-company-store.myshopify.com';
+                    }
+
+                    $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
                     foreach ($data as $row) {
                         //DB::table('tests')->insert(['name' => 'start']);
                         $INR = $row->price;
@@ -221,19 +235,37 @@ class updatePrice extends Command
                         ProductInfo::where('id', $row->id)->update(['price_status' => 1]);
                         //DB::table('tests')->insert(['name' => 'okk']);
                     }
+                    $update_log = Log::where('id', $log_id)->first();
                     $currentTime = now();
-                    $log->date = $currentTime->format('F j, Y');
-                    $log->end_time = $currentTime->toTimeString();
-                    $log->status = 'Complete';
-                    $log->save();
+                    $update_log->date = $currentTime->format('F j, Y');
+                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->status = 'Complete';
+                    $update_log->save();
                 }catch (\Exception $exception){
-                    $currentTime = now();
-                    $log->date = $currentTime->format('F j, Y');
-                    $log->end_time = $currentTime->toTimeString();
-                    $log->status = 'Failed';
-                    $log->message=json_encode($exception->getMessage());
-                    $log->save();
+
                 }
+
+            });
+
+                $currentTime = now();
+                $update_log = Log::where('id', $log_id)->first();
+                $update_log->date = $currentTime->format('F j, Y');
+                $update_log->status = 'Complete';
+                $update_log->end_time = $currentTime->toTimeString();
+                $update_log->save();
+
+            }catch (\Exception $exception){
+                $update_log = Log::where('id', $log_id)->first();
+                $currentTime = now();
+                $update_log->date = $currentTime->format('F j, Y');
+                $update_log->end_time = $currentTime->toTimeString();
+                $update_log->status = 'Failed';
+                $update_log->message=json_encode($exception->getMessage());
+                $update_log->save();
+            }
+
+
+
             }
         //return Command::SUCCESS;
     }

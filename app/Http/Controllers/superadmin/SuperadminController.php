@@ -13,6 +13,7 @@ use App\Models\Markets;
 use App\Models\MarketVendor;
 use App\Models\ProductChange;
 use App\Models\ProductType;
+use App\Models\ProductTypeSubCategory;
 use App\Models\Setting;
 use App\Models\VariantChange;
 use Illuminate\Http\Request;
@@ -3011,7 +3012,9 @@ class SuperadminController extends Controller
 
 
     public function updateProductTypeSizechart(Request $request){
+
         $product_type=ProductType::find($request->product_type_id);
+
         if($product_type){
 
             if ($request->hasFile('product_type_file')) {
@@ -3050,13 +3053,24 @@ class SuperadminController extends Controller
 
         $product_types=ProductType::where('vendor_id',$id)->get();
         foreach ($product_types as $product_type){
+            $product_type_categories=ProductTypeSubCategory::where('product_type_id',$product_type->id)->get();
+            $product_type_category_array=array();
+           foreach ($product_type_categories as $product_type_category){
 
+               $data_type['tags']=$product_type_category->tags;
+               $data_type['sizechart_html'] = $product_type_category->size_chart_html;
+               $data_type['sizechart_file'] = $product_type_category->size_chart_image;
+               array_push($product_type_category_array,$data_type);
+           }
             $data['product_type']=$product_type->product_type;
             $data['sizechart_html'] = $product_type->size_chart_html;
             $data['sizechart_file'] = $product_type->size_chart_image;
+            $data['product_type_tags'] = $product_type_category_array;
 
             array_push($product_type_array,$data);
         }
+
+
 
         $values = [
             'base_sizechart_html' => ($store->size_chart_html) ? $store->size_chart_html:'' ,
@@ -3074,6 +3088,7 @@ class SuperadminController extends Controller
 
                 ]
         ];
+
 
         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/smart_collections/$store->collections_ids/metafields.json";
 
@@ -3173,4 +3188,114 @@ class SuperadminController extends Controller
 
         return json_encode(array('status'=>'success'));
     }
+
+
+    public function addProductTypeSizeChart($id){
+
+        $product_type=ProductType::find($id);
+
+        $product_tags=Product::where('product_type_id',$product_type->id)->pluck('tags');
+$tag_array=array();
+     foreach ($product_tags as $product_tag){
+
+         $tags_data=explode(',',$product_tag);
+
+         $tag_array = array_merge($tag_array, $tags_data);
+     }
+        $tags = array_unique($tag_array);
+
+        $tags_to_remove = array();
+        $product_type_subcatgories=ProductTypeSubCategory::where('product_type_id',$id)->get();
+        foreach ($tags as $tag) {
+            foreach ($product_type_subcatgories as $subcategory) {
+                if (in_array($tag, explode(',', $subcategory->tags))) {
+                    $tags_to_remove[] = $tag;
+                    break;
+                }
+            }
+        }
+
+// Remove the tags found in $tags_to_remove from $tags
+        $tags = array_diff($tags, $tags_to_remove);
+
+
+
+
+        return view('superadmin.product-type-sizechart',compact('product_type','tags','product_type_subcatgories'));
+    }
+
+
+
+    public function saveProductTypeSubCategory(Request $request){
+
+
+        $product_type_subcategory=new ProductTypeSubCategory();
+        $product_type_subcategory->tags=implode(',',$request->tags);
+        $product_type_subcategory->size_chart_html=$request->product_type_sub_html;
+
+        if ($request->hasFile('product_type_sub_file')) {
+            $file=$request->file('product_type_sub_file');
+            $name = str_replace(' ', '', $file->getClientOriginalName());
+            $name = "size_chart_".time().'_'.$name;
+            $file->move(public_path() . '/size-chart-images/', $name);
+            $image = asset('/size-chart-images').'/' . $name;
+            $product_type_subcategory->size_chart_image=$image;
+        }
+
+        $product_type_subcategory->product_type_id=$request->product_type_id;
+        $product_type_subcategory->vendor_id=$request->vendor_id;
+        $product_type_subcategory->save();
+        $this->CreateUpdateMetafield($product_type_subcategory->vendor_id);
+        return redirect()->back()->with('success', 'Setting Saved Successfully');
+    }
+
+
+    public function deleteProductTypeSubCategoryImage(Request $request){
+
+        $product_type_subcategory= ProductTypeSubCategory::find($request->id);
+        if($product_type_subcategory) {
+            $product_type_subcategory->size_chart_image = null;
+            $product_type_subcategory->save();
+            $this->CreateUpdateMetafield($product_type_subcategory->vendor_id);
+        }
+        return json_encode(array('status'=>'success'));
+    }
+
+
+    public function updateProductTypeSubCategory(Request $request){
+
+
+        $product_type_subcategory=ProductTypeSubCategory::find($request->product_type_subcategory_id);
+        $product_type_subcategory->tags=implode(',',$request->tags);
+        $product_type_subcategory->size_chart_html=$request->product_type_sub_html;
+
+        if ($request->hasFile('product_type_sub_file')) {
+            $file=$request->file('product_type_sub_file');
+            $name = str_replace(' ', '', $file->getClientOriginalName());
+            $name = "size_chart_".time().'_'.$name;
+            $file->move(public_path() . '/size-chart-images/', $name);
+            $image = asset('/size-chart-images').'/' . $name;
+            $product_type_subcategory->size_chart_image=$image;
+        }
+
+        $product_type_subcategory->product_type_id=$request->product_type_id;
+        $product_type_subcategory->vendor_id=$request->vendor_id;
+        $product_type_subcategory->save();
+        $this->CreateUpdateMetafield($product_type_subcategory->vendor_id);
+        return redirect()->back()->with('success', 'Setting Saved Successfully');
+    }
+
+
+    public function deleteProductTypeSubCategory($id){
+
+
+        $product_type_subcategory=ProductTypeSubCategory::find($id);
+        if($product_type_subcategory){
+
+            $product_type_subcategory->delete();
+        }
+        $this->CreateUpdateMetafield($product_type_subcategory->vendor_id);
+        return redirect()->back()->with('success', 'Setting Saved Successfully');
+    }
+
 }

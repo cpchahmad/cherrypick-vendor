@@ -158,6 +158,14 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::get('deny-selected-products',[SuperadminController::class,'denySelectedProducts'])->name('superadmin.deny-selected-products');
 
 
+
+    Route::get('add-product-type-sizechart/{id}',[SuperadminController::class,'addProductTypeSizeChart'])->name('superadmin.add-product-type-sizechart');
+    Route::post('save-product-type-subcategory',[SuperadminController::class,'saveProductTypeSubCategory'])->name('superadmin.save-product-type-subcategory');
+    Route::get('delete-product-type-subcategory-img',[SuperadminController::class,'deleteProductTypeSubCategoryImage'])->name('superadmin.delete.product-type-subcategory-img');
+    Route::post('update-product-type-subcategory',[SuperadminController::class,'updateProductTypeSubCategory'])->name('superadmin.update-product-type-subcategory');
+    Route::get('delete-product-type-subcategory/{id}',[SuperadminController::class,'deleteProductTypeSubCategory'])->name('superadmin.delete-product-type-subcategory');
+
+
 });
 Route::group(['middleware'=>'products'],function(){
      Route::get('product-list',[ProductController::class,'productlist'])->name('product-list');

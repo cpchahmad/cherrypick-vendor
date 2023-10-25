@@ -61,16 +61,18 @@ class approveProducts extends Command
                 $log_id=$log->id;
 
                 try {
+
+
                     $product_data = Product::where('status', 1)->whereNull('shopify_id')->where('shopify_status', 'Pending')->chunk(20, function ($products) use ($log_id) {
 
                         $p_ids = $products->pluck('id');
-                        try {
+
 
                             Product::whereIn('id', $p_ids)->update(['shopify_status' => 'In-Progress']);
 
 
                             foreach ($products as $product) {
-
+                                try {
 
                                 $metafield_data =
                                     [
@@ -353,24 +355,27 @@ class approveProducts extends Command
 
                                 }
 
+                                } catch (\Exception $exception) {
 
+
+                                    $product->shopify_status = 'Failed';
+                                    $product->save();
+                                }
                             }
 
 
-                        } catch (\Exception $exception) {
 
-
-                            $product->shopify_status = 'Failed';
-                            $product->save();
-                        }
                     });
 
                     $currentTime = now();
                     $update_log = Log::where('id', $log_id)->first();
+
                     $update_log->date = $currentTime->format('F j, Y');
                     $update_log->status = 'Complete';
                     $update_log->end_time = $currentTime->toTimeString();
                     $update_log->save();
+
+
                 }catch (\Exception $exception){
 
                     $currentTime = now();

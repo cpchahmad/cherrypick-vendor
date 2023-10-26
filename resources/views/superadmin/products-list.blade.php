@@ -4,6 +4,10 @@
 <style>
     .filters_div{
         justify-content: unset !important;
+
+    }
+    .sort-by{
+        margin-bottom: unset !important;
     }
     span.select2.select2-container.select2-container--default {
 
@@ -128,7 +132,7 @@
 
 
       </div>
-        <form class="add-product-form">
+        <form class="add-product-form mt-4">
                 <div class="card table-card">
                   <div class="table-responsive">
                     <table class="table table-borderless view-productd">

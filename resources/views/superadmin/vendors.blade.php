@@ -18,9 +18,8 @@
                             <table class="table table-bordered table-white">
                                 <thead>
                                 <tr>
-                                    <th scope="col">S.No</th>
-                                    <th scope="col">Store Name</th>
-                                    <th scope="col">Store Email</th>
+
+                                    <th scope="col">Store Detail</th>
                                     <th scope="col">Total Products</th>
                                     <th scope="col">Pending Products</th>
                                     <th scope="col">Changes Pending Products</th>
@@ -53,9 +52,12 @@
                                     $shopify_failed_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Failed')->count();
                                     @endphp
                                     <tr>
-                                        <td>{{$i++}}</td>
-                                        <td>{{$vendor->name}}</td>
-                                        <td>{{$vendor->email}}</td>
+
+                                        <td>
+                                            <span><a style="font-weight: 600;" href="{{route('vendor.setting',$vendor->id)}}">{{$vendor->name}}</a></span>
+                                            <span>{{$vendor->email}}</span>
+                                        </td>
+
                                         <td>{{$total_products}}</td>
                                         <td>{{$pending_products}}</td>
                                         <td>{{$changes_pending_products}}</td>

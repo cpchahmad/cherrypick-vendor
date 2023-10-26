@@ -3202,6 +3202,16 @@ class SuperadminController extends Controller
         if($request->status!=""){
             $res->where('status',$request->status);
         }
+
+        if($request->shopify_status!=""){
+            $res->where('shopify_status',$request->shopify_status);
+        }
+
+        if($request->product_type!=""){
+
+            $ex_product_type=explode(',',$request->product_type);
+            $res->whereIn('product_type_id',$ex_product_type);
+        }
         $products=$res->get();
 
         ApproveAllProducts::dispatch($products);
@@ -3226,6 +3236,15 @@ class SuperadminController extends Controller
         }
         if($request->status!=""){
             $res->where('status',$request->status);
+        }
+        if($request->shopify_status!=""){
+            $res->where('shopify_status',$request->shopify_status);
+        }
+
+        if($request->product_type!=""){
+
+            $ex_product_type=explode(',',$request->product_type);
+            $res->whereIn('product_type_id',$ex_product_type);
         }
 
         $products=$res->get();

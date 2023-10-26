@@ -424,6 +424,12 @@
                 console.log(vendor);
                 var date='{{Request::get('date')}}';
                 var status='{{Request::get('status')}}';
+            var shopify_status='{{Request::get('shopify_status')}}';
+
+            var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+            var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+            var productTypeParam = selectedOptions.join(',');
+
             $.ajax({
                 type: 'GET',
                 url: "{{ route('superadmin.approve-selected-products') }}",
@@ -432,6 +438,9 @@
                     vendor: vendor,
                     date: date,
                     status: status,
+                    shopify_status:shopify_status,
+                    product_type:productTypeParam
+
                 },
                 success: function (response) {
                     var json = $.parseJSON(response);
@@ -452,6 +461,12 @@
             console.log(vendor);
             var date='{{Request::get('date')}}';
             var status='{{Request::get('status')}}';
+
+            var shopify_status='{{Request::get('shopify_status')}}';
+
+            var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+            var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+            var productTypeParam = selectedOptions.join(',');
             $.ajax({
                 type: 'GET',
                 url: "{{ route('superadmin.deny-selected-products') }}",
@@ -460,6 +475,8 @@
                     vendor: vendor,
                     date: date,
                     status: status,
+                    shopify_status:shopify_status,
+                    product_type:productTypeParam
                 },
                 success: function (response) {
                     var json = $.parseJSON(response);

@@ -174,6 +174,8 @@
             </form>
 
         @if(count($product_type_subcatgories) > 0)
+
+            <div class="container">
             <div class="row">
 
                 <h4>Product Type Tags Based</h4>
@@ -326,6 +328,7 @@
                         </div>
                     </div>
 
+            </div>
             </div>
 
             @endif

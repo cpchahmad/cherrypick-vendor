@@ -837,13 +837,18 @@ class SuperadminController extends Controller
    }
 
    public function productlist(Request $request){
-   	//return $request->all();
-       //echo "<pre>"; print_r($request->all()); die();
 
-     $res = Product::whereIn('status',[0,2]);
-      if($request->search != ""){
-          $res->where('title' , 'LIKE', '%' . $request->search . '%');
-      }
+
+//     $res = Product::whereIn('status',[0,2]);
+     $res = Product::query();
+
+
+       if ($request->search != "") {
+           $res->where('title', 'LIKE', '%' . $request->search . '%')
+               ->orWhereHas('productInfo', function ($query) use ($request) {
+                   $query->where('sku', 'LIKE', '%' . $request->search . '%');
+               });
+       }
       if($request->vendor != ""){
          $res->where('vendor' , $request->vendor);
       }
@@ -856,10 +861,51 @@ class SuperadminController extends Controller
           $res->where('status',$request->status);
       }
 
+       if($request->shopify_status!=""){
+           $res->where('shopify_status',$request->shopify_status);
+       }
+
+      if($request->product_type!=""){
+
+          $ex_product_type=explode(',',$request->product_type);
+          $res->whereIn('product_type_id',$ex_product_type);
+      }
+
+//       $product_tags=$res->pluck('tags');
+//       $tag_array=array();
+//       foreach ($product_tags as $product_tag){
+//
+//           $tags_data=explode(',',$product_tag);
+//
+//           $tag_array = array_merge($tag_array, $tags_data);
+//       }
+//       $tags = array_unique($tag_array);
+//
+//      if($request->tags!=""){
+//
+//          $ex_tags=explode(',',$request->tags);
+//
+//
+//
+//      }
+
+
+
+
+
+
+
+
       $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
+
+
+      $total_products=$res->count();
+
       $vendorlist = Store::where('role','Vendor')->get();
+
+      $product_types=ProductType::all();
       //dd($data);
-     return view('superadmin.products-list',compact('data','vendorlist'));
+     return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products'));
     }
 	public function updateAllProductPrices()
 	{

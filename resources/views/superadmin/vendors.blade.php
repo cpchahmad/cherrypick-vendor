@@ -21,6 +21,15 @@
                                     <th scope="col">S.No</th>
                                     <th scope="col">Store Name</th>
                                     <th scope="col">Store Email</th>
+                                    <th scope="col">Total Products</th>
+                                    <th scope="col">Pending Products</th>
+                                    <th scope="col">Changes Pending Products</th>
+                                    <th scope="col">Approved Products</th>
+                                    <th scope="col">Deny Products</th>
+                                    <th scope="col">Shopify Pushed Products</th>
+                                    <th scope="col">Shopify Pending Products</th>
+                                    <th scope="col">Shopify In-Progress Products</th>
+                                    <th scope="col">Shopify Failed Products</th>
                                     <th scope="col">Store Discount</th>
                                     <th scope="col">Premium Status</th>
                                     <th scope="col">Status</th>
@@ -30,10 +39,32 @@
                                 <tbody>
                                 <?php $i=1; ?>
                                 @foreach($vendorlist as $vendor)
+
+
+                                    @php
+                                    $total_products=\App\Models\Product::where('vendor',$vendor->id)->count();
+                                    $pending_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',0)->count();
+                                    $changes_pending_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',2)->count();
+                                    $approved_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',1)->count();
+                                    $deny_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',3)->count();
+                                    $shopify_pushed_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Complete')->count();
+                                    $shopify_pending_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Pending')->count();
+                                    $shopify_inprogress_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','In-Progress')->count();
+                                    $shopify_failed_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Failed')->count();
+                                    @endphp
                                     <tr>
                                         <td>{{$i++}}</td>
                                         <td>{{$vendor->name}}</td>
                                         <td>{{$vendor->email}}</td>
+                                        <td>{{$total_products}}</td>
+                                        <td>{{$pending_products}}</td>
+                                        <td>{{$changes_pending_products}}</td>
+                                        <td>{{$approved_products}}</td>
+                                        <td>{{$deny_products}}</td>
+                                        <td>{{$shopify_pushed_products}}</td>
+                                        <td>{{$shopify_pending_products}}</td>
+                                        <td>{{$shopify_inprogress_products}}</td>
+                                        <td>{{$shopify_failed_products}}</td>
                                         <td><input type="text" class="float-number" id="dis_{{$vendor->id}}" value="{{$vendor->vendor_discount}}"><button onclick="updateDiscount({{$vendor->id}})">Save</button></td>
                                         <td class="icon-action">
                   <span class="form-switch">

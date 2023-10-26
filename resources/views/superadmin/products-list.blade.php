@@ -1,11 +1,24 @@
 @extends('layouts.superadmin')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    .filters_div{
+        justify-content: unset !important;
+    }
+    span.select2.select2-container.select2-container--default {
+
+        padding: 5px;
+        background-color: #fff;
+        border: 1px solid #dadcde;
+    }
+</style>
 @section('main')
   <main id="main" class="main">
 
     <div class="subpagetitle fit-title">
         <div class="row">
             <div class="col-6">
-                <h1>Product List</h1>
+                <h1>Product List ({{$total_products}})</h1>
             </div>
             <div class="col-6" style="text-align: right;margin-bottom: 6px;">
                 <button class="btn btn-success btn-sm approve_all submit_loader" href="">Approve All</button>
@@ -32,6 +45,8 @@
               </form>
             </div>
          </div>
+
+
          <div class="label-area sort-area mx-2">
             <select class="form-select" aria-label="Default select example" onchange='filterByVendor(this.value)'>
               <option value='' selected="">Select Vendor</option>
@@ -43,22 +58,75 @@
 
           <div class="label-area sort-area mx-2">
               <select class="form-select" aria-label="Default select example" onchange='filterByStatus(this.value)'>
-                  <option value=''  selected="">Select Status</option>
+                  <option value=''  selected="">Select App Status</option>
                   <option value="0" {{ Request::get('status') == "0" ? 'selected' : '' }}>Pending</option>
+                  <option value="1" {{ Request::get('status') == "1" ? 'selected' : '' }}>Approved</option>
                   <option value="2" {{ Request::get('status') == "2" ? 'selected' : '' }}>Changes Pending</option>
+                  <option value="3" {{ Request::get('status') == "3" ? 'selected' : '' }}>Deny</option>
 
               </select>
           </div>
 
-          <div class="sale-date mx-2">
-          <div class="input-group">
-              <input type="text" class="datepicker_input form-control datepicker-input" id="fil_date" placeholder="@if(Request::get('date')!='') {{Request::get('date')}} @else {{'Select Date'}} @endif" onblur='filterByDate(this.value)'  aria-label="Date and Month">
-            <i class="bi bi-calendar4 input-group-text"></i>
+          <div class="label-area sort-area mx-2">
+              <select class="form-select" aria-label="Default select example" onchange='filterByShopifyStatus(this.value)'>
+                  <option value=''  selected="">Select Shopify Status</option>
+                  <option value="Pending" {{ Request::get('shopify_status') == "Pending" ? 'selected' : '' }}>Pending</option>
+                  <option value="Complete" {{ Request::get('shopify_status') == "Complete" ? 'selected' : '' }}>Completed</option>
+                  <option value="In-Progress" {{ Request::get('shopify_status') == "In-Progress" ? 'selected' : '' }}>In-Progress</option>
+                  <option value="Failed" {{ Request::get('shopify_status') == "Failed" ? 'selected' : '' }}>Failed</option>
+
+              </select>
           </div>
-        </div>
+
         <!--<div class="create-plan">
           <a href="#">Export Products</a>
         </div> -->
+      </div>
+      <div class="sort-by filters_div">
+
+
+          <div class="sale-date mt-4 mx-2">
+              <div class="input-group">
+                  <input type="text" class="datepicker_input form-control datepicker-input" id="fil_date" placeholder="@if(Request::get('date')!='') {{Request::get('date')}} @else {{'Select Date'}} @endif" onblur='filterByDate(this.value)'  aria-label="Date and Month">
+                  <i class="bi bi-calendar4 input-group-text"></i>
+              </div>
+          </div>
+
+          <div class="label-area sort-area mx-2">
+              @php
+
+              $product_type=Request::get('product_type');
+               $selectedProductTypes =explode(',',$product_type);
+              @endphp
+              <label>Select Product Type</label>
+              <select class="js-example-basic-multiple form-control" onchange="filterByProductType(this)" multiple="multiple" name="product_type[]" >
+                  <option value="" ></option>
+                  @foreach($product_types as $type)
+                      <option value="{{ $type->id }}" @if(in_array($type->id, $selectedProductTypes)) selected @endif>
+                          {{ $type->product_type }}
+                      </option>
+                  @endforeach
+              </select>
+          </div>
+
+{{--          <div class="label-area sort-area mx-2">--}}
+{{--              @php--}}
+
+{{--                  $product_tags=Request::get('tags');--}}
+{{--                   $selectedProductTags =explode(',',$product_tags);--}}
+{{--              @endphp--}}
+
+{{--              <select class="js-example-basic-multiple1 form-control" onchange="filterByProductTags(this)" multiple="multiple" name="tags[]" >--}}
+{{--                  <option value=""  ></option>--}}
+{{--                  @foreach($tags as $tag)--}}
+{{--                      <option value="{{ $tag }}"  @if(in_array($tag, $selectedProductTags)) selected @endif >--}}
+{{--                          {{ $tag }}--}}
+{{--                      </option>--}}
+{{--                  @endforeach--}}
+{{--              </select>--}}
+{{--          </div>--}}
+
+
       </div>
         <form class="add-product-form">
                 <div class="card table-card">
@@ -71,7 +139,8 @@
                             <th scope="col">Product</th>
                             <th scope="col">Date</th>
                             <th scope="col">Vendor Name</th>
-                            <th scope="col">Status</th>
+                            <th scope="col">App Status</th>
+                            <th scope="col">Shopify Status</th>
                             <th scope="col">Action</th>
                           </tr>
                         </thead>
@@ -91,7 +160,10 @@
                                 $info_query=\App\Models\Store::where(['id' => $row->vendor])->pluck('name')->first();
                             @endphp
                             <td>{{ $info_query }}</td>
-                            <td>@if($row->status==1) <span class="en-recovered"></span> Approved @elseif($row->status=='2') <span class="en-in-progress"></span>{{'Changes Pending'}} @else <span class="en-dismissed"></span> Pending @endif</td>
+                            <td>@if($row->status==1) <span class="en-recovered"></span> Approved @elseif($row->status=='2') <span class="en-in-progress"></span>{{'Changes Pending'}} @elseif($row->status=='3') <span class="en-dismissed"></span>{{'Deny'}} @else <span class="en-dismissed"></span> Pending @endif</td>
+                            <td>@if($row->shopify_status=='Complete') <span class="en-recovered"></span> Completed @elseif($row->shopify_status=='In-Progress') <span class="en-in-progress"></span>{{'In-Progress'}} @elseif($row->shopify_status=='Failed') <span class="en-dismissed"></span>{{'Failed'}} @else <span class="en-dismissed"></span> Pending @endif</td>
+
+
                             <!--<td><span class="form-switch">
                                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault_{{$row->id}}" onclick="approveProduct({{$row->id}})" checked="">
                                </span>
@@ -132,7 +204,11 @@
           var search='{{Request::get('search')}}';
           var date='{{Request::get('date')}}';
          var status='{{Request::get('status')}}';
-          window.location.href='products?search='+search+'&vendor='+id+'&date='+date+'&status='+status;
+         var shopify_status='{{Request::get('shopify_status')}}';
+         var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+         var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+         var productTypeParam = selectedOptions.join(',');
+          window.location.href='products?search='+search+'&vendor='+id+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status;
      }
 
      function filterByStatus(id)
@@ -141,29 +217,94 @@
          var search='{{Request::get('search')}}';
          var vendor='{{Request::get('vendor')}}';
          var date='{{Request::get('date')}}';
-         window.location.href='products?search='+search+'&vendor='+vendor+'&date='+date+'&status='+id;
+         var shopify_status='{{Request::get('shopify_status')}}';
+         var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+         var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+         var productTypeParam = selectedOptions.join(',');
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+id+'&shopify_status='+shopify_status;
      }
+
+     function filterByShopifyStatus(val)
+     {
+
+         var search='{{Request::get('search')}}';
+         var vendor='{{Request::get('vendor')}}';
+         var date='{{Request::get('date')}}';
+         var status='{{Request::get('status')}}';
+         var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+         var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+         var productTypeParam = selectedOptions.join(',');
+
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+val;
+     }
+
      function filterByName(val)
      {
          var search=$('#search').val();
          if(search!='')
          {
+             var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+             var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+             var productTypeParam = selectedOptions.join(',');
              var vendor='{{Request::get('vendor')}}';
              var date='{{Request::get('date')}}';
              var status='{{Request::get('status')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&date='+date+'&status='+status;
+             var shopify_status='{{Request::get('shopify_status')}}';
+             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status;
          }
      }
      function filterByDate(val)
      {
          if(val!='')
          {
+             var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+             var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+             var productTypeParam = selectedOptions.join(',');
              var search='{{Request::get('search')}}';
              var vendor='{{Request::get('vendor')}}';
              var status='{{Request::get('status')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&date='+val+'&status='+status;
+             var shopify_status='{{Request::get('shopify_status')}}';
+             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+val+'&status='+status+'&shopify_status='+shopify_status;
          }
      }
+
+     function filterByProductType(val)
+     {
+         var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+         var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+         var productTypeParam = selectedOptions.join(',');
+
+
+         var search='{{Request::get('search')}}';
+         var date='{{Request::get('date')}}';
+         var status='{{Request::get('status')}}';
+         var shopify_status='{{Request::get('shopify_status')}}';
+         var vendor='{{Request::get('vendor')}}';
+
+         window.location.href = 'products?search=' + search + '&vendor='+vendor+ '&product_type=' + productTypeParam + '&date=' + date + '&status=' + status+'&shopify_status='+shopify_status;
+     }
+
+
+     function filterByProductTags(val)
+     {
+         var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+         var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+         var productTypeParam = selectedOptions.join(',');
+
+         var productTagSelect = document.querySelector('.js-example-basic-multiple1');
+         var selectedOptions_tags = Array.from(productTagSelect.selectedOptions).map(option => option.value);
+         var productTagParam = selectedOptions_tags.join(',');
+
+
+         var search='{{Request::get('search')}}';
+         var date='{{Request::get('date')}}';
+         var status='{{Request::get('status')}}';
+
+
+         window.location.href = 'products?search=' + search + '&product_type=' + productTypeParam + '&tags=' +productTagParam+ '&date=' + date + '&status=' + status;
+     }
+
+
      function approveMultiple()
      {
         var array = $.map($('input[name="products[]"]:checked'), function(c){return c.value; });
@@ -262,9 +403,15 @@
 </script>
 
 @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 
     $(document).ready(function () {
+
+
+
+        $('.js-example-basic-multiple').select2();
+        $('.js-example-basic-multiple1').select2();
 
         $('.approve_all').click(function (){
 

@@ -345,7 +345,7 @@
                                                     <td><input type="text" class="float-number" id="hsn_{{$vendor_product_type->id}}" value="{{$vendor_product_type->hsn_code}}"></td>
                                                     <td><input type="text" class="float-number" id="weight_{{$vendor_product_type->id}}" value="{{$vendor_product_type->base_weight}}"></td>
 {{--                                                  <td><a href="#" data-bs-toggle="modal" data-bs-target="#basicModal_{{$vendor_product_type->id}}">Add Size Chart</a></td>--}}
-                                                  <td><a href="{{route('superadmin.add-product-type-sizechart',$vendor_product_type->id)}}" >Add Size Chart</a></td>
+                                                  <td><a target="_blank" href="{{route('superadmin.add-product-type-sizechart',$vendor_product_type->id)}}" >Add Size Chart</a></td>
                                                     <td><button class="btn btn-primary" onclick="updateRecord({{$vendor_product_type->id}})">Save</button></td>
 
                                                     <div class="modal fade" id="basicModal_{{$vendor_product_type->id}}" tabindex="-1" aria-hidden="true" style="display: none;">

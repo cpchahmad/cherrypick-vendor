@@ -21,4 +21,9 @@ class ProductInfo extends Model
         return  $this->belongsTo('App\Models\ProductImages', 'product_id', 'product_id');
     }
 
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

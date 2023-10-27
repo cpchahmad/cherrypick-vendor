@@ -891,6 +891,11 @@ class SuperadminController extends Controller
           $res->whereIn('product_type_id',$ex_product_type);
       }
 
+       $product_type_ids=$res->pluck('product_type_id');
+
+      $product_types=ProductType::whereIn('id',$product_type_ids)->get();
+
+
 //       $product_tags=$res->pluck('tags');
 //       $tag_array=array();
 //       foreach ($product_tags as $product_tag){
@@ -922,7 +927,7 @@ class SuperadminController extends Controller
 
       $vendorlist = Store::where('role','Vendor')->get();
 
-      $product_types=ProductType::all();
+
       //dd($data);
      return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products','total_variants'));
     }
@@ -3206,6 +3211,7 @@ class SuperadminController extends Controller
     public function approveSelectedProducts(Request $request){
 
         $res = Product::whereNull('shopify_id')->where('in_queue',0);
+
         if($request->search != ""){
             $res->where('title' , 'LIKE', '%' . $request->search . '%');
         }

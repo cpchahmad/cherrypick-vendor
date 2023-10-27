@@ -27,7 +27,7 @@
         <div class="row">
             <div class="col-6">
                 <h1>Product List</h1>
-                <p>Total Products: ({{$total_products}})</p>
+                <p style="margin-bottom: 3px;">Total Products: ({{$total_products}})</p>
                 <p>Total Variants: ({{$total_variants}})</p>
             </div>
             <div class="col-6" style="text-align: right;margin-bottom: 6px;">

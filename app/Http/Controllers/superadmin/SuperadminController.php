@@ -1212,12 +1212,21 @@ class SuperadminController extends Controller
                     $tags = $product->tags . ',' . $product->orignal_vendor;
                 }
             }
+
+            $use_store_hsncode=0;
             if($product->product_type_id){
                 $product_type_check=ProductType::find($product->product_type_id);
                 if($product_type_check){
                     if($product_type_check->hsn_code) {
+                        $use_store_hsncode=1;
                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
                     }
+                }
+            }
+
+            if($store && $store->hsn_code){
+                if($use_store_hsncode==0){
+                    $tags = $tags . ',HSN:' . $store->hsn_code;
                 }
             }
 
@@ -1688,12 +1697,21 @@ class SuperadminController extends Controller
                     $tags = $product->tags . ',' . $product->orignal_vendor;
                 }
             }
+
+            $use_store_hsncode=0;
             if($product->product_type_id){
                 $product_type_check=ProductType::find($product->product_type_id);
                 if($product_type_check){
                     if($product_type_check->hsn_code) {
+                        $use_store_hsncode=1;
                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
                     }
+                }
+            }
+
+            if($store && $store->hsn_code){
+                if($use_store_hsncode==0){
+                    $tags = $tags . ',HSN:' . $store->hsn_code;
                 }
             }
 
@@ -3017,6 +3035,7 @@ class SuperadminController extends Controller
         $store=Store::find($request->vendor_id);
         if($store){
             $store->base_weight=$request->base_weight;
+            $store->hsn_code=$request->hsn_code;
             if ($request->hasFile('file')) {
                 $file=$request->file('file');
                 $name = str_replace(' ', '', $file->getClientOriginalName());

@@ -22,4 +22,10 @@ class Product extends Model
     {
         return $this->hasOne(ProductInfo::class);
     }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductInfo::class);
+    }
+
 }

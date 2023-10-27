@@ -20,9 +20,15 @@
   <main id="main" class="main">
 
     <div class="subpagetitle fit-title">
+
+        @php
+
+        @endphp
         <div class="row">
             <div class="col-6">
-                <h1>Product List ({{$total_products}})</h1>
+                <h1>Product List</h1>
+                <p>Total Products: ({{$total_products}})</p>
+                <p>Total Variants: ({{$total_variants}})</p>
             </div>
             <div class="col-6" style="text-align: right;margin-bottom: 6px;">
                 <button class="btn btn-success btn-sm approve_all submit_loader" href="">Approve All</button>

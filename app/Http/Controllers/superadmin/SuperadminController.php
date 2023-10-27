@@ -543,24 +543,45 @@ class SuperadminController extends Controller
 		return back()->with('success','Shiping charges update successfully.');
 	}
     public function dashboard(){
-        $sql=Product::where('status', 1)->get()->toArray();
-        $total_approval=count($sql);
-        $sql_pending=Product::whereIn('status', [0,2])->get()->toArray();
-        $total_pending_approval=count($sql_pending);
-		$sql_pending_reject=Product::where('status', 3)->get()->toArray();
-        $total_deny=count($sql_pending_reject);
-        $sql_today=Product::where('status', 1)->where('approve_date', Carbon::now()->format('Y-m-d'))->get()->toArray();
-        $total_today_approval=count($sql_today);
-        $sql_weekly=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfWeek()->toDateString(), Carbon::now()->endOfWeek()->toDateString()])->get()->toArray();
-        $total_weekly_approval=count($sql_weekly);
-        $sql_month=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->lastOfMonth()->toDateString()])->get()->toArray();
-        $total_month_approval=count($sql_month);
+
+
+//        $sql=Product::where('status', 1)->get()->toArray();
+//        $total_approval=count($sql);
+//        $sql_pending=Product::whereIn('status', [0,2])->get()->toArray();
+//        $total_pending_approval=count($sql_pending);
+//		$sql_pending_reject=Product::where('status', 3)->get()->toArray();
+//        $total_deny=count($sql_pending_reject);
+//        $sql_today=Product::where('status', 1)->where('approve_date', Carbon::now()->format('Y-m-d'))->get()->toArray();
+//        $total_today_approval=count($sql_today);
+//        $sql_weekly=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfWeek()->toDateString(), Carbon::now()->endOfWeek()->toDateString()])->get()->toArray();
+//        $total_weekly_approval=count($sql_weekly);
+//        $sql_month=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->lastOfMonth()->toDateString()])->get()->toArray();
+//        $total_month_approval=count($sql_month);
+
+
+        $total_approval=Product::where('status', 1)->count();
+
+        $total_pending_approval=Product::whereIn('status', [0,2])->count();
+
+        $total_deny=Product::where('status', 3)->count();
+
+        $total_today_approval=Product::where('status', 1)->where('approve_date', Carbon::now()->format('Y-m-d'))->count();
+
+        $total_weekly_approval=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfWeek()->toDateString(), Carbon::now()->endOfWeek()->toDateString()])->count();
+
+        $total_month_approval=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->lastOfMonth()->toDateString()])->count();
+
 
         $sql_out_of_stock=ProductInfo::where('stock', 0)->get()->toArray();
         $total_out_of_stock=count($sql_out_of_stock);
 
 
+
+
+
+
         $shopify_products_pending=Product::where('shopify_status','Pending')->count();
+
         $shopify_products_inprogress=Product::where('shopify_status','In-Progress')->count();
         $shopify_products_complete=Product::where('shopify_status','Complete')->count();
 
@@ -570,7 +591,6 @@ class SuperadminController extends Controller
                 ->join('stores', 'products_variants.vendor_id', '=', 'stores.id')
                 ->groupBy('products_variants.vendor_id')
                 ->get();
-
 
     	return view('superadmin.index', compact('total_approval','total_pending_approval','total_today_approval','total_weekly_approval','total_month_approval','total_out_of_stock','data','total_deny','shopify_products_pending','shopify_products_inprogress','shopify_products_complete'));
     }
@@ -892,20 +912,19 @@ class SuperadminController extends Controller
 
 
 
+       $total_products = $res->count();
 
-
-
+       $product_ids = $res->pluck('id')->toArray();
+       $total_variants=ProductInfo::whereIn('product_id',$product_ids)->count();
 
       $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
 
-
-      $total_products=$res->count();
 
       $vendorlist = Store::where('role','Vendor')->get();
 
       $product_types=ProductType::all();
       //dd($data);
-     return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products'));
+     return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products','total_variants'));
     }
 	public function updateAllProductPrices()
 	{
@@ -1019,7 +1038,6 @@ class SuperadminController extends Controller
 	}
     public function createProductShopify($id)
     {
-
 
         $product = Product::find($id);
 
@@ -3187,7 +3205,7 @@ class SuperadminController extends Controller
 
     public function approveSelectedProducts(Request $request){
 
-        $res = Product::whereNull('shopify_id');
+        $res = Product::whereNull('shopify_id')->where('in_queue',0);
         if($request->search != ""){
             $res->where('title' , 'LIKE', '%' . $request->search . '%');
         }
@@ -3222,7 +3240,7 @@ class SuperadminController extends Controller
 
     public function denySelectedProducts(Request $request){
 
-        $res = Product::whereNull('shopify_id');
+        $res = Product::whereNull('shopify_id')->where('in_queue',0);
         if($request->search != ""){
             $res->where('title' , 'LIKE', '%' . $request->search . '%');
         }

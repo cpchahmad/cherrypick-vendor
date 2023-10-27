@@ -20,15 +20,15 @@
                                 <tr>
 
                                     <th scope="col">Store Detail</th>
-                                    <th scope="col">Total Products</th>
-                                    <th scope="col">Pending Products</th>
-                                    <th scope="col">Changes Pending Products</th>
-                                    <th scope="col">Approved Products</th>
-                                    <th scope="col">Deny Products</th>
-                                    <th scope="col">Shopify Pushed Products</th>
-                                    <th scope="col">Shopify Pending Products</th>
-                                    <th scope="col">Shopify In-Progress Products</th>
-                                    <th scope="col">Shopify Failed Products</th>
+                                    <th scope="col">Total Products/Total Variants</th>
+                                    <th scope="col">Pending Products/Pending Variants</th>
+                                    <th scope="col">Changes Pending Products/Changes Pending Variants</th>
+                                    <th scope="col">Approved Products/Approved Variants</th>
+                                    <th scope="col">Deny Products/Deny Variants</th>
+                                    <th scope="col">Shopify Pushed Products/Variants</th>
+                                    <th scope="col">Shopify Pending Products/Variants</th>
+                                    <th scope="col">Shopify In-Progress Products/Variants</th>
+                                    <th scope="col">Shopify Failed Products/Variants</th>
                                     <th scope="col">Store Discount</th>
                                     <th scope="col">Premium Status</th>
                                     <th scope="col">Status</th>
@@ -42,14 +42,51 @@
 
                                     @php
                                     $total_products=\App\Models\Product::where('vendor',$vendor->id)->count();
-                                    $pending_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',0)->count();
-                                    $changes_pending_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',2)->count();
-                                    $approved_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',1)->count();
-                                    $deny_products=\App\Models\Product::where('vendor',$vendor->id)->where('status',3)->count();
-                                    $shopify_pushed_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Complete')->count();
-                                    $shopify_pending_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Pending')->count();
-                                    $shopify_inprogress_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','In-Progress')->count();
-                                    $shopify_failed_products=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Failed')->count();
+                                   $total_variants=\App\Models\ProductInfo::where('vendor_id',$vendor->id)->count();
+                                    $pending_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',0)->pluck('id');
+                                    $pending_products=count($pending_products_ids);
+                                    $total_pending_variants=\App\Models\ProductInfo::whereIn('product_id',$pending_products_ids)->count();
+
+
+                                    $changes_pending_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',2)->pluck('id');
+                                    $changes_pending_products=count($changes_pending_products_ids);
+                                    $total_changes_pending_variants=\App\Models\ProductInfo::whereIn('product_id',$changes_pending_products_ids)->count();
+
+
+                                    $approved_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',1)->pluck('id');
+                                    $approved_products=count($approved_products_ids);
+                                    $total_approved_variants=\App\Models\ProductInfo::whereIn('product_id',$approved_products_ids)->count();
+
+
+
+                                    $deny_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',3)->pluck('id');
+                                    $deny_products=count($deny_products_ids);
+                                     $total_deny_variants=\App\Models\ProductInfo::whereIn('product_id',$deny_products_ids)->count();
+
+
+                                    $shopify_pushed_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Complete')->pluck('id');
+                                    $shopify_pushed_products=count($shopify_pushed_products_ids);
+                                    $total_shopify_pushed_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_pushed_products_ids)->count();
+
+
+                                    $shopify_pending_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Pending')->pluck('id');
+                                    $shopify_pending_products=count($shopify_pushed_products_ids);
+                                    $total_shopify_pending_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_pending_products_ids)->count();
+
+
+                                    $shopify_inprogress_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','In-Progress')->pluck('id');
+                                    $shopify_inprogress_products=count($shopify_inprogress_products_ids);
+                                     $total_shopify_inprogress_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_inprogress_products_ids)->count();
+
+
+
+
+                                    $shopify_failed_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Failed')->pluck('id');
+                                    $shopify_failed_products=count($shopify_failed_products_ids);
+                                     $total_shopify_failed_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_failed_products_ids)->count();
+
+
+
                                     @endphp
                                     <tr>
 
@@ -58,15 +95,15 @@
                                             <span>{{$vendor->email}}</span>
                                         </td>
 
-                                        <td>{{$total_products}}</td>
-                                        <td>{{$pending_products}}</td>
-                                        <td>{{$changes_pending_products}}</td>
-                                        <td>{{$approved_products}}</td>
-                                        <td>{{$deny_products}}</td>
-                                        <td>{{$shopify_pushed_products}}</td>
-                                        <td>{{$shopify_pending_products}}</td>
-                                        <td>{{$shopify_inprogress_products}}</td>
-                                        <td>{{$shopify_failed_products}}</td>
+                                        <td>{{$total_products}}/{{$total_variants}}</td>
+                                        <td>{{$pending_products}}/{{$total_pending_variants}}</td>
+                                        <td>{{$changes_pending_products}}/{{$total_changes_pending_variants}}</td>
+                                        <td>{{$approved_products}}/{{$total_approved_variants}}</td>
+                                        <td>{{$deny_products}}/{{$total_deny_variants}}</td>
+                                        <td>{{$shopify_pushed_products}}/{{$total_shopify_pushed_variants}}</td>
+                                        <td>{{$shopify_pending_products}}/{{$total_shopify_pending_variants}}</td>
+                                        <td>{{$shopify_inprogress_products}}/{{$total_shopify_inprogress_variants}}</td>
+                                        <td>{{$shopify_failed_products}}/{{$total_shopify_failed_variants}}</td>
                                         <td><input type="text" class="float-number" id="dis_{{$vendor->id}}" value="{{$vendor->vendor_discount}}"><button onclick="updateDiscount({{$vendor->id}})">Save</button></td>
                                         <td class="icon-action">
                   <span class="form-switch">

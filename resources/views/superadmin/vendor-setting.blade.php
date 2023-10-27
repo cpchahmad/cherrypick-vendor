@@ -439,6 +439,16 @@
                      </span>
 
                                                 </div>
+                                                <div class="col-6">
+                                                    <label for="inputNanme4" class="form-label">HSN Code</label>
+                                                    <input type="text" class="form-control" id="" name="hsn_code" value="@if(isset($vendor->hsn_code)) {{$vendor->hsn_code}} @endif" required="true">
+                                                    <span style="color:red;">
+                         @error('dirham_inr')
+                                                        {{$message}}
+                                                        @enderror
+                     </span>
+
+                                                </div>
 
                                             </div>
                                         </div>

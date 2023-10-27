@@ -215,12 +215,20 @@ class approveProducts extends Command
                                 }
 
                             }
+                            $use_store_hsncode=0;
                             if ($product->product_type_id) {
                                 $product_type_check = ProductType::find($product->product_type_id);
                                 if ($product_type_check) {
                                     if ($product_type_check->hsn_code) {
+                                        $use_store_hsncode=1;
                                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
                                     }
+                                }
+                            }
+
+                            if($vendor && $vendor->hsn_code){
+                                if($use_store_hsncode==0){
+                                    $tags = $tags . ',HSN:' . $vendor->hsn_code;
                                 }
                             }
 

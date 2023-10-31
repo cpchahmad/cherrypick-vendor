@@ -143,7 +143,7 @@ class approveProducts extends Command
                                     "option2" => $v->varient1_value,
                                     "sku" => $v->sku,
                                     "price" => $v->price_usd,
-                                    "grams" => $v->grams,
+                                    "grams" => $v->pricing_weight,
                                     "taxable" => false,
                                     "inventory_management" => ($v->stock ? null : "shopify"),
 //                            "inventory_quantity" => $v->stock

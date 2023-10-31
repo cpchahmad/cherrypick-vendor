@@ -1131,7 +1131,7 @@ class SuperadminController extends Controller
                     "option2" => $v->varient1_value,
                     "sku"     => $v->sku,
                     "price"   => $v->price_usd,
-                    "grams"   => $v->grams,
+                    "grams"   => $v->pricing_weight,
                     "taxable" => false,
                     "inventory_management" => ($v->stock ? null :"shopify"),
 //                    "inventory_quantity" => $v->stock
@@ -1777,7 +1777,7 @@ class SuperadminController extends Controller
                                 "sku" => $product_info->sku,
                                 "price" => $product_info->price_usd,
                                 "compare_at_price" => $product_info->price_usd,
-                                "grams" => $product_info->grams,
+                                "grams" => $product_info->pricing_weight,
                                 "taxable" => false,
                                 "inventory_management" => ($product_info->stock) ? null : "shopify",
                             );
@@ -2230,7 +2230,7 @@ class SuperadminController extends Controller
                    "option2" => $product_variant->varient1_value,
                    "sku"     => $product_variant->sku,
                    "price"   => $product_variant->price_usd,
-                   "grams"   => $product_variant->grams,
+                   "grams"   => $product_variant->pricing_weight,
                    "taxable" => false,
                    "inventory_management" => ($product_variant->stock ? null :"shopify"),
                );
@@ -2579,7 +2579,11 @@ class SuperadminController extends Controller
 			{
 
                 $variant_grams=($var['grams'] > 0) ? $var['grams'] :$grams;
+                $pricing_weight=$variant_grams;
 
+                if($product_type && $product_type->base_weight){
+                    $pricing_weight=max($variant_grams, $product_type->base_weight);
+                }
 				$i++;
 				$check=ProductInfo::where('sku',$var['sku'])->where('product_id',$product_id)->first();
 
@@ -2587,7 +2591,7 @@ class SuperadminController extends Controller
 
 				if ($check==null)
 				{
-					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
 					$product_info->sku = $var['sku'];
@@ -2601,6 +2605,7 @@ class SuperadminController extends Controller
 					$product_info->price_ger = $prices['nld'];
 					$product_info->base_price = $prices['base_price'];
 					$product_info->grams = $variant_grams;
+                    $product_info->pricing_weight = $pricing_weight;
 					$product_info->stock = $var['available'];
 					$product_info->vendor_id = $store_id;
 					$product_info->dimensions = '0-0-0';
@@ -2679,11 +2684,17 @@ class SuperadminController extends Controller
 			{
 
                 $variant_grams=($var['grams'] > 0) ? $var['grams'] :$grams;
+
+                $pricing_weight=$variant_grams;
+
+                if($product_type && $product_type->base_weight){
+                    $pricing_weight=max($variant_grams, $product_type->base_weight);
+                }
 				$i++;
 				$check_info=ProductInfo::where('sku',$var['sku'])->first();
 				if (!$check_info)
 				{
-					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
 					$product_info->sku = $var['sku'];
@@ -2697,6 +2708,7 @@ class SuperadminController extends Controller
 					$product_info->price_ger = $prices['nld'];
 					$product_info->base_price = $prices['base_price'];
 					$product_info->grams = $variant_grams;
+                    $product_info->pricing_weight = $pricing_weight;
 					$product_info->stock = $var['available'];
 					$product_info->vendor_id = $vid;
 					$product_info->dimensions = '0-0-0';
@@ -2714,7 +2726,7 @@ class SuperadminController extends Controller
 				}
 				else   //update variants
 				{
-					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$variant_grams);
+					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
 					$info_id=$check_info->id;
 					$info['price']=$prices['inr'];
 					$info['price_usd']=$prices['usd'];
@@ -2726,6 +2738,7 @@ class SuperadminController extends Controller
 					$info['price_ger']=$prices['nld'];
 					$info['base_price']=$prices['base_price'];
 					$info['grams']=$variant_grams;
+					$info['pricing_weight']=$pricing_weight;
 					$info['stock']=$var['available'];
 
 
@@ -2935,7 +2948,7 @@ class SuperadminController extends Controller
 	        //dd($prices);
 		//$prices=Helpers::calc_price_fetched_products($product_info->base_price,$shipping_weight);
 	        $product_info->shipping_weight = $shipping_weight;
-			$product_info->grams = $shipping_weight;
+			$product_info->pricing_weight = $shipping_weight;
 		$product_info->price = $prices['inr'];
 		$product_info->price_usd = $prices['usd'];
 		$product_info->price_nld = $prices['nld'];
@@ -3404,6 +3417,37 @@ $tag_array=array();
         }
         $this->CreateUpdateMetafield($product_type_subcategory->vendor_id);
         return redirect()->back()->with('success', 'Setting Saved Successfully');
+    }
+
+
+
+    public function UpdatePricingWeight(){
+
+
+        $products=Product::all();
+        foreach ($products as $product){
+
+            $product_type=ProductType::where('id',$product->product_type_id)->first();
+
+            $variants=ProductInfo::where('product_id',$product->id)->whereNull('pricing_weight')->get();
+            foreach ($variants as $variant){
+
+                $pricing_weight=$variant->grams;
+
+                if($product_type && $product_type->base_weight){
+                    $pricing_weight=max($variant->grams, $product_type->base_weight);
+                }
+
+                $variant->pricing_weight=$pricing_weight;
+                $variant->save();
+
+
+            }
+
+            dump($product->id);
+        }
+
+        dd('done');
     }
 
 }

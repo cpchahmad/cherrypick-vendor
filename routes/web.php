@@ -29,6 +29,9 @@ use App\Http\Controllers\ForgotPasswordController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('UpdatePricingWeight',[SuperadminController::class,'UpdatePricingWeight']);
+
+
 Route::get('demotest',[ProductController::class,'demoTestProduct']);
 Route::get('sync-products',[ProductController::class,'shopifyProductTest']);
 Route::get('sync/{cid}',[ProductController::class,'shopifyProductSync']);

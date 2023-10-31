@@ -350,6 +350,7 @@ class Helpers{
 //added by Zain
 	public static function calc_price_fetched_products_by_vendor($vid,$products_price,$products_grams)
 	{
+
 		$conversionPrice=ConversionRate::first();
 		//$usd=$products_price;
         $inr=round($products_price,2);
@@ -797,7 +798,6 @@ class Helpers{
 
 
 
-
             if($weight_in_gms <= 50)
             {
                 $Variant_Price = round(($price_usd + $usa_shipping_50gms), 2);
@@ -910,12 +910,21 @@ class Helpers{
             }
             else
             {
-                $Variant_Price = round(($price_usd + $usa_shipping_5000gms), 2);
-                $price_gbp_final = round(($price_gbp + $uk_shipping_5000gms), 2);
-                $price_nld_final = round(($price_euro_nld + $nld_shipping_5000gms), 2);
-                $price_inr_final = round(($price_inr + $ind_shipping_5000gms), 2);
-                $price_cad_final = round(($price_cad + $cad_shipping_5000gms), 2);
-                $price_aud_final = round(($price_aud + $au_shipping_5000gms), 2);
+                $weight_cal=$weight_in_gms/1000;
+
+                $usa_shipping_5000gms_mul=$usa_shipping_5000gms*$weight_cal;
+                $uk_shipping_5000gms_mul=$uk_shipping_5000gms*$weight_cal;
+                $nld_shipping_5000gms_mul=$nld_shipping_5000gms*$weight_cal;
+                $ind_shipping_5000gms_mul=$ind_shipping_5000gms*$weight_cal;
+                $cad_shipping_5000gms_mul=$cad_shipping_5000gms*$weight_cal;
+                $au_shipping_5000gms_mul=$au_shipping_5000gms*$weight_cal;
+
+                $Variant_Price = round(($price_usd + $usa_shipping_5000gms_mul), 2);
+                $price_gbp_final = round(($price_gbp + $uk_shipping_5000gms_mul), 2);
+                $price_nld_final = round(($price_euro_nld + $nld_shipping_5000gms_mul), 2);
+                $price_inr_final = round(($price_inr + $ind_shipping_5000gms_mul), 2);
+                $price_cad_final = round(($price_cad + $cad_shipping_5000gms_mul), 2);
+                $price_aud_final = round(($price_aud + $au_shipping_5000gms_mul), 2);
 //                $price_irl_final = round(($price_euro_irl + $irl_shipping_5000gms), 2);
 //                $price_ger_final = round(($price_euro_ger + $ger_shipping_5000gms), 2);
 
@@ -1302,6 +1311,8 @@ $store=Store::find($vid);
         $usa_shipping_750gms = $usa_ship->gms_750;
         $usa_shipping_1000gms = $usa_ship->gms_1000;
         $usa_shipping_5000gms = $usa_ship->gms_5000;
+
+
 
         $usa_shipping_50gms_savory = $usa_ship->savory_gms_50;
         $usa_shipping_100gms_savory = $usa_ship->savory_gms_100;
@@ -1951,14 +1962,38 @@ $store=Store::find($vid);
 				}
 				else
 				{
-				        $Variant_Price = round(($price_usd + $usa_shipping_5000gms), 2);
-					$price_gbp_final = round(($price_gbp + $uk_shipping_5000gms), 2);
-					$price_nld_final = round(($price_euro_nld + $nld_shipping_5000gms), 2);
-					$price_inr_final = round(($price_inr + $ind_shipping_5000gms), 2);
-					$price_cad_final = round(($price_cad + $cad_shipping_5000gms), 2);
-					$price_aud_final = round(($price_aud + $au_shipping_5000gms), 2);
-					$price_irl_final = round(($price_euro_irl + $irl_shipping_5000gms), 2);
-					$price_ger_final = round(($price_euro_ger + $ger_shipping_5000gms), 2);
+                    $weight_cal=$weight_in_gms/1000;
+
+                    $usa_shipping_5000gms_mul=$usa_shipping_5000gms*$weight_cal;
+                    $uk_shipping_5000gms_mul=$uk_shipping_5000gms*$weight_cal;
+                    $nld_shipping_5000gms_mul=$nld_shipping_5000gms*$weight_cal;
+                    $ind_shipping_5000gms_mul=$ind_shipping_5000gms*$weight_cal;
+                    $cad_shipping_5000gms_mul=$cad_shipping_5000gms*$weight_cal;
+                    $au_shipping_5000gms_mul=$au_shipping_5000gms*$weight_cal;
+                    $irl_shipping_5000gms_mul=$irl_shipping_5000gms*$weight_cal;
+                    $ger_shipping_5000gms_mul=$ger_shipping_5000gms*$weight_cal;
+
+                    $Variant_Price = round(($price_usd + $usa_shipping_5000gms_mul), 2);
+                    $price_gbp_final = round(($price_gbp + $uk_shipping_5000gms_mul), 2);
+                    $price_nld_final = round(($price_euro_nld + $nld_shipping_5000gms_mul), 2);
+                    $price_inr_final = round(($price_inr + $ind_shipping_5000gms_mul), 2);
+                    $price_cad_final = round(($price_cad + $cad_shipping_5000gms_mul), 2);
+                    $price_aud_final = round(($price_aud + $au_shipping_5000gms_mul), 2);
+
+                    $price_irl_final = round(($price_euro_irl + $irl_shipping_5000gms_mul), 2);
+                    $price_ger_final = round(($price_euro_ger + $ger_shipping_5000gms_mul), 2);
+
+
+
+
+//				        $Variant_Price = round(($price_usd + $usa_shipping_5000gms), 2);
+//					$price_gbp_final = round(($price_gbp + $uk_shipping_5000gms), 2);
+//					$price_nld_final = round(($price_euro_nld + $nld_shipping_5000gms), 2);
+//					$price_inr_final = round(($price_inr + $ind_shipping_5000gms), 2);
+//					$price_cad_final = round(($price_cad + $cad_shipping_5000gms), 2);
+//					$price_aud_final = round(($price_aud + $au_shipping_5000gms), 2);
+//					$price_irl_final = round(($price_euro_irl + $irl_shipping_5000gms), 2);
+//					$price_ger_final = round(($price_euro_ger + $ger_shipping_5000gms), 2);
 
 					/*$Variant_Price = round(($price_usd + ($weight_in_gms * 0.016)), 2);
 					$price_gbp_final = round(($price_gbp + ($weight_in_gms * 0.011)), 2);
@@ -1971,6 +2006,7 @@ $store=Store::find($vid);
 
 		//echo $Variant_Price; die;
         //$premium=0;
+
         if($store->premium==1)
         {
             $Variant_Price=round(($Variant_Price  * 1.05), 2);
@@ -1994,7 +2030,10 @@ $store=Store::find($vid);
 			$price_ger_final=round(($price_ger_final  ), 2);
         }
 
+
         $Variant_Price = ceil($Variant_Price * 4) / 4;
+
+
         $price_gbp_final = ceil($price_gbp_final * 4) / 4;
         $price_nld_final = ceil($price_nld_final * 4) / 4;
         $price_inr_final = ceil($price_inr_final * 4) / 4;

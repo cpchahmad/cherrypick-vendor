@@ -219,7 +219,7 @@
   <!-- ======= Footer ======= -->
   <footer id="footer" class="footer">
     <div class="copyright">
-      &copy; Copyright <strong><span>Cherrypick</span></strong>. All Rights Reserved
+        Copyright © 2023,<a target="_blank" href="https://www.cherrypick.city">Cherrypick.city</a>
     </div>
   </footer>
   <!-- End Footer -->

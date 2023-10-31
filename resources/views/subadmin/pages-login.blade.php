@@ -20,15 +20,15 @@
   <!-- Vendor CSS Files -->
   <link href="{{url('subadmin/assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
-  
+
   <link href="{{url('subadmin/assets/vendor/quill/quill.snow.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/vendor/quill/quill.bubble.css')}}" rel="stylesheet">
- 
+
   <!-- Template Main CSS File -->
   <link href="{{url('subadmin/assets/css/style.css')}}" rel="stylesheet">
   <link href="{{url('subadmin/assets/css/custom.css')}}" rel="stylesheet">
 
-  
+
 </head>
 
 <body>
@@ -44,7 +44,7 @@
               <div class="d-flex justify-content-center py-4">
                 <a href="index.html" class="logo d-flex align-items-center w-auto">
                    <img src="assets/img/logo-shopping.png" alt="">
-                  
+
                 </a>
               </div><!-- End Logo -->
 
@@ -113,7 +113,7 @@
                 <!-- You can delete the links only if you purchased the pro version. -->
                 <!-- Licensing information: https://bootstrapmade.com/license/ -->
                 <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
-                Designed by <a href="https://www.orangemantra.com/">Orange Mantra</a>
+                  Copyright © 2023,<a target="_blank" href="https://www.cherrypick.city">Cherrypick.city</a>
               </div>
 
             </div>
@@ -132,7 +132,7 @@
   <script src="{{url('subadmin/assets/vendor/chart.js/chart.min.js')}}"></script>
   <script src="{{url('subadmin/assets/vendor/echarts/echarts.min.js')}}"></script>
   <script src="{{url('subadmin/assets/vendor/quill/quill.min.js')}}"></script>
-  
+
  <script src="{{url('subadmin/assets/vendor/tinymce/tinymce.min.js')}}"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
   <script src="{{url('subadmin/assets/vendor/php-email-form/validate.js')}}"></script>
@@ -141,7 +141,7 @@
    <script src="{{url('subadmin/assets/js/main.js')}}"></script>
  <script>
     $('.sidebar-nav .nav-link:not(.collapsed) ~ .nav-content').addClass('show');
-  
+
     jQuery(function($) {
      var path = window.location.href; // because the 'href' property of the DOM element is the absolute path
      $('ul a').each(function() {

@@ -158,6 +158,7 @@ class updatePrice extends Command
                         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
                         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
                         $response = curl_exec($curl);
+
                         curl_close($curl);
 
                         $res = json_decode($response, true);
@@ -199,6 +200,7 @@ class updatePrice extends Command
                             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
                             $response = curl_exec($curl);
+
                             curl_close($curl);
 
                         }

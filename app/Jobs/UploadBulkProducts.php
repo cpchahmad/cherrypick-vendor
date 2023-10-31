@@ -132,6 +132,13 @@ class UploadBulkProducts implements ShouldQueue
                             }
                         }
 
+                        $pricing_weight=$grams;
+
+                        if($product_type && $product_type->base_weight){
+                            $pricing_weight=max($grams, $product_type->base_weight);
+                        }
+
+
                         ///Product variants
 
 
@@ -139,7 +146,7 @@ class UploadBulkProducts implements ShouldQueue
                         $product_info->product_id = $product_id;
                         $product_info->vendor_id = $vendor_id;
                         $product_info->sku = $row[11];
-                        $prices = Helpers::calc_price_new($row[10], $grams, $row[2], $volumetric_Weight, $vendor_id);
+                        $prices = Helpers::calc_price_new($row[10], $pricing_weight, $row[2], $volumetric_Weight, $vendor_id);
                         $product_info->price = $prices['inr'];
                         $product_info->price_usd = $prices['usd'];
                         $product_info->price_aud = $prices['aud'];
@@ -150,6 +157,7 @@ class UploadBulkProducts implements ShouldQueue
                         $product_info->price_ger = $prices['ger'];
                         $product_info->base_price = $row[10];
                         $product_info->grams = $grams;
+                        $product_info->pricing_weight = $pricing_weight;
                         $product_info->hex_code = $row[8];
                         $product_info->swatch_image = $row[9];
                         $product_info->stock = $row[15];
@@ -217,9 +225,15 @@ class UploadBulkProducts implements ShouldQueue
                             }
                         }
 
+                        $pricing_weight=$grams;
+
+                        if($product_type && $product_type->base_weight){
+                            $pricing_weight=max($grams, $product_type->base_weight);
+                        }
+
                         $check_info = ProductInfo::where('sku', $row[11])->first();
                         if (!$check_info) {
-                            $prices = Helpers::calc_price_new($row[10], $grams, $row[2], $volumetric_Weight, $vendor_id);
+                            $prices = Helpers::calc_price_new($row[10], $pricing_weight, $row[2], $volumetric_Weight, $vendor_id);
                             $product_info = new ProductInfo;
                             $product_info->product_id = $check->id;
                             $product_info->vendor_id = $vendor_id;
@@ -237,6 +251,8 @@ class UploadBulkProducts implements ShouldQueue
                             $product_info->price_irl = $prices['irl'];
                             $product_info->price_ger = $prices['ger'];
                             $product_info->grams = $grams;
+                            $product_info->pricing_weight = $pricing_weight;
+
                             $product_info->stock = $row[15];
                             $product_info->dimensions = $row[18] . "-" . $row[19] . "-" . $row[20];
                             $product_info->varient_name = $row[4];
@@ -251,7 +267,7 @@ class UploadBulkProducts implements ShouldQueue
                             $product_info->temp_require = $row[17];
                             $product_info->save();
                         } else {
-                            $prices = Helpers::calc_price_new($row[10], $grams, $row[2], $volumetric_Weight, $vendor_id);
+                            $prices = Helpers::calc_price_new($row[10], $pricing_weight, $row[2], $volumetric_Weight, $vendor_id);
                             $data['price'] = $prices['inr'];
                             $data['price_usd'] = $prices['usd'];
                             $data['price_aud'] = $prices['aud'];
@@ -262,6 +278,7 @@ class UploadBulkProducts implements ShouldQueue
                             $data['price_ger'] = $prices['ger'];
                             $data['base_price'] = $row[10];
                             $data['grams'] = $grams;
+                            $data['pricing_weight'] = $pricing_weight;
                             $data['stock'] = $row[15];
                             $data['hex_code'] = $row[8];
                             $data['swatch_image'] = $row[9];

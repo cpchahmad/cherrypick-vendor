@@ -54,7 +54,7 @@ class updatePriceNewConvesionRate extends Command
                     $arr = explode("-", $row->dimensions);
                     if (is_numeric($arr[0]) && is_numeric($arr[1]) && is_numeric($arr[2]))
                         $volumetric_Weight = $arr[0] * $arr[1] * $arr[2] / 5000;
-                    $prices = Helpers::calc_price_new($row->base_price, $row->grams, $row->tags, $volumetric_Weight, $row->vendor_id);
+                    $prices = Helpers::calc_price_new($row->base_price, $row->pricing_weight, $row->tags, $volumetric_Weight, $row->vendor_id);
 
                     if ($prices) {
 //                        ProductInfo::where('id', $row->id)->update(['price_status' => 0, 'price_conversion_update_status' => 0, 'price' => $prices['inr'], 'price_usd' => $prices['usd'], 'price_aud' => $prices['aud'], 'price_cad' => $prices['cad'], 'price_gbp' => $prices['gbp'], 'price_nld' => $prices['nld']]);

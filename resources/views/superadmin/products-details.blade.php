@@ -123,7 +123,7 @@
 
                                             <div class="row">
                                                 <div class="col-12" style="text-align:end">
-                                                    <button class="btn btn-warning btn-sm submit"  id="{{$row->id}}" shipping="{{$row->shipping_weight}}">Update</button>
+                                                    <button class="btn btn-warning btn-sm submit"  id="{{$row->id}}" shipping="{{$row->pricing_weight}}">Update</button>
                                                 </div>
                                             </div>
                                             <div class="row mt-3" style="border-bottom: 2px solid black">
@@ -154,6 +154,7 @@
                                                 <div class="col-6 font_size">
 
                                                     <p><b>Weight(GM):</b> {{$row->grams}}</p>
+                                                    <p><b>Pricing Weight(GM):</b> {{$row->pricing_weight}}</p>
 
                                                     <p><b>Quantity:</b> {{$row->stock}}</p>
 
@@ -513,7 +514,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title text-xs-center">Update Shipping Weight</h4>
+                    <h4 class="modal-title text-xs-center">Update Pricing Weight</h4>
                     <button type="button" class="close" data-dismiss="modal" onclick="dismissModal();">&times;</button>
                 </div>
                 <div class="modal-body">
@@ -545,7 +546,7 @@
 {{--                        </div>--}}
 
                         <div class="form-group">
-                            <label class="control-label">Shipping Weight</label>
+                            <label class="control-label">Pricing Weight</label>
                             <div>
                                 <input type="text"  class="form-control input-lg decimal" name="shipping_weight" id="shipping_weight" placeholder="Shipping Weight" required>
                             </div>

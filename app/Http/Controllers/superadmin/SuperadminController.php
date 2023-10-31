@@ -3424,7 +3424,8 @@ $tag_array=array();
     public function UpdatePricingWeight(){
 
 
-        $products=Product::all();
+        $products = Product::where('id', '>=', 168173)
+            ->get();
         foreach ($products as $product){
 
             $product_type=ProductType::where('id',$product->product_type_id)->first();

@@ -74,6 +74,9 @@ class updatePrice extends Command
                     }
 
                     $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
+
+
+
                     foreach ($data as $row) {
                         //DB::table('tests')->insert(['name' => 'start']);
                         $INR = $row->price;
@@ -127,7 +130,8 @@ class updatePrice extends Command
                         $data['variant'] = array(
                             "id" => $variant_id,
                             "price" => $USD_com,
-                            "compare_at_price" => $USD
+                            "compare_at_price" => $USD,
+                            "grams" => $row->pricing_weight,
                         );
 
                         $setting = Setting::first();
@@ -237,12 +241,7 @@ class updatePrice extends Command
                         ProductInfo::where('id', $row->id)->update(['price_status' => 1]);
                         //DB::table('tests')->insert(['name' => 'okk']);
                     }
-                    $update_log = Log::where('id', $log_id)->first();
-                    $currentTime = now();
-                    $update_log->date = $currentTime->format('F j, Y');
-                    $update_log->end_time = $currentTime->toTimeString();
-                    $update_log->status = 'Complete';
-                    $update_log->save();
+
                 }catch (\Exception $exception){
 
                 }

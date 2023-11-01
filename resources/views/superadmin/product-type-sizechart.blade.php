@@ -45,6 +45,9 @@
         width: unset !important;
     }
 
+    .rte-modern.rte-desktop.rte-toolbar-default{
+        min-width: unset !important;
+    }
 
 </style>
 @section('main')
@@ -58,7 +61,7 @@
                 <div class="col-6" style="text-align: right">
                     <a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#basicModal_toAdd" >Add</a>
                     <div class="modal fade" id="basicModal_toAdd"  aria-hidden="true" style="display: none;">
-                        <div class="modal-dialog modal-lg">
+                        <div class="modal-dialog modal-xl">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Size Chart</h5>
@@ -90,7 +93,7 @@
                                         <div class="col-12 mt-5">
 
                                             <div>
-                                                <textarea style="width: 100% !important;" name="product_type_sub_html" id="editor_id" class="form-control editor" rows="3"></textarea>
+                                                <textarea style="width: 100% !important;" name="product_type_sub_html" id="editor_id" class="form-control " rows="3"></textarea>
 
                                             </div>
                                         </div>
@@ -137,10 +140,15 @@
                                 <div class="col-12 mt-2">
                                     <label for="inputNanme4" class="form-label">HTML</label>
 
-                                    <div>
-                                        <textarea style="width: 100% !important;" name="product_type_html" id="editor1" class="form-control tooltip_logo_text" rows="3">@if(isset($product_type->size_chart_html)){{$product_type->size_chart_html}}@endif </textarea>
+{{--                                    <div>--}}
+{{--                                        <textarea style="width: 100% !important;" name="product_type_html" id="editor1" class="form-control tooltip_logo_text" rows="3">@if(isset($product_type->size_chart_html)){{$product_type->size_chart_html}}@endif </textarea>--}}
 
-                                    </div>
+{{--                                    </div>--}}
+
+
+                                        <textarea style="width: 100% !important;" name="product_type_html" id="div_editor1" class="form-control" rows="3">@if(isset($product_type->size_chart_html)){{$product_type->size_chart_html}}@endif </textarea>
+
+
                                 </div>
 
                                 <div class="col-12 mt-2">
@@ -210,7 +218,7 @@
                                             <a href="#"  data-bs-toggle="modal" data-bs-target="#basicModal_toAdd_{{$product_type_subcategory->id}}"  class="btn btn-success mx-2 ">Edit</a>
                                             <a href="{{route('superadmin.delete-product-type-subcategory',$product_type_subcategory->id)}}" class="btn btn-danger ">Delete</a>
                                             <div class="modal fade" id="basicModal_toAdd_{{$product_type_subcategory->id}}" tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
+                                                <div class="modal-dialog modal-xl">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title">Size Chart</h5>
@@ -272,7 +280,7 @@
                                                                 <div class="col-12 mt-5">
 
                                                                     <div>
-                                                                        <textarea style="width: 100% !important;" name="product_type_sub_html" id="editor_id_{{$product_type_subcategory->id}}" class="form-control editor" rows="3">{{$product_type_subcategory->size_chart_html}}</textarea>
+                                                                        <textarea style="width: 100% !important;" name="product_type_sub_html" id="div_mul_editor_{{$product_type_subcategory->id}}" class="form-control " rows="3">{{$product_type_subcategory->size_chart_html}}</textarea>
 
                                                                     </div>
                                                                 </div>
@@ -339,14 +347,25 @@
 @section('js')
     <script src="https://cdn.ckeditor.com/4.11.3/standard/ckeditor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+    <script>
+        var editor1 = new RichTextEditor("#div_editor1", { editorResizeMode: "none" });
+        var editor3 = new RichTextEditor("#editor_id", { editorResizeMode: "none" });
+
+        @foreach($product_type_subcatgories as $index=> $product_type_subcategory)
+        var editor2 = new RichTextEditor("#div_mul_editor_{{$product_type_subcategory->id}}", { editorResizeMode: "none" });
+        @endforeach
+
+    </script>
     <script>
         $(document).ready(function(){
 
 
 
-            $('.tooltip_logo_text').each(function () {
-                CKEDITOR.replace($(this).prop('id'));
-            });
+            // $('.tooltip_logo_text').each(function () {
+            //     CKEDITOR.replace($(this).prop('id'));
+            // });
 
             $('.editor').each(function () {
                 CKEDITOR.replace($(this).prop('id'));

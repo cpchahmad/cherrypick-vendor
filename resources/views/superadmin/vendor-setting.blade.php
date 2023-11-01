@@ -462,7 +462,7 @@
                                                     <label for="inputNanme4" class="form-label">HTML</label>
 
                                                     <div>
-                                                        <textarea style="width: 100% !important;" name="html" id="editor1" class="form-control tooltip_logo_text" rows="3">@if(isset($vendor->size_chart_html)){{$vendor->size_chart_html}}@endif </textarea>
+                                                        <textarea style="width: 100% !important;" name="html" id="editor1" class="form-control " rows="3">@if(isset($vendor->size_chart_html)){{$vendor->size_chart_html}}@endif </textarea>
 
                                                     </div>
                                                 </div>
@@ -575,6 +575,12 @@
 </script>
 
 <script>
+
+
+        var editor1 = new RichTextEditor("#editor1", { editorResizeMode: "none" });
+</script>
+
+<script>
     $(document).ready(function(){
 
         // $('.dropify').dropify();
@@ -588,10 +594,10 @@
         {{--    Parent: $('#basicModal_{{$vendor_product_types[0]->id}}')--}}
         {{--});--}}
 
-        $('.tooltip_logo_text').each(function () {
-            CKEDITOR.replace($(this).prop('id'));
-
-        });
+        // $('.tooltip_logo_text').each(function () {
+        //     CKEDITOR.replace($(this).prop('id'));
+        //
+        // });
 
         @foreach($vendor_product_types as $index=> $vendor_product_type)
         {{--$('.dropify_{{$vendor_product_type->id}}').dropify();--}}

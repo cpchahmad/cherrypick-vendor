@@ -32,6 +32,9 @@
 
 
     <link rel="stylesheet" href="{{asset('dist/css/dropify.min.css')}}">
+    <link rel="stylesheet" href="{{asset('richtexteditor/rte_theme_default.css')}}">
+
+
 
 
 </head>
@@ -313,6 +316,8 @@ $('#product_val').val(product_id);
 
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+  <script src="{{asset('richtexteditor/rte.js')}}"></script>
+
 
 
 

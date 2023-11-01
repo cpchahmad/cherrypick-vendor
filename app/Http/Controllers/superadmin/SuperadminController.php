@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
 use App\Jobs\ApproveAllProducts;
 use App\Jobs\DenyAllProducts;
+use App\Jobs\UpdateProductsWeight;
 use App\Jobs\UploadBulkProducts;
 use App\Models\Log;
 use App\Models\Markets;
@@ -3038,7 +3039,10 @@ class SuperadminController extends Controller
         $weight=$request->weight;
         $hsn_code=$request->hsncode;
         ProductType::where('id',$id)->update(['base_weight' => $weight,'hsn_code'=>$hsn_code]);
+
+        UpdateProductsWeight::dispatch($id);
         return json_encode(array('status'=>'success'));
+
 
     }
 

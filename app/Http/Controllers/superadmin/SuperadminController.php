@@ -3157,22 +3157,25 @@ class SuperadminController extends Controller
         $product_type_array=array();
 
         $product_types=ProductType::where('vendor_id',$id)->get();
-        foreach ($product_types as $product_type){
-            $product_type_categories=ProductTypeSubCategory::where('product_type_id',$product_type->id)->get();
-            $product_type_category_array=array();
-           foreach ($product_type_categories as $product_type_category){
+        foreach ($product_types as $product_type) {
 
-               $data_type['tags']=$product_type_category->tags;
-               $data_type['sizechart_html'] = $product_type_category->size_chart_html;
-               $data_type['sizechart_file'] = $product_type_category->size_chart_image;
-               array_push($product_type_category_array,$data_type);
-           }
-            $data['product_type']=$product_type->product_type;
-            $data['sizechart_html'] = $product_type->size_chart_html;
-            $data['sizechart_file'] = $product_type->size_chart_image;
-            $data['product_type_tags'] = $product_type_category_array;
+            if ($product_type->size_chart_html || $product_type->size_chart_image) {
+                $product_type_categories = ProductTypeSubCategory::where('product_type_id', $product_type->id)->get();
+                $product_type_category_array = array();
+                foreach ($product_type_categories as $product_type_category) {
 
-            array_push($product_type_array,$data);
+                    $data_type['tags'] = $product_type_category->tags;
+                    $data_type['sizechart_html'] = $product_type_category->size_chart_html;
+                    $data_type['sizechart_file'] = $product_type_category->size_chart_image;
+                    array_push($product_type_category_array, $data_type);
+                }
+                $data['product_type'] = $product_type->product_type;
+                $data['sizechart_html'] = $product_type->size_chart_html;
+                $data['sizechart_file'] = $product_type->size_chart_image;
+                $data['product_type_tags'] = $product_type_category_array;
+
+                array_push($product_type_array, $data);
+            }
         }
 
 
@@ -3188,7 +3191,7 @@ class SuperadminController extends Controller
                 [
                     "key" => 'records',
                     "value" => json_encode($values),
-                    "type" => "json_string",
+                    "type" => "json",
                     "namespace" => "sizechart",
 
                 ]
@@ -3215,6 +3218,7 @@ class SuperadminController extends Controller
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
         $response = curl_exec ($curl);
+
 
         curl_close ($curl);
 

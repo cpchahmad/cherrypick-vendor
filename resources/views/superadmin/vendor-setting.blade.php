@@ -39,6 +39,8 @@
                 </div>
             </div>
         </div>
+
+        <input type="hidden" class="vendor_name" name="vendor_name" value="{{$vendor->name}}" >
         <section class="section up-banner">
             <div class="row">
                 <div class="col-12 ">
@@ -346,7 +348,32 @@
                                                     <td><input type="text" class="float-number" id="weight_{{$vendor_product_type->id}}" value="{{$vendor_product_type->base_weight}}"></td>
 {{--                                                  <td><a href="#" data-bs-toggle="modal" data-bs-target="#basicModal_{{$vendor_product_type->id}}">Add Size Chart</a></td>--}}
                                                   <td><a target="_blank" href="{{route('superadmin.add-product-type-sizechart',$vendor_product_type->id)}}" >Add Size Chart</a></td>
-                                                    <td><button class="btn btn-primary" onclick="updateRecord({{$vendor_product_type->id}})">Save</button></td>
+                                                    <td>
+
+                                                        <div class="btn-list flex-nowrap">
+                                                            <div class="dropdown">
+                                                                <button class="btn dropdown-toggle align-text-top" data-bs-toggle="dropdown">
+                                                                    Actions
+                                                                </button>
+                                                                <div class="dropdown-menu dropdown-menu-end" style="cursor: pointer">
+                                                                    <a onclick="updateRecord({{$vendor_product_type->id}})"  class="dropdown-item" >
+                                                                        Save
+                                                                    </a>
+                                                                    <a class="dropdown-item update_database_price" data-store="{{$vendor->name}}" data-id="{{$vendor_product_type->id}}"  >
+                                                                       Update Prices in Database
+                                                                    </a>
+
+                                                                    <a class="dropdown-item update_shopify_price" data-store="{{$vendor->name}}"  data-id="{{$vendor_product_type->id}}" >
+                                                                        Update Prices in Shopify
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+{{--                                                        <button class="btn btn-primary" onclick="updateRecord({{$vendor_product_type->id}})">Update Prices in Database</button>--}}
+{{--                                                        <button class="btn btn-primary" onclick="updateRecord({{$vendor_product_type->id}})">Update Prices in Shopify</button>--}}
+{{--                                                        <button class="btn btn-primary" onclick="updateRecord({{$vendor_product_type->id}})">Save</button>--}}
+                                                    </td>
 
                                                     <div class="modal fade" id="basicModal_{{$vendor_product_type->id}}" tabindex="-1" aria-hidden="true" style="display: none;">
                                                         <div class="modal-dialog modal-lg">
@@ -429,6 +456,7 @@
                                             <div class="row">
 
                                                 <input type="hidden" name="vendor_id" value="{{$vendor->id}}" >
+
                                                 <div class="col-6">
                                                     <label for="inputNanme4" class="form-label">Base Weight</label>
                                                     <input type="text" class="form-control" id="" name="base_weight" value="@if(isset($vendor->base_weight)) {{$vendor->base_weight}} @endif" required="true">
@@ -529,10 +557,12 @@
         var weight_val=$('#weight_'+id).val();
         var hsn_val=$('#hsn_'+id).val();
         var v_token = "{{csrf_token()}}";
+        var store=$('.vendor_name').val();
+        console.log(store);
 
             $.ajax({
                 type:'post',
-                data:{id : id, weight : weight_val,hsncode:hsn_val},
+                data:{id : id, weight : weight_val,hsncode:hsn_val,store:store},
                 headers: {'X-CSRF-Token': v_token},
                 url:"{{ route('superadmin.update.record') }}",
                 success:function(response){
@@ -649,6 +679,43 @@
                 }
             });
         })
+
+
+        $('.update_database_price').click(function (){
+
+            var id=$(this).data('id');
+            var store=$(this).data('store');
+            $.ajax({
+                type: 'get',
+                data: {id: id,store:store},
+                url: "{{ route('superadmin.update.database-price-by-producttype') }}",
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status == 'success') {
+
+                        toastr.success("Updating Database Price is In-Progress!!");
+                    }
+                }
+            });
+        });
+
+        $('.update_shopify_price').click(function (){
+
+            var id=$(this).data('id');
+            var store=$(this).data('store');
+            $.ajax({
+                type: 'get',
+                data: {id: id,store:store},
+                url: "{{ route('superadmin.update.shopify-price-by-producttype') }}",
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status == 'success') {
+
+                        toastr.success("Updating Shopify Price is In-Progress!!");
+                    }
+                }
+            });
+        });
     });
 </script>
 

@@ -130,7 +130,12 @@
 
                                                      <div class="col-6">
                                                          @if($data->is_variants==1)
-                                                         {{$row->varient_value}} / {{$row->varient1_value}}
+                                                             @if($row->varient1_value)
+                                                                 {{$row->varient_value}} / {{$row->varient1_value}}
+                                                                 @else
+                                                                 {{$row->varient_value}}
+                                                                 @endif
+
                                                              @endif
                                                      </div>
 
@@ -140,8 +145,16 @@
                                                   </div>
 
                                             <div class="row mt-3">
+                                                <div class="col-9">
+                                                </div>
+                                                <div class="col-2">
+                                                    @if($row->manual_weight==1)<span class="badge bg-danger">Added Manually</span>@endif
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
                                                 @if($data->is_variants==1)
-                                                <div class="col-6 font_size">
+
+                                                        <div class="col-6 font_size">
                                                     <p><b>Varaint 1 Name:</b> {{$row->varient_name}}</p>
 
                                                     <p><b>Varaint 1 Value:</b> {{$row->varient_value}}</p>
@@ -154,7 +167,7 @@
                                                 <div class="col-6 font_size">
 
                                                     <p><b>Weight(GM):</b> {{$row->grams}}</p>
-                                                    <p><b>Pricing Weight(GM):</b> {{$row->pricing_weight}}</p>
+                                                    <p><b>Pricing Weight(GM):</b> {{$row->pricing_weight}}  </p>
 
                                                     <p><b>Quantity:</b> {{$row->stock}}</p>
 

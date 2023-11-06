@@ -563,15 +563,38 @@ class fetchProductJson extends Command
                     if($product_type && $product_type->base_weight){
                         $pricing_weight=max($variant_grams, $product_type->base_weight);
                     }
-                    $check=ProductInfo::where('sku',$var['sku'])->where('product_id',$product_id)->first();
+                    $check=ProductInfo::where('reference_shopify_id',$var['id'])->where('product_id',$product_id)->first();
 
 
                     if ($check==null)
                     {
+                        if($var['sku']){
+                            $sku=$var['sku'];
+                        }
+                        else{
+                            if($store->sku_count < 10){
+                                $count=$store->sku_count+1;
+                                if($product_type && $product_type->product_type) {
+                                    $sku = $store->name.'-'.$product_type->product_type.'-0'.$count;
+                                }else{
+                                    $sku = $store->name.'-0'.$count;
+                                }
+                            }else{
+                                $count=$store->sku_count+1;
+                                if($product_type && $product_type->product_type) {
+                                    $sku = $store->name.'-'.$product_type->product_type.'-'.$count;
+                                }else{
+                                    $sku = $store->name.'-'.$count;
+                                }
+                            }
+                            $store->sku_count=$store->sku_count+1;
+                            $store->save();
+                        }
+
                         $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
                         $product_info = new ProductInfo;
                         $product_info->product_id = $product_id;
-                        $product_info->sku = $var['sku'];
+                        $product_info->sku = $sku;
                         $product_info->price = $prices['inr'];
                         $product_info->price_usd = $prices['usd'];
                         $product_info->price_nld = $prices['nld'];
@@ -584,6 +607,7 @@ class fetchProductJson extends Command
                         $product_info->grams = $variant_grams;
                         $product_info->pricing_weight = $pricing_weight;
                         $product_info->stock = $var['available'];
+                        $product_info->reference_shopify_id=$var['id'];
                         $product_info->vendor_id = $store_id;
                         $product_info->dimensions = '0-0-0';
                         if(isset($row['options'])){
@@ -668,13 +692,41 @@ class fetchProductJson extends Command
                         $pricing_weight=max($variant_grams, $product_type->base_weight);
                     }
 
-                    $check_info=ProductInfo::where('sku',$var['sku'])->first();
+
+
+                    $check_info=ProductInfo::where('reference_shopify_id',$var['id'])->first();
+
+
+                    if($var['sku']){
+                        $sku=$var['sku'];
+                    }
+                    else{
+                        if($store->sku_count < 10){
+                            $count=$store->sku_count+1;
+                            if($product_type && $product_type->product_type) {
+                                $sku = $store->name.'-'.$product_type->product_type.'-0'.$count;
+                            }else{
+                                $sku = $store->name.'-0'.$count;
+                            }
+                        }else{
+                            $count=$store->sku_count+1;
+                            if($product_type && $product_type->product_type) {
+                                $sku = $store->name.'-'.$product_type->product_type.'-'.$count;
+                            }else{
+                                $sku = $store->name.'-'.$count;
+                            }
+                        }
+                        $store->sku_count=$store->sku_count+1;
+                        $store->save();
+                    }
+
+
                     if (!$check_info)
                     {
                         $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
                         $product_info = new ProductInfo;
                         $product_info->product_id = $product_id;
-                        $product_info->sku = $var['sku'];
+                        $product_info->sku = $sku;
                         $product_info->price = $prices['inr'];
                         $product_info->price_usd = $prices['usd'];
                         $product_info->price_nld = $prices['nld'];
@@ -687,6 +739,7 @@ class fetchProductJson extends Command
                         $product_info->grams = $variant_grams;
                         $product_info->pricing_weight = $pricing_weight;
                         $product_info->stock = $var['available'];
+                        $product_info->reference_shopify_id = $var['id'];
                         $product_info->vendor_id = $vid;
                         $product_info->dimensions = '0-0-0';
                         if(isset($row['options'])){
@@ -703,6 +756,10 @@ class fetchProductJson extends Command
                     }
                     else   //update variants
                     {
+                        if($check_info->manual_weight==1){
+                            $pricing_weight=$check_info->pricing_weight;
+                        }
+
                         $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
                         $info_id=$check_info->id;
                         $info['price']=$prices['inr'];
@@ -715,7 +772,9 @@ class fetchProductJson extends Command
                         $info['price_ger']=$prices['nld'];
                         $info['base_price']=$prices['base_price'];
                         $info['grams']=$variant_grams;
-                        $info['pricing_weight']=$pricing_weight;
+                        $info['sku']=$sku;
+                            $info['pricing_weight'] = $pricing_weight;
+
                         $info['stock']=$var['available'];
 
 

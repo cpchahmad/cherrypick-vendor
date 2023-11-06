@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
 use App\Jobs\ApproveAllProducts;
 use App\Jobs\DenyAllProducts;
+use App\Jobs\UpdateProductPricesByProductType;
 use App\Jobs\UpdateProductsWeight;
+use App\Jobs\UpdateShopifyPricesByProductType;
 use App\Jobs\UploadBulkProducts;
 use App\Models\Log;
 use App\Models\Markets;
@@ -1021,19 +1023,50 @@ class SuperadminController extends Controller
     }
     public function bulkApproveProduct(Request $request)
     {
+        $product_array_id=array();
         $ids=explode(",",$request->ids);
-        foreach($ids as $v)
+        foreach($ids as $id)
         {
-            Product::where('id', $v)->update(['status' => '1', 'approve_date' => Carbon::now()]);
+            $product_info =ProductInfo::where('product_id',$id)->get();
+            $upload_product=0;
+            foreach($product_info as $index=> $v)
+            {
+                if($v->stock){
+                    array_push($product_array_id,$id);
+                }
+            }
+
+        }
+        $product_array_id=array_unique($product_array_id);
+
+        if(count($product_array_id) > 0) {
+            $data = Product::whereIn('id',$product_array_id)->update(['status'=>1,'approve_date' => Carbon::now()]);
+
         }
         return json_encode(array('status'=>'success'));
     }
 	public function bulkRejectProduct(Request $request)
     {
         $ids=explode(",",$request->ids);
-        foreach($ids as $v)
+
+        $product_array_id=array();
+        foreach($ids as $id)
         {
-            Product::where('id', $v)->update(['status' => '3', 'approve_date' => Carbon::now()]);
+            $product_info =ProductInfo::where('product_id',$id)->get();
+            $upload_product=0;
+            foreach($product_info as $index=> $v)
+            {
+                if($v->stock){
+                    array_push($product_array_id,$id);
+                }
+            }
+
+        }
+       $product_array_id=array_unique($product_array_id);
+
+        if(count($product_array_id) > 0) {
+            $data = Product::whereIn('id',$product_array_id)->update(['status'=>3,'approve_date' => Carbon::now()]);
+
         }
         return json_encode(array('status'=>'success'));
     }
@@ -1221,6 +1254,7 @@ class SuperadminController extends Controller
                     if($product_type_check->hsn_code) {
                         $use_store_hsncode=1;
                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
+                        $tags=$tags.','.$product_type_check->product_type;
                     }
                 }
             }
@@ -1706,6 +1740,7 @@ class SuperadminController extends Controller
                     if($product_type_check->hsn_code) {
                         $use_store_hsncode=1;
                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
+                        $tags=$tags.','.$product_type_check->product_type;
                     }
                 }
             }
@@ -1792,7 +1827,7 @@ class SuperadminController extends Controller
                                 "sku" => $product_info->sku,
                                 "price" => $product_info->price_usd,
                                 "compare_at_price" => $product_info->price_usd,
-                                "grams" => $product_info->grams,
+                                "grams" => $product_info->pricing_weight,
                                 "taxable" => false,
                                 "inventory_management" => ($product_info->stock) ? null : "shopify",
                             );
@@ -2586,16 +2621,40 @@ class SuperadminController extends Controller
                     $pricing_weight=max($variant_grams, $product_type->base_weight);
                 }
 				$i++;
-				$check=ProductInfo::where('sku',$var['sku'])->where('product_id',$product_id)->first();
+				$check=ProductInfo::where('reference_shopify_id',$var['id'])->where('product_id',$product_id)->first();
 
 
 
 				if ($check==null)
 				{
+
+                    if($var['sku']){
+                        $sku=$var['sku'];
+                    }
+                    else{
+                        if($store->sku_count < 10){
+                            $count=$store->sku_count+1;
+                            if($product_type && $product_type->product_type) {
+                                $sku = $store->name.'-'.$product_type->product_type.'-0'.$count;
+                            }else{
+                                $sku = $store->name.'-0'.$count;
+                            }
+                        }else{
+                            $count=$store->sku_count+1;
+                            if($product_type && $product_type->product_type) {
+                                $sku = $store->name.'-'.$product_type->product_type.'-'.$count;
+                            }else{
+                                $sku = $store->name.'-'.$count;
+                            }
+                        }
+                        $store->sku_count=$store->sku_count+1;
+                        $store->save();
+                    }
+
 					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
-					$product_info->sku = $var['sku'];
+					$product_info->sku = $sku;
 					$product_info->price = $prices['inr'];
 					$product_info->price_usd = $prices['usd'];
 					$product_info->price_nld = $prices['nld'];
@@ -2609,6 +2668,7 @@ class SuperadminController extends Controller
                     $product_info->pricing_weight = $pricing_weight;
 					$product_info->stock = $var['available'];
 					$product_info->vendor_id = $store_id;
+					$product_info->reference_shopify_id = $var['id'];
 					$product_info->dimensions = '0-0-0';
                     if(isset($row['options'])){
                         $product_info->varient_name =$row['options'][0]['name'];
@@ -2692,13 +2752,38 @@ class SuperadminController extends Controller
                     $pricing_weight=max($variant_grams, $product_type->base_weight);
                 }
 				$i++;
-				$check_info=ProductInfo::where('sku',$var['sku'])->first();
+				$check_info=ProductInfo::where('reference_shopify_id',$var['id'])->first();
+                if($var['sku']){
+                    $sku=$var['sku'];
+                }
+                else{
+                    if($store->sku_count < 10){
+                        $count=$store->sku_count+1;
+                        if($product_type && $product_type->product_type) {
+                            $sku = $store->name.'-'.$product_type->product_type.'-0'.$count;
+                        }else{
+                            $sku = $store->name.'-0'.$count;
+                        }
+                    }else{
+                        $count=$store->sku_count+1;
+                        if($product_type && $product_type->product_type) {
+                            $sku = $store->name.'-'.$product_type->product_type.'-'.$count;
+                        }else{
+                            $sku = $store->name.'-'.$count;
+                        }
+                    }
+                    $store->sku_count=$store->sku_count+1;
+                    $store->save();
+                }
 				if (!$check_info)
 				{
+
+
 					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
 					$product_info = new ProductInfo;
 					$product_info->product_id = $product_id;
-					$product_info->sku = $var['sku'];
+					$product_info->sku = $sku;
+                    $product_info->reference_shopify_id = $var['id'];
 					$product_info->price = $prices['inr'];
 					$product_info->price_usd = $prices['usd'];
 					$product_info->price_nld = $prices['nld'];
@@ -2727,6 +2812,10 @@ class SuperadminController extends Controller
 				}
 				else   //update variants
 				{
+
+                    if($check_info->manual_weight==1){
+                        $pricing_weight=$check_info->pricing_weight;
+                    }
 					$prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
 					$info_id=$check_info->id;
 					$info['price']=$prices['inr'];
@@ -2739,7 +2828,10 @@ class SuperadminController extends Controller
 					$info['price_ger']=$prices['nld'];
 					$info['base_price']=$prices['base_price'];
 					$info['grams']=$variant_grams;
-					$info['pricing_weight']=$pricing_weight;
+                    $info['sku']=$sku;
+                    if($check_info->manual_weight==0) {
+                        $info['pricing_weight'] = $pricing_weight;
+                    }
 					$info['stock']=$var['available'];
 
 
@@ -2958,6 +3050,7 @@ class SuperadminController extends Controller
 		$product_info->price_aud = $prices['aud'];
 		$product_info->price_irl = $prices['irl'];
 		$product_info->price_ger = $prices['ger'];
+        $product_info->manual_weight=1;
 		$product_info->save();
 	}
 
@@ -3040,7 +3133,7 @@ class SuperadminController extends Controller
         $hsn_code=$request->hsncode;
         ProductType::where('id',$id)->update(['base_weight' => $weight,'hsn_code'=>$hsn_code]);
 
-        UpdateProductsWeight::dispatch($id);
+        UpdateProductsWeight::dispatch($id,$request->store);
         return json_encode(array('status'=>'success'));
 
 
@@ -3457,6 +3550,19 @@ $tag_array=array();
         }
 
         dd('done');
+    }
+
+
+    public function updateProductPricesByProductType(Request $request){
+
+        UpdateProductPricesByProductType::dispatch($request->id,$request->store);
+        return json_encode(array('status'=>'success'));
+    }
+
+    public function updateShopifyPricesByProductType(Request $request){
+
+        UpdateShopifyPricesByProductType::dispatch($request->id,$request->store);
+        return json_encode(array('status'=>'success'));
     }
 
 }

@@ -110,7 +110,13 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::get('updatepricebyvendor/{id}',[SuperadminController::class,'updateProductPricesByVendor'])->name('update-price-by-vendor');
     Route::get('updatepricebyvendorinshopify/{id}',[SuperadminController::class,'updateProductPricesInShopify'])->name('update-price-by-vendor-inshopify');
 
-	  Route::get('store-amount',[SuperadminController::class,'storeAmount'])->name('superadmin.store-amount');
+
+    Route::get('updatepriceby-producttype',[SuperadminController::class,'updateProductPricesByProductType'])->name('superadmin.update.database-price-by-producttype');
+    Route::get('update-shopify-priceby-producttype',[SuperadminController::class,'updateShopifyPricesByProductType'])->name('superadmin.update.shopify-price-by-producttype');
+
+
+
+    Route::get('store-amount',[SuperadminController::class,'storeAmount'])->name('superadmin.store-amount');
 	  Route::get('store-amount-history/{id}',[SuperadminController::class,'storeOrdersAmount']);
 	  Route::get('order-details/{id}',[SuperadminController::class,'storeOrdersDetails'])->name('superadmin.orderdetail');
       Route::get('conversion-rate',[SuperadminController::class,'conversionRate']);
@@ -145,7 +151,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::get('vendor-setting/{id}',[SuperadminController::class,'vendorSetting'])->name('vendor.setting');
     Route::post('update-hsn-code',[SuperadminController::class,'updatehsncode'])->name('superadmin.update.hsncode');
     Route::post('update-record',[SuperadminController::class,'updaterecord'])->name('superadmin.update.record');
-    Route::post('update-record',[SuperadminController::class,'updaterecord'])->name('superadmin.update.record');
+
 
     Route::post('vendor-setting',[SuperadminController::class,'Vendorbaseweightupdate'])->name('superadmin.baseweight.update');
     Route::post('update-market-bulkprice',[SuperadminController::class,'updatemarketbulkprice'])->name('superadmin.update.market-bulkprice');

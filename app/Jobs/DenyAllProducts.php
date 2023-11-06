@@ -57,27 +57,48 @@ class DenyAllProducts implements ShouldQueue
         try {
 
             $product_array_id=array();
-            foreach ($this->products as $product){
+            if(count($this->products) > 0){
+                $currentTime = now();
+                $log=new Log();
+                $log->name='Deny Products';
+                $log->date = $currentTime->format('F j, Y');
+                $log->total_product = count($this->products);
+                $log->start_time = $currentTime->toTimeString();
+                $log->status='In-Progress';
+                $log->save();
+                foreach ($this->products as $product){
 
-                $product_info =ProductInfo::where('product_id',$product->id)->get();
-                $upload_product=0;
-                foreach($product_info as $index=> $v)
-                {
-                    if($v->stock){
-                        array_push($product_array_id,$product->id);
+                    $product_info =ProductInfo::where('product_id',$product->id)->get();
+                    $upload_product=0;
+                    foreach($product_info as $index=> $v)
+                    {
+                        if($v->stock){
+                            array_push($product_array_id,$product->id);
+                        }
                     }
+
                 }
+                $product_array_id=array_unique($product_array_id);
+                if(count($product_array_id) > 0) {
+                    $data = Product::whereIn('id',$product_array_id)->update(['status'=>3,'approve_date' => Carbon::now()]);
 
+                }
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
+                $log->end_time = $currentTime->toTimeString();
+                $log->status='Complete';
+                $log->save();
             }
 
-            if(count($product_array_id) > 0) {
-                $data = Product::whereIn('id',$product_array_id)->update(['status'=>3,'approve_date' => Carbon::now()]);
-
-            }
 
         }catch (\Exception $exception){
 
-
+            $currentTime = now();
+            $log->date = $currentTime->format('F j, Y');
+            $log->status = 'Failed';
+            $log->end_time = $currentTime->toTimeString();
+            $log->message=json_encode($exception->getMessage());
+            $log->save();
         }
 
     }

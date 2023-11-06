@@ -30,6 +30,8 @@ class UpdateProductsWeight implements ShouldQueue
 
     public $timeout = 10000;
     protected $id;
+    protected $store;
+
 
     /**
      * Create a new job instance.
@@ -37,9 +39,10 @@ class UpdateProductsWeight implements ShouldQueue
      * @return void
      */
 
-    public function __construct($id)
+    public function __construct($id,$store)
     {
         $this->id = $id;
+        $this->store = $store;
 
 
     }
@@ -58,9 +61,20 @@ class UpdateProductsWeight implements ShouldQueue
 
             $products=Product::where('product_type_id',$this->id)->get();
             $product_type=ProductType::where('id',$this->id)->first();
+            if(count($products) > 0){
+                $product_count=count($products);
+                $currentTime = now();
+                $log=new Log();
+                $log->name='Update Products Weight by Product Type ('.$this->store.')';
+                $log->date = $currentTime->format('F j, Y');
+                $log->total_product = $product_count;
+                $log->start_time = $currentTime->toTimeString();
+                $log->status='In-Progress';
+                $log->save();
             foreach ($products as $product){
-                $variants=ProductInfo::where('product_id',$product->id)->get();
+                $variants=ProductInfo::where('product_id',$product->id)->where('manual_weight',0)->get();
                 foreach ($variants as $variant){
+
 
                     $pricing_weight=$variant->grams;
 
@@ -74,9 +88,21 @@ class UpdateProductsWeight implements ShouldQueue
 
 
             }
+
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
+                $log->end_time = $currentTime->toTimeString();
+                $log->status='Complete';
+                $log->save();
+            }
         }catch (\Exception $exception){
 
-
+            $currentTime = now();
+            $log->date = $currentTime->format('F j, Y');
+            $log->status = 'Failed';
+            $log->end_time = $currentTime->toTimeString();
+            $log->message=json_encode($exception->getMessage());
+            $log->save();
         }
 
     }

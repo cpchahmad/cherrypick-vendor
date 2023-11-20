@@ -1254,8 +1254,9 @@ class SuperadminController extends Controller
                     if($product_type_check->hsn_code) {
                         $use_store_hsncode=1;
                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
-                        $tags=$tags.','.$product_type_check->product_type;
+
                     }
+                    $tags=$tags.','.$product_type_check->product_type;
                 }
             }
 
@@ -1740,8 +1741,9 @@ class SuperadminController extends Controller
                     if($product_type_check->hsn_code) {
                         $use_store_hsncode=1;
                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
-                        $tags=$tags.','.$product_type_check->product_type;
+
                     }
+                    $tags=$tags.','.$product_type_check->product_type;
                 }
             }
 
@@ -3426,19 +3428,20 @@ $tag_array=array();
      }
         $tags = array_unique($tag_array);
 
-        $tags_to_remove = array();
+//        $tags_to_remove = array();
         $product_type_subcatgories=ProductTypeSubCategory::where('product_type_id',$id)->get();
-        foreach ($tags as $tag) {
-            foreach ($product_type_subcatgories as $subcategory) {
-                if (in_array($tag, explode(',', $subcategory->tags))) {
-                    $tags_to_remove[] = $tag;
-                    break;
-                }
-            }
-        }
+//        foreach ($tags as $tag) {
+//            foreach ($product_type_subcatgories as $subcategory) {
+//                if (in_array($tag, explode(',', $subcategory->tags))) {
+//                    $tags_to_remove[] = $tag;
+//                    break;
+//                }
+//            }
+//        }
 
 // Remove the tags found in $tags_to_remove from $tags
-        $tags = array_diff($tags, $tags_to_remove);
+
+//        $tags = array_diff($tags, $tags_to_remove);
 
 
 

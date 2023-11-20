@@ -251,18 +251,18 @@
                                                                                      $tag_array = array_merge($tag_array, $tags_data);
                                                                                  }
 
-                                                                                   $remove_tag_array=array();
-                                                                                 foreach ($remove_tags as $remove_tag){
+                                                                                 //  $remove_tag_array=array();
+                                                                                 //foreach ($remove_tags as $remove_tag){
 
-                                                                                     $remove_tags_data=explode(',',$remove_tag);
+                                                                                   //  $remove_tags_data=explode(',',$remove_tag);
 
-                                                                                     $remove_tag_array = array_merge($remove_tag_array, $remove_tags_data);
-                                                                                 }
+                                                                                     //$remove_tag_array = array_merge($remove_tag_array, $remove_tags_data);
+                                                                                // }
 
 
 
                                                                                     $tags = array_unique($tag_array);
-                                                                                    $tags=array_diff($tags,$remove_tag_array);
+                                                                                    //$tags=array_diff($tags,$remove_tag_array);
 
 
 

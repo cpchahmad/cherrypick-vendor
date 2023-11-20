@@ -222,8 +222,8 @@ class approveProducts extends Command
                                     if ($product_type_check->hsn_code) {
                                         $use_store_hsncode=1;
                                         $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
-                                        $tags=$tags.','.$product_type_check->product_type;
                                     }
+                                    $tags=$tags.','.$product_type_check->product_type;
                                 }
                             }
 

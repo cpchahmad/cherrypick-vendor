@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Extra;
 use App\Models\Log;
 use App\Models\ProductImagesNew;
 use App\Models\ProductType;
@@ -358,6 +359,15 @@ class approveProducts extends Command
                                     $update_log->save();
                                     $product->shopify_status = 'Complete';
                                     $product->save();
+                                }else{
+
+                                    $product->shopify_status = 'Pending';
+                                    $product->save();
+
+                                    $extra=new Extra();
+                                    $extra->log=json_encode($result);
+                                    $extra->record='Push Product to Shopify';
+                                    $extra->save();
                                 }
 //                          $this->linkProductToCollection($shopify_product_id, $vendor->collections_ids);
 

@@ -600,51 +600,53 @@ class Helpers{
         $ger_furniture = $ger_ship->furniture;
 
                 $weight_in_gms=$products_grams;
-        if($weight_in_gms <= 50)
-        {
-            $base_price = round(($inr - $ind_shipping_50gms), 2);
-        }
-        elseif($weight_in_gms <= 100)
-        {
-            $base_price = round(($inr - $ind_shipping_100gms), 2);
-        }
-        elseif($weight_in_gms <= 150)
-        {
-            $base_price = round(($inr - $ind_shipping_150gms), 2);
-        }
-        elseif($weight_in_gms <= 200)
-        {
-            $base_price = round(($inr - $ind_shipping_200gms), 2);
-        }
-        elseif($weight_in_gms <= 250)
-        {
-            $base_price = round(($inr - $ind_shipping_250gms), 2);
-        }
-        elseif($weight_in_gms <= 300)
-        {
-            $base_price = round(($inr - $ind_shipping_300gms), 2);
-        }
-        elseif($weight_in_gms <= 400)
-        {
-            $base_price = round(($inr - $ind_shipping_400gms), 2);
-        }
-        elseif($weight_in_gms <= 500)
-        {
-            $base_price = round(($inr - $ind_shipping_500gms), 2);
-        }
-        elseif($weight_in_gms <= 750)
-        {
-            $base_price = round(($inr - $ind_shipping_750gms), 2);
-        }
-        elseif($weight_in_gms <= 1000)
-        {
-            $base_price = round(($inr - $ind_shipping_1000gms), 2);
-        }
-        else
-        {
-            $base_price = round(($inr - $ind_shipping_5000gms), 2);
-            //$base_price = round(($inr - ($weight_in_gms * 0.016)), 2);
-        }
+//        if($weight_in_gms <= 50)
+//        {
+//            $base_price = round(($inr - $ind_shipping_50gms), 2);
+//        }
+//        elseif($weight_in_gms <= 100)
+//        {
+//            $base_price = round(($inr - $ind_shipping_100gms), 2);
+//        }
+//        elseif($weight_in_gms <= 150)
+//        {
+//            $base_price = round(($inr - $ind_shipping_150gms), 2);
+//        }
+//        elseif($weight_in_gms <= 200)
+//        {
+//            $base_price = round(($inr - $ind_shipping_200gms), 2);
+//        }
+//        elseif($weight_in_gms <= 250)
+//        {
+//            $base_price = round(($inr - $ind_shipping_250gms), 2);
+//        }
+//        elseif($weight_in_gms <= 300)
+//        {
+//            $base_price = round(($inr - $ind_shipping_300gms), 2);
+//        }
+//        elseif($weight_in_gms <= 400)
+//        {
+//            $base_price = round(($inr - $ind_shipping_400gms), 2);
+//        }
+//        elseif($weight_in_gms <= 500)
+//        {
+//            $base_price = round(($inr - $ind_shipping_500gms), 2);
+//        }
+//        elseif($weight_in_gms <= 750)
+//        {
+//            $base_price = round(($inr - $ind_shipping_750gms), 2);
+//        }
+//        elseif($weight_in_gms <= 1000)
+//        {
+//            $base_price = round(($inr - $ind_shipping_1000gms), 2);
+//        }
+//        else
+//        {
+//            $base_price = round(($inr - $ind_shipping_5000gms), 2);
+//            //$base_price = round(($inr - ($weight_in_gms * 0.016)), 2);
+//        }
+
+        $base_price=$inr;
 
         $price_inr_usd=$price_inr_euro_nld=$price_inr_euro_irl=$price_inr_euro_ger=$price_inr_gbp=$price_inr_aud=$price_inr_cad=$price_inr = $base_price;
         $market_vendors=MarketVendor::where('vendor_id',$vid)->get();

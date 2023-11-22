@@ -27,8 +27,17 @@
         <div class="row">
             <div class="col-6">
                 <h1>Product List</h1>
-                <p style="margin-bottom: 3px;">Total Products: ({{$total_products}})</p>
-                <p>Total Variants: ({{$total_variants}})</p>
+                <div class="row">
+                    <div class="col-6">
+                        <p style="margin-bottom: 3px;">Total Products: ({{$total_products}})</p>
+                        <p>Total Variants: ({{$total_variants}})
+
+                    </div>
+              <div class="col-6">
+                  <p style="margin-bottom: 3px;">In-Stock: ({{$total_variants_in_stock}})</p>
+                <p style="margin-bottom: 3px;">Out-of-Stock: ({{$total_variants_out_of_stock}})</p>
+              </div>
+                </div>
             </div>
             <div class="col-6" style="text-align: right;margin-bottom: 6px;">
                 <button class="btn btn-success btn-sm approve_all submit_loader" href="">Approve All</button>

@@ -38,6 +38,10 @@ class Kernel extends ConsoleKernel
 		$schedule->command('products:approve')->everyMinute()->withoutOverlapping();
 		$schedule->command('fetch:jsonproduct')->daily()->withoutOverlapping();
         $schedule->command('update:priceConversionRate')->everyMinute();
+
+
+
+//        $schedule->command('fetch:jsonproductandupdateprice')->monthly();
     }
 
     /**

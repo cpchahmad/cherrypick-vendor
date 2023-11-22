@@ -924,6 +924,8 @@ class SuperadminController extends Controller
 
        $product_ids = $res->pluck('id')->toArray();
        $total_variants=ProductInfo::whereIn('product_id',$product_ids)->count();
+       $total_variants_in_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',1)->count();
+       $total_variants_out_of_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',0)->count();
 
       $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
 
@@ -932,7 +934,7 @@ class SuperadminController extends Controller
 
 
       //dd($data);
-     return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products','total_variants'));
+     return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products','total_variants','total_variants_in_stock','total_variants_out_of_stock'));
     }
 	public function updateAllProductPrices()
 	{

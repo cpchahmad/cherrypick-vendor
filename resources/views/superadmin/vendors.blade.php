@@ -1,5 +1,30 @@
 @extends('layouts.superadmin')
 
+    <style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table-bordered th,
+    .table-bordered td {
+        border: 1px solid #dee2e6;
+    }
+
+    .table-responsive thead th:first-child,
+    .table-responsive tbody td:first-child {
+        position: sticky;
+        left: 0;
+        background-color: #fff; /* Adjust background color as needed */
+        z-index: 2;
+    }
+
+    .table-responsive thead th:first-child::after,
+    .table-responsive tbody td:first-child::after {
+        content: '\00a0'; /* Add a non-breaking space to ensure content is visible */
+    }
+</style>
+
+
 @section('main')
     <main id="main" class="main">
         <div class="home-flex">
@@ -19,7 +44,7 @@
                                 <thead>
                                 <tr>
 
-                                    <th scope="col">Store Detail</th>
+                                    <th scope="col" style="width: 200px; background-color: #E0E0E0;">Store Detail</th>
                                     <th scope="col">Total Products/Total Variants</th>
                                     <th scope="col">Pending Products/Pending Variants</th>
                                     <th scope="col">Changes Pending Products/Changes Pending Variants</th>

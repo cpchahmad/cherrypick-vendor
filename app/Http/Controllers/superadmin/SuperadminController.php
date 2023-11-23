@@ -3266,6 +3266,18 @@ class SuperadminController extends Controller
                     $data_type['sizechart_file'] = $product_type_category->size_chart_image;
                     array_push($product_type_category_array, $data_type);
                 }
+
+                usort($product_type_category_array, function ($a, $b) {
+                    $tagsA = count(explode(',', $a['tags']));
+                    $tagsB = count(explode(',', $b['tags']));
+
+                    if ($tagsA == $tagsB) {
+                        return strcmp($a['tags'], $b['tags']); // Sort alphabetically if tags count is the same
+                    }
+
+                    return $tagsB - $tagsA; // Sort by the number of tags in descending order
+                });
+
                 $data['product_type'] = $product_type->product_type;
                 $data['sizechart_html'] = $product_type->size_chart_html;
                 $data['sizechart_file'] = $product_type->size_chart_image;

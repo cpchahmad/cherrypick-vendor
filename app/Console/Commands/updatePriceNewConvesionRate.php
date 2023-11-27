@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Log;
+use App\Models\ProductLog;
 use Illuminate\Console\Command;
 use App\Models\ProductInfo;
 use Auth;
@@ -32,9 +33,11 @@ class updatePriceNewConvesionRate extends Command
      */
     public function handle()
     {
+
 		$data=ProductInfo::join('product_master', 'product_master.id', 'products_variants.product_id')
 		->select('product_master.tags','products_variants.*')
 		->where('price_conversion_update_status', 1)->orderBy('products_variants.id', 'DESC')->get();
+
 
 
        ProductInfo::where('price_conversion_update_status', 1)->update(['price_conversion_update_status'=> 0]);
@@ -47,9 +50,12 @@ class updatePriceNewConvesionRate extends Command
             $log->start_time = $currentTime->toTimeString();
             $log->status='In-Progress';
             $log->save();
+
+            $product_ids_array=array();
             try {
                 foreach ($data as $row) {
 
+                    array_push($product_ids_array,$row->product_id);
                     $volumetric_Weight = 0;
                     $arr = explode("-", $row->dimensions);
                     if (is_numeric($arr[0]) && is_numeric($arr[1]) && is_numeric($arr[2]))
@@ -62,6 +68,16 @@ class updatePriceNewConvesionRate extends Command
                     }
 
                 }
+
+                $product_ids=array_unique($product_ids_array);
+                foreach ($product_ids as $product_id){
+                    $product_log=new ProductLog();
+                    $product_log->title='Update Price Conversion Rate';
+                    $product_log->date_time=now()->format('F j, Y H:i:s');
+                    $product_log->product_id=$product_id;
+                    $product_log->save();
+                }
+
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->end_time = $currentTime->toTimeString();

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Log;
+use App\Models\ProductLog;
 use App\Models\ProductType;
 use App\Models\Setting;
 use Illuminate\Console\Command;
@@ -529,6 +530,14 @@ class fetchProductJson extends Command
                 $product->save();
                 $product_id=$product->id;
 
+
+                $product_logs=new ProductLog();
+                $product_logs->title='Product Created';
+                $product_logs->date_time=now()->format('F j, Y H:i:s');
+                $product_logs->product_id=$product_id;
+                $product_logs->save();
+
+
                 $i=0;
 
                 $grams=0;
@@ -658,6 +667,14 @@ class fetchProductJson extends Command
                 $data['is_updated_by_url'] = 1;
                 Product::where('id',$product_check->id)->update($data);
                 $product_id=$product_check->id;
+
+
+                $product_logs=new ProductLog();
+                $product_logs->title='Product Update';
+                $product_logs->date_time=now()->format('F j, Y H:i:s');
+                $product_logs->product_id=$product_id;
+                $product_logs->save();
+
                 $i=0;
 
                 $grams=0;

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Log;
 use App\Models\Product;
+use App\Models\ProductLog;
 use App\Models\Setting;
 use Illuminate\Console\Command;
 use App\Models\ProductInfo;
@@ -56,8 +57,9 @@ class updatePrice extends Command
                 $log->status = 'In-Progress';
                 $log->save();
                 $log_id=$log->id;
-            try{
-            $variant_data = ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->chunk(20, function ($data) use ($log_id) {
+
+//            $variant_data = ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->chunk(20, function ($data) use ($log_id) {
+            $data = ProductInfo::where('price_status',0)->whereNotNull('inventory_id')->get();
 
                 try {
 
@@ -75,9 +77,11 @@ class updatePrice extends Command
 
                     $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/graphql.json";
 
+                    $product_ids_array=array();
 
 
                     foreach ($data as $row) {
+                        array_push($product_ids_array,$row->product_id);
                         //DB::table('tests')->insert(['name' => 'start']);
                         $INR = $row->price;
                         $CAD = $row->price_cad;
@@ -241,12 +245,27 @@ class updatePrice extends Command
                         ProductInfo::where('id', $row->id)->update(['price_status' => 1]);
                         //DB::table('tests')->insert(['name' => 'okk']);
                     }
+                    $product_ids=array_unique($product_ids_array);
+                    foreach ($product_ids as $product_id){
+                        $product_log=new ProductLog();
+                        $product_log->title='Update Price in Shopify';
+                        $product_log->date_time=now()->format('F j, Y H:i:s');
+                        $product_log->product_id=$product_id;
+                        $product_log->save();
+                    }
 
                 }catch (\Exception $exception){
 
+                    $update_log = Log::where('id', $log_id)->first();
+                    $currentTime = now();
+                    $update_log->date = $currentTime->format('F j, Y');
+                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->status = 'Failed';
+                    $update_log->message=json_encode($exception->getMessage());
+                    $update_log->save();
                 }
 
-            });
+//            });
 
                 $currentTime = now();
                 $update_log = Log::where('id', $log_id)->first();
@@ -255,15 +274,7 @@ class updatePrice extends Command
                 $update_log->end_time = $currentTime->toTimeString();
                 $update_log->save();
 
-            }catch (\Exception $exception){
-                $update_log = Log::where('id', $log_id)->first();
-                $currentTime = now();
-                $update_log->date = $currentTime->format('F j, Y');
-                $update_log->end_time = $currentTime->toTimeString();
-                $update_log->status = 'Failed';
-                $update_log->message=json_encode($exception->getMessage());
-                $update_log->save();
-            }
+
 
 
 

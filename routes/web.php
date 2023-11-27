@@ -173,6 +173,14 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::get('delete-product-type-subcategory-img',[SuperadminController::class,'deleteProductTypeSubCategoryImage'])->name('superadmin.delete.product-type-subcategory-img');
     Route::post('update-product-type-subcategory',[SuperadminController::class,'updateProductTypeSubCategory'])->name('superadmin.update-product-type-subcategory');
     Route::get('delete-product-type-subcategory/{id}',[SuperadminController::class,'deleteProductTypeSubCategory'])->name('superadmin.delete-product-type-subcategory');
+    Route::get('update-product-shopify-status',[SuperadminController::class,'UpdateProductShopifyStatus'])->name('superadmin.update.product.shopifystatus');
+
+
+
+    Route::get('start-shopifypush-cronjob/{id}',[SuperadminController::class,'startShopifyPushCronjob'])->name('start.shopifypush.cronjob');
+    Route::get('pause-shopifypush-cronjob/{id}',[SuperadminController::class,'pauseShopifyPushCronjob'])->name('pause.shopifypush.cronjob');
+
+
 
 
 });

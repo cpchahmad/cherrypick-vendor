@@ -254,6 +254,13 @@ class updatePrice extends Command
                         $product_log->save();
                     }
 
+                    $currentTime = now();
+                    $update_log = Log::where('id', $log_id)->first();
+                    $update_log->date = $currentTime->format('F j, Y');
+                    $update_log->status = 'Complete';
+                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->save();
+
                 }catch (\Exception $exception){
 
                     $update_log = Log::where('id', $log_id)->first();
@@ -267,12 +274,7 @@ class updatePrice extends Command
 
 //            });
 
-                $currentTime = now();
-                $update_log = Log::where('id', $log_id)->first();
-                $update_log->date = $currentTime->format('F j, Y');
-                $update_log->status = 'Complete';
-                $update_log->end_time = $currentTime->toTimeString();
-                $update_log->save();
+
 
 
 

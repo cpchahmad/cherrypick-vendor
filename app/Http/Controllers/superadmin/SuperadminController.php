@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
 use App\Jobs\ApproveAllProducts;
 use App\Jobs\DenyAllProducts;
+use App\Jobs\ProductsSyncFromApi;
 use App\Jobs\UpdateProductPricesByProductType;
 use App\Jobs\UpdateProductsWeight;
 use App\Jobs\UpdateShopifyPricesByProductType;
@@ -2619,6 +2620,7 @@ class SuperadminController extends Controller
 				$product->tags = $tags;
 				$product->category = $category_id;
                 $product->product_type_id=$product_type->id;
+                $product->is_updated_by_url=1;
 				$product->save();
 				$product_id=$product->id;
 
@@ -2751,6 +2753,7 @@ class SuperadminController extends Controller
 				$data['tags']=implode(",",$row['tags']);
                 $data['product_type_id']=$product_type->id;
                 $data['orignal_vendor'] = $vendor;
+                $data['is_updated_by_url'] = 1;
 				Product::where('id',$product_check->id)->update($data);
 				$product_id=$product_check->id;
 			$i=0;
@@ -3640,6 +3643,16 @@ $tag_array=array();
             $log->save();
         }
         return redirect()->back()->with('success', 'Changed Successfully');
+    }
+
+
+    public function syncApiData($id)
+    {
+        $vendor = Store::find($id);
+        if($vendor){
+            ProductsSyncFromApi::dispatch($id);
+            return redirect()->back()->with('success', 'Products Sync In-Progress');
+        }
     }
 
 }

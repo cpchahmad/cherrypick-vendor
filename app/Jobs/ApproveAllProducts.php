@@ -125,12 +125,12 @@ class ApproveAllProducts implements ShouldQueue
 
         }catch (\Exception $exception){
 
-            $currentTime = now();
-            $log->date = $currentTime->format('F j, Y');
-            $log->status = 'Failed';
-            $log->end_time = $currentTime->toTimeString();
-            $log->message=json_encode($exception->getMessage());
-            $log->save();
+//            $currentTime = now();
+//            $log->date = $currentTime->format('F j, Y');
+//            $log->status = 'Failed';
+//            $log->end_time = $currentTime->toTimeString();
+//            $log->message=json_encode($exception->getMessage());
+//            $log->save();
         }
 
     }

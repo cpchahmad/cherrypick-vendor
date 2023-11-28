@@ -181,6 +181,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
     Route::get('pause-shopifypush-cronjob/{id}',[SuperadminController::class,'pauseShopifyPushCronjob'])->name('pause.shopifypush.cronjob');
 
 
+    Route::get('sync-vendor-api-data/{id}',[SuperadminController::class,'syncApiData'])->name('sync.from.api');
 
 
 });

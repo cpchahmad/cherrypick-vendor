@@ -60,6 +60,7 @@ class UpdateProductsWeight implements ShouldQueue
         try {
 
             $products=Product::where('product_type_id',$this->id)->get();
+            $product_ids=Product::where('product_type_id',$this->id)->pluck('id')->toArray();
             $product_type=ProductType::where('id',$this->id)->first();
             if(count($products) > 0){
                 $product_count=count($products);
@@ -70,6 +71,7 @@ class UpdateProductsWeight implements ShouldQueue
                 $log->total_product = $product_count;
                 $log->start_time = $currentTime->toTimeString();
                 $log->status='In-Progress';
+                $log->product_ids=implode(',',$product_ids);
                 $log->save();
             foreach ($products as $product){
                 $variants=ProductInfo::where('product_id',$product->id)->where('manual_weight',0)->get();

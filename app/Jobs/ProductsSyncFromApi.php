@@ -56,6 +56,15 @@ class ProductsSyncFromApi implements ShouldQueue
         set_time_limit(0);
         $vendor = Store::find($this->vendor_id);
         if ($vendor) {
+
+            $currentTime = now();
+            $log = new Log();
+            $log->name = 'Fetch Product From Json ('.$vendor->name.')';
+            $log->date = $currentTime->format('F j, Y');
+            $log->start_time = $currentTime->toTimeString();
+            $log->status = 'In-Progress';
+            $log->save();
+
             $vid=$vendor->id;
             $json_url = \Illuminate\Support\Facades\DB::table('cron_json_url')->where('vendor_id', $vendor->id)->first();
            $extra=new Extra();
@@ -232,6 +241,11 @@ class ProductsSyncFromApi implements ShouldQueue
 
                 Product::where('vendor', $vid)->update(['is_updated_by_url' => 0]);
 
+                $currentTime = now();
+                $log->date = $currentTime->format('F j, Y');
+                $log->end_time = $currentTime->toTimeString();
+                $log->status = 'Complete';
+                $log->save();
             }
         }
 

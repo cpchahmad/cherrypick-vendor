@@ -81,6 +81,7 @@ class updatePriceNewConvesionRate extends Command
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->end_time = $currentTime->toTimeString();
+                $log->product_ids=implode(',',$product_ids);
                 $log->status='Complete';
                 $log->save();
             }catch (\Exception $exception){

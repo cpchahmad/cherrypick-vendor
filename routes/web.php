@@ -82,7 +82,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 	  Route::get('reject-product/{id}',[SuperadminController::class,'rejectProduct']);
       Route::get('out-of-stock',[SuperadminController::class,'outofstockProduct'])->name('superadmin.out-of-stock');
 	  Route::get('out-of-stock-products/{id}',[SuperadminController::class,'outofstockProductLists'])->name('superadmin.out-of-stock-products');
-      Route::post('bulk-approve-product',[SuperadminController::class,'bulkApproveProduct'])->name('superadmin.bulk-approve-product');
+      Route::get('bulk-approve-product',[SuperadminController::class,'bulkApproveProduct'])->name('superadmin.bulk-approve-product');
 	  Route::post('bulk-reject-product',[SuperadminController::class,'bulkRejectProduct'])->name('superadmin.bulk-reject-product');
       Route::get('store-configuration',[SuperadminController::class,'vendorlist'])->name('superadmin.store-configuration');
       Route::get('products-details/{id}',[SuperadminController::class,'productDetails'])->name('superadmin.productdetails');
@@ -95,6 +95,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 
 
     Route::get('logs',[SuperadminController::class,'Logs'])->name('superadmin.logs');
+    Route::get('logs-detail/{id}',[SuperadminController::class,'LogsDetail'])->name('superadmin.logs.detail');
 
 
     //15-06-2023

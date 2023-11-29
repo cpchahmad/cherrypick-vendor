@@ -259,6 +259,7 @@ class updatePrice extends Command
                     $update_log->date = $currentTime->format('F j, Y');
                     $update_log->status = 'Complete';
                     $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->product_ids=implode(',',$product_ids);
                     $update_log->save();
 
                 }catch (\Exception $exception){

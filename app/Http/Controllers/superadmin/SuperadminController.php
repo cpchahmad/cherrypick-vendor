@@ -3647,8 +3647,8 @@ $tag_array=array();
 
 
     public function UpdateProductShopifyStatus(){
-//        Product::where('shopify_status', 'In-Progress')->update(['shopify_status' => 'Pending']);
-        Product::where('vendor',66)->where('shopify_status', 'In-Progress')->update(['shopify_status' => 'Pending']);
+        Product::where('shopify_status', 'In-Progress')->update(['shopify_status' => 'Pending']);
+//        Product::where('vendor',66)->where('shopify_status', 'In-Progress')->update(['shopify_status' => 'Pending']);
         return redirect()->back()->with('success', 'Changed Successfully');
     }
 

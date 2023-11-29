@@ -22,6 +22,8 @@
   <link href="{{url('superadmin/assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/vendor/datepicker/datepicker.css')}}" rel="stylesheet">
+    <link href="{{url('public/superadmin/assets/vendor/remixicon/remixicon.css')}}" rel="stylesheet">
+
 
   <link href="{{url('superadmin/assets/vendor/quill/quill.snow.css')}}" rel="stylesheet">
   <link href="{{url('superadmin/assets/vendor/quill/quill.bubble.css')}}" rel="stylesheet">

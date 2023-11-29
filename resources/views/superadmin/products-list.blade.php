@@ -329,25 +329,65 @@
         var array = $.map($('input[name="products[]"]:checked'), function(c){return c.value; });
         if(array!='')
         {
-            var v_token = "{{csrf_token()}}";
-            var formData= new FormData();
-            formData.append('ids' , array);
+
+            var search='{{Request::get('search')}}';
+            var vendor='{{Request::get('vendor')}}';
+            console.log(vendor);
+            var date='{{Request::get('date')}}';
+            var status='{{Request::get('status')}}';
+            var shopify_status='{{Request::get('shopify_status')}}';
+
+            var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+            var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+            var productTypeParam = selectedOptions.join(',');
+                console.log(productTypeParam);
+
+            {{--var v_token = "{{csrf_token()}}";--}}
+            {{--var formData= new FormData();--}}
+            {{--formData.append('ids' , array);--}}
+
+
             $.ajax({
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    type:'post',
-                    data:formData,
-                    headers: {'X-CSRF-Token': v_token},
-                    url:"{{ route('superadmin.bulk-approve-product') }}",
-                    success:function(response){
-                        var json = $.parseJSON(response);
-                        if(json.status=='success')
-                        {
-                            window.location.href='products';
-                        }
+                type: 'GET',
+                url: "{{ route('superadmin.bulk-approve-product') }}",
+                data: {
+                    ids:array,
+                    search: search,
+                    vendor: vendor,
+                    date: date,
+                    status: status,
+                    shopify_status:shopify_status,
+                    product_type:productTypeParam
+
+                },
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status === 'success') {
+
+                        toastr.success("Products are In-Progress for Approval");
+                        // window.location.href = 'products';
                     }
-                });
+                }
+            });
+
+
+            {{--$.ajax({--}}
+            {{--        cache: false,--}}
+            {{--        contentType: false,--}}
+            {{--        processData: false,--}}
+            {{--        type:'post',--}}
+
+            {{--        data:formData,--}}
+            {{--        headers: {'X-CSRF-Token': v_token},--}}
+            {{--        url:"{{ route('superadmin.bulk-approve-product') }}",--}}
+            {{--        success:function(response){--}}
+            {{--            var json = $.parseJSON(response);--}}
+            {{--            if(json.status=='success')--}}
+            {{--            {--}}
+            {{--                window.location.href='products';--}}
+            {{--            }--}}
+            {{--        }--}}
+            {{--    });--}}
         }
      }
 	 function rejectMultiple()

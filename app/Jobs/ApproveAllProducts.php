@@ -30,6 +30,7 @@ class ApproveAllProducts implements ShouldQueue
 
     public $timeout = 10000;
     protected $products;
+    protected $filter_data;
 
     /**
      * Create a new job instance.
@@ -37,9 +38,10 @@ class ApproveAllProducts implements ShouldQueue
      * @return void
      */
 
-    public function __construct($products)
+    public function __construct($products,$filter_data)
     {
         $this->products = $products;
+        $this->filter_data = $filter_data;
 
 
     }
@@ -113,6 +115,7 @@ class ApproveAllProducts implements ShouldQueue
                     $check_log->product_pushed = 0;
                     $check_log->start_time = $currentTime->toTimeString();
                     $check_log->product_ids=implode(',',$product_array_id);
+                    $check_log->filters=json_encode($this->filter_data);
                     $check_log->save();
 
                 }

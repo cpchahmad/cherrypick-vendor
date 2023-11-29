@@ -183,8 +183,7 @@
 
         @if(count($product_type_subcatgories) > 0)
 
-            <div class="container">
-            <div class="row">
+
 
                 <h4>Product Type Tags Based</h4>
 
@@ -215,8 +214,8 @@
                                         </td>
 
                                         <td style="display: flex">
-                                            <a href="#"  data-bs-toggle="modal" data-bs-target="#basicModal_toAdd_{{$product_type_subcategory->id}}"  class="btn btn-success mx-2 ">Edit</a>
-                                            <a href="{{route('superadmin.delete-product-type-subcategory',$product_type_subcategory->id)}}" class="btn btn-danger ">Delete</a>
+                                            <a href="#"  data-bs-toggle="modal" data-bs-target="#basicModal_toAdd_{{$product_type_subcategory->id}}"  class="btn btn-success  ">Edit</a>
+                                            <a href="{{route('superadmin.delete-product-type-subcategory',$product_type_subcategory->id)}}" class="btn btn-danger mx-1 ">Delete</a>
                                             <div class="modal fade" id="basicModal_toAdd_{{$product_type_subcategory->id}}" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog modal-xl">
                                                     <div class="modal-content">
@@ -336,8 +335,6 @@
                         </div>
                     </div>
 
-            </div>
-            </div>
 
             @endif
         </section>

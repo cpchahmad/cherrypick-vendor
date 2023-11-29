@@ -136,8 +136,15 @@
                      </span>
                                         </td>
                                         <td><span class="@if($vendor->status=='Active') {{'en-recovered'}} @else {{'en-dismissed'}} @endif"></span> {{$vendor->status}}</td>
+
+                                        @php
+                                        $json_url=\Illuminate\Support\Facades\DB::table('cron_json_url')->where('vendor_id',$vendor->id)->first();
+                                        @endphp
                                         <td class="icon-action">
-                                            <a href="{{route('vendor.setting',$vendor->id)}}"><i class="bi bi-eye"></i></a>
+                                            @if($json_url)
+                                            <a href="{{route('sync.from.api',$vendor->id)}}" style="font-size: 10px;color:white;" class="btn btn-primary btn-sm">Sync from Api</a>
+                                            @endif
+                                            <a  href="{{route('vendor.setting',$vendor->id)}}"><i class="bi bi-eye"></i></a>
                                             <span class="form-switch">
                       <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault_{{$vendor->id}}" onclick="changeStoreStatus({{$vendor->id}})" @if($vendor->status=='Active') {{'checked'}} @endif>
                      </span>

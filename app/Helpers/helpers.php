@@ -799,7 +799,6 @@ class Helpers{
 
 
 
-
             if($weight_in_gms <= 50)
             {
                 $Variant_Price = round(($price_usd + $usa_shipping_50gms), 2);
@@ -952,10 +951,11 @@ $store=Store::find($vid);
         }
 
 
+
         $Variant_Price = ceil($Variant_Price * 4) / 4;
         $price_gbp_final = ceil($price_gbp_final * 4) / 4;
         $price_nld_final = ceil($price_nld_final * 4) / 4;
-        $price_inr_final = ceil($price_inr_final * 4) / 4;
+        $price_inr_final = ceil($price_inr_final);
         $price_cad_final = ceil($price_cad_final * 4) / 4;
         $price_aud_final = ceil($price_aud_final * 4) / 4;
 //        $price_irl_final = ceil($price_irl_final * 4) / 4;
@@ -2038,7 +2038,7 @@ $store=Store::find($vid);
 
         $price_gbp_final = ceil($price_gbp_final * 4) / 4;
         $price_nld_final = ceil($price_nld_final * 4) / 4;
-        $price_inr_final = ceil($price_inr_final * 4) / 4;
+        $price_inr_final = ceil($price_inr_final);
         $price_cad_final = ceil($price_cad_final * 4) / 4;
         $price_aud_final = ceil($price_aud_final * 4) / 4;
         $price_irl_final = ceil($price_irl_final * 4) / 4;

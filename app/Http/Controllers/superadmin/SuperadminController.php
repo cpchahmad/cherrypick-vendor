@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProductController;
 use App\Jobs\ApproveAllProducts;
 use App\Jobs\DenyAllProducts;
+use App\Jobs\ProductsSyncFromApi;
 use App\Jobs\UpdateProductPricesByProductType;
 use App\Jobs\UpdateProductsWeight;
 use App\Jobs\UpdateShopifyPricesByProductType;
@@ -15,6 +16,7 @@ use App\Models\Log;
 use App\Models\Markets;
 use App\Models\MarketVendor;
 use App\Models\ProductChange;
+use App\Models\ProductLog;
 use App\Models\ProductType;
 use App\Models\ProductTypeSubCategory;
 use App\Models\Setting;
@@ -639,13 +641,18 @@ class SuperadminController extends Controller
     }
 
 	public function updateGeneralConfiguration(Store $store, Request $request) {
+
 		$validatedData = $request->validate([
 			'emailid'=>'required|email|email:rfc,dns',
             'mobile'=>'required|min:10',
 			'address' => 'required',
         ]);
 		$store->update($validatedData);
-		return redirect()->back();
+
+        return redirect()->back()->with([
+            'success' => 'Setting Saved Successfully',
+        ]);
+//		return redirect()->back();
 	}
 
 	public function updatePaymentDetails(Payment $payment, Request $request) {
@@ -731,7 +738,10 @@ class SuperadminController extends Controller
 
         curl_close ($curl);
 
-		return redirect()->back();
+        return redirect()->back()->with([
+            'success' => 'Store Front Setting Saved Successfully',
+            'active_tab' => $request->active_tab,
+        ]);
 	}
 	public function updateVendorTag($id, Request $request) {
 		$request->validate([
@@ -744,7 +754,10 @@ class SuperadminController extends Controller
 			$productTag->save();
 		}
 		ProductInfo::where('vendor_id', $id)->update(['price_conversion_update_status' => 1]);
-		return redirect()->back();
+        return redirect()->back()->with([
+            'success' => 'Tags Saved Successfully',
+            'active_tab' => $request->active_tab,
+        ]);
 	}
 
 	public function storesList(){
@@ -1003,9 +1016,10 @@ class SuperadminController extends Controller
      $data = Product::find($id);
      $items = ProductInfo::where('product_id',$id)->get();
      $vendor = Store::where('id',$data->vendor)->first();
+     $product_logs=ProductLog::where('product_id',$id)->orderBy('id','desc')->get();
 //     $change_products=ProductChange::where('product_id',$id)->get();
 //     $change_variants=VariantChange::where('product_id',$id)->get();
-     return view('superadmin.products-details',compact('data','items','vendor'));
+     return view('superadmin.products-details',compact('data','items','vendor','product_logs'));
     }
     public function outofstockProduct(){
         $data = DB::table('products_variants')
@@ -1025,8 +1039,10 @@ class SuperadminController extends Controller
     }
     public function bulkApproveProduct(Request $request)
     {
+
         $product_array_id=array();
-        $ids=explode(",",$request->ids);
+//        $ids=explode(",",$request->ids);
+        $ids=$request->ids;
         foreach($ids as $id)
         {
             $product_info =ProductInfo::where('product_id',$id)->get();
@@ -1039,12 +1055,43 @@ class SuperadminController extends Controller
             }
 
         }
+
         $product_array_id=array_unique($product_array_id);
 
         if(count($product_array_id) > 0) {
             $data = Product::whereIn('id',$product_array_id)->update(['status'=>1,'approve_date' => Carbon::now()]);
 
+            $check_log=Log::where('name','Approve Product Push')->where('is_running',1)->where('is_complete',0)->first();
+            $currentTime = now();
+            if($check_log==null){
+                $check_log=new Log();
+                $check_log->status='In-Progress';
+                $check_log->is_running=1;
+                $check_log->is_complete=0;
+
+            }else{
+                $check_log=new Log();
+                $check_log->is_running=0;
+                $check_log->is_complete=0;
+                $check_log->status='In-Queue';
+            }
+
+
+            $check_log->name = 'Approve Product Push';
+            $check_log->running_at=now();
+            $check_log->date = $currentTime->format('F j, Y');
+            $check_log->total_product = count($product_array_id);
+            $check_log->product_left = count($product_array_id);
+            $check_log->product_pushed = 0;
+            $check_log->start_time = $currentTime->toTimeString();
+            $check_log->product_ids=implode(',',$product_array_id);
+            $check_log->filters=json_encode($request->all());
+            $check_log->save();
+
         }
+
+
+
         return json_encode(array('status'=>'success'));
     }
 	public function bulkRejectProduct(Request $request)
@@ -2587,6 +2634,7 @@ class SuperadminController extends Controller
 				$product->tags = $tags;
 				$product->category = $category_id;
                 $product->product_type_id=$product_type->id;
+                $product->is_updated_by_url=1;
 				$product->save();
 				$product_id=$product->id;
 
@@ -2719,6 +2767,7 @@ class SuperadminController extends Controller
 				$data['tags']=implode(",",$row['tags']);
                 $data['product_type_id']=$product_type->id;
                 $data['orignal_vendor'] = $vendor;
+                $data['is_updated_by_url'] = 1;
 				Product::where('id',$product_check->id)->update($data);
 				$product_id=$product_check->id;
 			$i=0;
@@ -3080,9 +3129,18 @@ class SuperadminController extends Controller
     }
 
 
-    public function Logs(){
+    public function Logs(Request $request){
 
-        $logs=Log::orderBy('id','desc')->paginate(30);
+        $logs=Log::query();
+        if($request->status!=""){
+            $logs->where('status',$request->status);
+        }
+
+        if($request->date != "" && $request->date!='undefined'){
+            $request->date = str_replace('/', '-', $request->date);
+            $logs->whereDate('created_at' , date('Y-m-d',strtotime($request->date)));
+        }
+        $logs=$logs->orderBy('id','desc')->paginate(30)->appends($request->all());
         return view('superadmin.logs',compact('logs'));
     }
 
@@ -3161,7 +3219,11 @@ class SuperadminController extends Controller
             $store->size_chart_html=$request->html;
             $store->save();
             $this->CreateUpdateMetafield($store->id);
-            return redirect()->back()->with('success', 'Setting Saved Successfully');
+            return redirect()->back()->with([
+                'success' => 'Setting Saved Successfully',
+                'active_tab' => $request->active_tab, // Add more key-value pairs as needed
+            ]);
+//            return redirect()->back()->with('success', 'Setting Saved Successfully');
         }
 
 
@@ -3266,6 +3328,18 @@ class SuperadminController extends Controller
                     $data_type['sizechart_file'] = $product_type_category->size_chart_image;
                     array_push($product_type_category_array, $data_type);
                 }
+
+                usort($product_type_category_array, function ($a, $b) {
+                    $tagsA = count(explode(',', $a['tags']));
+                    $tagsB = count(explode(',', $b['tags']));
+
+                    if ($tagsA == $tagsB) {
+                        return strcmp($a['tags'], $b['tags']); // Sort alphabetically if tags count is the same
+                    }
+
+                    return $tagsB - $tagsA; // Sort by the number of tags in descending order
+                });
+
                 $data['product_type'] = $product_type->product_type;
                 $data['sizechart_html'] = $product_type->size_chart_html;
                 $data['sizechart_file'] = $product_type->size_chart_image;
@@ -3347,7 +3421,7 @@ class SuperadminController extends Controller
 
     public function approveSelectedProducts(Request $request){
 
-        $res = Product::whereNull('shopify_id')->where('in_queue',0);
+        $res = Product::whereNull('shopify_id');
 
         if($request->search != ""){
             $res->where('title' , 'LIKE', '%' . $request->search . '%');
@@ -3375,7 +3449,8 @@ class SuperadminController extends Controller
         }
         $products=$res->get();
 
-        ApproveAllProducts::dispatch($products);
+
+        ApproveAllProducts::dispatch($products,$request->all());
 
         return json_encode(array('status'=>'success'));
 
@@ -3568,6 +3643,63 @@ $tag_array=array();
 
         UpdateShopifyPricesByProductType::dispatch($request->id,$request->store);
         return json_encode(array('status'=>'success'));
+    }
+
+
+    public function UpdateProductShopifyStatus(){
+        Product::where('shopify_status', 'In-Progress')->update(['shopify_status' => 'Pending']);
+//        Product::where('vendor',66)->where('shopify_status', 'In-Progress')->update(['shopify_status' => 'Pending']);
+        return redirect()->back()->with('success', 'Changed Successfully');
+    }
+
+
+    public function startShopifyPushCronjob($id){
+        $log=Log::find($id);
+        if($log){
+            $log->is_enabled=1;
+            $log->status='In-Progress';
+            $log->is_running=1;
+            $log->save();
+        }
+        return redirect()->back()->with('success', 'Changed Successfully');
+    }
+
+    public function pauseShopifyPushCronjob($id){
+        $log=Log::find($id);
+        if($log){
+            $log->status='Paused';
+            $log->is_enabled=0;
+            $log->is_running=0;
+            $log->save();
+        }
+
+        $check_log=Log::where('name','Approve Product Push')->where('status','In-Queue')->first();
+        if($check_log){
+            $check_log->status='In-Progress';
+            $check_log->is_running=1;
+            $check_log->save();
+        }
+        return redirect()->back()->with('success', 'Changed Successfully');
+    }
+
+
+    public function syncApiData($id)
+    {
+        $vendor = Store::find($id);
+        if($vendor){
+            ProductsSyncFromApi::dispatch($id);
+            return redirect()->back()->with('success', 'Products Sync In-Progress');
+        }
+    }
+
+
+    public function LogsDetail($id){
+
+        $log=Log::find($id);
+        if($log){
+            $product_ids=explode(',',$log->product_ids);
+            return view('superadmin.logs-detail',compact('log','product_ids'));
+        }
     }
 
 }

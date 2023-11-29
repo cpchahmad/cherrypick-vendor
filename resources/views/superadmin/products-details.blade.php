@@ -221,6 +221,34 @@
                                         </div>
                                     @endforeach
 
+                                    @if(count($product_logs) > 0)
+                                 <strong>Logs</strong>
+                                    <div class="card-body show-plan collections mt-3">
+                                        <!-- Bordered Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-white">
+                                                <thead>
+                                                <tr>
+
+                                                    <th scope="col">Title</th>
+                                                    <th scope="col">Date Time</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <?php $i=1; ?>
+                                                @foreach($product_logs as $product_log)
+                                                    <tr>
+                                                        <td>{{$product_log->title}}</td>
+                                                        <td>{{$product_log->date_time}}</td>
+                                                    </tr>
+                                                @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <!-- End Bordered Table -->
+                                    </div>
+                                        @endif
+
 
 
 
@@ -228,6 +256,8 @@
 
 
                                 </div>
+
+
                                 <div class="col-lg-4 col-md-4 col-sm-4">
                                     <div class="card border-light border-0 mt-3  shadow-sm">
                                         <div class="card-header  text-dark">

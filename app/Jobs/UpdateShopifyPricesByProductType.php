@@ -59,7 +59,8 @@ class UpdateShopifyPricesByProductType implements ShouldQueue
 
         try {
 
-            $products=Product::where('product_type_id',$this->id)->get();
+            $products=Product::where('product_type_id',$this->id)->where('shopify_status','Complete')->get();
+            $product_ids=Product::where('product_type_id',$this->id)->where('shopify_status','Complete')->pluck('id')->toArray();
             if(count($products) > 0 ) {
                 $product_count=count($products);
                     $currentTime = now();
@@ -68,6 +69,7 @@ class UpdateShopifyPricesByProductType implements ShouldQueue
                     $log->date = $currentTime->format('F j, Y');
                     $log->total_product = $product_count;
                     $log->start_time = $currentTime->toTimeString();
+                $log->product_ids=implode(',',$product_ids);
                     $log->status='In-Progress';
                     $log->save();
 

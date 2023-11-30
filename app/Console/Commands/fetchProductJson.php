@@ -111,6 +111,8 @@ class fetchProductJson extends Command
                 $vid = $val->vendor_id;
                 $url = $val->url;
 
+                Product::where('vendor', $vid)->update(['is_available' => 0]);
+
                 for ($i = 1; $i <= 100; $i++) {
                     $str = file_get_contents("https://" . $url . "/collections/all/products.json?page=" . $i . "&limit=250", false, $context);
                     $arr = json_decode($str, true);
@@ -133,6 +135,13 @@ class fetchProductJson extends Command
 
                     }
 
+                }
+
+                $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
+                foreach ($delete_products as $delete_product){
+
+                    ProductInfo::where('product_id',$delete_product->id)->delete();
+                    $delete_product->delete();
                 }
 
 
@@ -481,6 +490,28 @@ class fetchProductJson extends Command
         //echo "<pre>"; print_r($products); die;
         foreach($products as $index=> $row)
         {
+            $html=$row['body_html'];
+                $html = preg_replace('/<img[^>]*>/', '', $html);
+
+            $linkToRemove = 'https://www.violetandpurple.com/index.php/faq';
+// Find the position of the link
+            $position = strpos($html, $linkToRemove);
+
+// If the link is found, find the parent <p> tag and remove it
+            if ($position !== false) {
+                $startTagPosition = strrpos(substr($html, 0, $position), '<p');
+                $endTagPosition = strpos($html, '</p>', $position) + 4;
+
+                // Remove the parent <p> tag
+                $modifiedHtml = substr_replace($html, '', $startTagPosition, $endTagPosition - $startTagPosition);
+            } else {
+                // If the link is not found, keep the original HTML
+                $modifiedHtml = $html;
+            }
+
+// Output the modified HTML
+            $html=$modifiedHtml;
+
 
 
             $product_check=Product::where('reference_shopify_id',$row['id'])->where('vendor',$vid)->first();
@@ -511,7 +542,7 @@ class fetchProductJson extends Command
 
                 $shopify_id=$row['id'];
                 $title=$row['title'];
-                $description=$row['body_html'];
+                $description=$html;
                 $vendor=$row['vendor'];
                 $tags=implode(",",$row['tags']);
                 $handle=$row['handle'];
@@ -527,6 +558,7 @@ class fetchProductJson extends Command
                 $product->category = $category_id;
                 $product->product_type_id=$product_type->id;
                 $product->is_updated_by_url=1;
+                $product->is_available=1;
                 $product->save();
                 $product_id=$product->id;
 
@@ -660,11 +692,12 @@ class fetchProductJson extends Command
             {
                 $vendor=$row['vendor'];
                 $data['title']=$row['title'];
-                $data['body_html']=$row['body_html'];
+                $data['body_html']=$html;
                 $data['tags']=implode(",",$row['tags']);
                 $data['product_type_id']=$product_type->id;
                 $data['orignal_vendor'] = $vendor;
                 $data['is_updated_by_url'] = 1;
+                $data['is_available'] = 1;
                 Product::where('id',$product_check->id)->update($data);
                 $product_id=$product_check->id;
 
@@ -694,6 +727,17 @@ class fetchProductJson extends Command
                         if ($var['grams'] > 0 && $grams_selected==0) {
                             $grams_selected=1;
                             $grams = $var['grams'];
+                        }
+                    }
+                }
+
+
+                $check_info_v=ProductInfo::where('product_id',$product_check->id)->get();
+                foreach ($check_info_v as $v_get){
+
+                    if($v_get->inventory_id==null){
+                        if($v_get->manual_weight==0) {
+                            $v_get->delete();
                         }
                     }
                 }

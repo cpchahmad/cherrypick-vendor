@@ -308,6 +308,10 @@ Route::get('testcode',[ProductController::class,'testcode']);
 
 
 
+   Route::get('update-specific',[SuperadminController::class,'updateSpecificShopifyProduct']);
+
+
+
 
 
 

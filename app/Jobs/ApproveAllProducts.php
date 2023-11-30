@@ -84,7 +84,7 @@ class ApproveAllProducts implements ShouldQueue
                     }
 
                 }
-                $product_array_id=array_unique($product_array_id);
+//                $product_array_id=array_unique($product_array_id);
                 $currentTime = now();
 //                $log->date = $currentTime->format('F j, Y');
 //                $log->end_time = $currentTime->toTimeString();

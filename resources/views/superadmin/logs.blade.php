@@ -67,6 +67,8 @@
                         <option value="In-Progress" {{ Request::get('status') == "In-Progress" ? 'selected' : '' }}>In-Progress</option>
                         <option value="Paused" {{ Request::get('status') == "Paused" ? 'selected' : '' }}>Pause</option>
                         <option value="In-Queue" {{ Request::get('status') == "In-Queue" ? 'selected' : '' }}>In-Queue</option>
+                        <option value="On-Hold" {{ Request::get('status') == "On-Hold" ? 'selected' : '' }}>On-Hold</option>
+                        <option value="Failed" {{ Request::get('status') == "Failed" ? 'selected' : '' }}>Failed</option>
 
                     </select>
 
@@ -92,6 +94,7 @@
                                 <th scope="col">Products Pushed</th>
                                 <th scope="col">Products Left</th>
                                 <th scope="col">Status</th>
+                                <th scope="col">Run At</th>
                                 <th scope="col">Action</th>
 
                             </tr>
@@ -204,9 +207,11 @@
                                     <td>{{ $log->product_left }}</td>
 
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @elseif ($log->status=='Paused') <span class="en-dismissed"></span>{{'Pause'}} @else <span class="en-dismissed"></span>{{$log->status}}@endif</td>
+
+                                    <td>{{ \Illuminate\Support\Carbon::parse($log->running_at)->format('F j, Y H:i:s') }}</td>
                                     <td>
                                         @if($log->name=='Approve Product Push')
-                                            @if($log->status=='In-Progress')
+                                            @if($log->status=='In-Progress' || $log->status=='On-Hold')
                                                 <a href="{{route('pause.shopifypush.cronjob',$log->id)}}" class="btn btn-primary pause_btn btn_size">Pause</a>
                                             @elseif($log->status=='Paused')
                                                 <a href="{{route('start.shopifypush.cronjob',$log->id)}}" class="btn btn-success btn_size">Start</a>

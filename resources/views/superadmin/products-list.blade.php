@@ -34,8 +34,8 @@
 
                     </div>
               <div class="col-6">
-                  <p style="margin-bottom: 3px;">In-Stock: ({{$total_variants_in_stock}})</p>
-                <p style="margin-bottom: 3px;">Out-of-Stock: ({{$total_variants_out_of_stock}})</p>
+                  <p style="margin-bottom: 3px;">In-Stock: ({{$total_products_in_stock}}/{{$total_variants_in_stock}})</p>
+                <p style="margin-bottom: 3px;">Out-of-Stock: ({{$total_products_out_of_stock}}/{{$total_variants_out_of_stock}})</p>
               </div>
                 </div>
             </div>

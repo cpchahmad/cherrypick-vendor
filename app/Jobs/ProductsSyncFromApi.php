@@ -66,6 +66,7 @@ class ProductsSyncFromApi implements ShouldQueue
             $log->save();
 
             $vid=$vendor->id;
+            Product::where('vendor', $vid)->update(['is_available' => 0]);
             $json_url = \Illuminate\Support\Facades\DB::table('cron_json_url')->where('vendor_id', $vendor->id)->first();
            $extra=new Extra();
            $extra->log=json_encode($json_url);
@@ -108,7 +109,12 @@ class ProductsSyncFromApi implements ShouldQueue
                     //echo "<pre>"; print_r($arr['products']); die();
                 }
 
+                $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
+                foreach ($delete_products as $delete_product){
 
+                    ProductInfo::where('product_id',$delete_product->id)->delete();
+                    $delete_product->delete();
+                }
                 $setting = Setting::first();
                 if ($setting) {
                     $API_KEY = $setting->api_key;

@@ -30,7 +30,7 @@ class ApproveAllProducts implements ShouldQueue
 
     public $timeout = 10000;
     protected $products;
-    protected $filter_data;
+    protected $log_id;
 
     /**
      * Create a new job instance.
@@ -38,10 +38,10 @@ class ApproveAllProducts implements ShouldQueue
      * @return void
      */
 
-    public function __construct($products,$filter_data)
+    public function __construct($products,$log_id)
     {
         $this->products = $products;
-        $this->filter_data = $filter_data;
+        $this->log_id = $log_id;
 
 
     }
@@ -84,7 +84,7 @@ class ApproveAllProducts implements ShouldQueue
                     }
 
                 }
-//                $product_array_id=array_unique($product_array_id);
+                $product_array_id=array_unique($product_array_id);
                 $currentTime = now();
 //                $log->date = $currentTime->format('F j, Y');
 //                $log->end_time = $currentTime->toTimeString();
@@ -93,29 +93,35 @@ class ApproveAllProducts implements ShouldQueue
                 if(count($product_array_id) > 0) {
                     $data = Product::whereIn('id',$product_array_id)->update(['status'=>1,'approve_date' => Carbon::now()]);
 
-                    $check_log=Log::where('name','Approve Product Push')->where('is_running',1)->where('is_complete',0)->first();
+                    $check_existing_log=Log::where('name','Approve Product Push')->where('is_running',1)->where('is_complete',0)->first();
                     $currentTime = now();
-                    if($check_log==null){
-                        $check_log=new Log();
+                    $check_log=Log::where('id',$this->log_id)->first();
+                    if($check_existing_log==null){
+//                        $check_log=new Log();
                         $check_log->status='In-Progress';
                         $check_log->is_running=1;
                         $check_log->is_complete=0;
 
                     }else{
-                        $check_log=new Log();
+//                        $check_log=new Log();
                         $check_log->is_running=0;
                         $check_log->is_complete=0;
                         $check_log->status='In-Queue';
                     }
-                    $check_log->name = 'Approve Product Push';
                     $check_log->running_at=now();
-                    $check_log->date = $currentTime->format('F j, Y');
+//                    $check_log->date = $currentTime->format('F j, Y');
                     $check_log->total_product = count($product_array_id);
                     $check_log->product_left = count($product_array_id);
                     $check_log->product_pushed = 0;
-                    $check_log->start_time = $currentTime->toTimeString();
+//                    $check_log->start_time = $currentTime->toTimeString();
                     $check_log->product_ids=implode(',',$product_array_id);
-                    $check_log->filters=json_encode($this->filter_data);
+                    $check_log->save();
+
+                }else{
+
+                    $check_log=Log::where('id',$this->log_id)->first();
+                    $check_log->status='Complete';
+                    $check_log->end_time = now()->format('F j, Y');
                     $check_log->save();
 
                 }

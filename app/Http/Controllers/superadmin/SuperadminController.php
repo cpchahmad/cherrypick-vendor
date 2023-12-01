@@ -913,6 +913,8 @@ class SuperadminController extends Controller
       $product_types=ProductType::whereIn('id',$product_type_ids)->get();
 
 
+
+
 //       $product_tags=$res->pluck('tags');
 //       $tag_array=array();
 //       foreach ($product_tags as $product_tag){
@@ -936,6 +938,9 @@ class SuperadminController extends Controller
 
        $total_products = $res->count();
 
+
+
+
        $product_ids = $res->pluck('id')->toArray();
        $total_variants=ProductInfo::whereIn('product_id',$product_ids)->count();
        $total_variants_in_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',1)->count();
@@ -943,54 +948,57 @@ class SuperadminController extends Controller
 
 
 
-//       foreach ($product_ids as $product_id) {
-//
-//           $upload_product=0;
-//           $product_variants_stocks = ProductInfo::where('product_id', $product_id)->pluck('stock')->toArray();
-//
-//           foreach ($product_variants_stocks as $product_variants_stock){
-//               if($product_variants_stock==1) {
-//                   $upload_product = 1;
-//               }
-//           }
-//           if($upload_product==1){
-//               $total_products_in_stock=$total_products_in_stock+1;
-//           }else{
-//               $total_products_out_of_stock=$total_products_out_of_stock+1;
-//           }
-//       }
-
-//       $productData = Product::whereIn('id', $productIds)
-//           ->with('productInfos') // Eager load the related ProductInfos
-//           ->get();
-//
-//       $totalProductsInStock = $productData->flatMap->productInfos->where('stock', 1)->count();
-//       $totalProductsOutOfStock = $productData->flatMap->productInfos->where('stock', '!=', 1)->count();
 
 
 
        $total_products_in_stock=0;
        $total_products_out_of_stock=0;
 
+       $inStockProductIds = [];
+       $outOfStockProductIds = [];
+
+
        Product::whereIn('id', $product_ids)
            ->with(['productInfos' => function ($query) {
                $query->select('product_id', 'stock');
            }])
-           ->chunk(200, function ($products) use (&$total_products_in_stock, &$total_products_out_of_stock) {
+           ->chunk(200, function ($products) use (&$total_products_in_stock, &$total_products_out_of_stock, &$inStockProductIds, &$outOfStockProductIds) {
                foreach ($products as $product) {
                    $stockCounts = $product->productInfos->pluck('stock')->toArray();
 
                    if (in_array(1, $stockCounts)) {
                        // If at least one variant has stock 1
                        $total_products_in_stock++;
+                       $inStockProductIds[] = $product->id;
                    } elseif (count(array_unique($stockCounts)) === 1 && reset($stockCounts) === 0) {
                        // If all variants have stock 0
                        $total_products_out_of_stock++;
+                       $outOfStockProductIds[] = $product->id;
+
                    }
                }
            });
 
 
+
+       if($request->stock!="")
+       {
+           if($request->stock=='in-stock'){
+
+           $res->whereIn('id', $inStockProductIds)->get();
+               $total_products_out_of_stock=0;
+               $total_variants_out_of_stock=0;
+
+
+           }elseif ($request->stock=='out-of-stock'){
+
+               $res->whereIn('id', $outOfStockProductIds)->get();
+
+               $total_products_in_stock=0;
+               $total_variants_in_stock=0;
+           }
+
+       }
 
 
       $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
@@ -1093,6 +1101,7 @@ class SuperadminController extends Controller
     public function bulkApproveProduct(Request $request)
     {
 
+
         $product_array_id=array();
 //        $ids=explode(",",$request->ids);
         $ids=$request->ids;
@@ -1111,7 +1120,7 @@ class SuperadminController extends Controller
         }
 
 
-//        $product_array_id=array_unique($product_array_id);
+        $product_array_id=array_unique($product_array_id);
 
 
         if(count($product_array_id) > 0) {
@@ -2648,7 +2657,7 @@ class SuperadminController extends Controller
 //		}
 //
 //	}
-    function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
+    function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null,$log_id=null)
 	{
 
 
@@ -2732,6 +2741,7 @@ class SuperadminController extends Controller
                     $product_logs->title = 'Product Created';
                     $product_logs->date_time = now()->format('F j, Y H:i:s');
                     $product_logs->product_id = $product_id;
+                    $product_logs->log_id = $log_id;
                     $product_logs->save();
 
                     $i = 0;
@@ -2864,6 +2874,7 @@ class SuperadminController extends Controller
                     $product_logs->title = 'Product Update';
                     $product_logs->date_time = now()->format('F j, Y H:i:s');
                     $product_logs->product_id = $product_id;
+                    $product_logs->log_id = $log_id;
                     $product_logs->save();
                     $i = 0;
 
@@ -3296,7 +3307,16 @@ class SuperadminController extends Controller
         $hsn_code=$request->hsncode;
         ProductType::where('id',$id)->update(['base_weight' => $weight,'hsn_code'=>$hsn_code]);
 
-        UpdateProductsWeight::dispatch($id,$request->store);
+        $currentTime = now();
+        $log=new Log();
+        $log->name='Update Products Weight by Product Type ('.$request->store.')';
+        $log->date = $currentTime->format('F j, Y');
+        $log->start_time = $currentTime->toTimeString();
+        $log->status='Processing';
+        $log->save();
+
+
+        UpdateProductsWeight::dispatch($id,$log->id);
         return json_encode(array('status'=>'success'));
 
 
@@ -3548,10 +3568,66 @@ class SuperadminController extends Controller
             $ex_product_type=explode(',',$request->product_type);
             $res->whereIn('product_type_id',$ex_product_type);
         }
+
+        $product_ids = $res->pluck('id')->toArray();
+
+
+
+        $inStockProductIds = [];
+        $outOfStockProductIds = [];
+
+
+        Product::whereIn('id', $product_ids)
+            ->with(['productInfos' => function ($query) {
+                $query->select('product_id', 'stock');
+            }])
+            ->chunk(200, function ($products_get) use (&$total_products_in_stock, &$total_products_out_of_stock, &$inStockProductIds, &$outOfStockProductIds) {
+                foreach ($products_get as $product_g) {
+                    $stockCounts = $product_g->productInfos->pluck('stock')->toArray();
+
+                    if (in_array(1, $stockCounts)) {
+                        // If at least one variant has stock 1
+
+                        $inStockProductIds[] = $product_g->id;
+                    } elseif (count(array_unique($stockCounts)) === 1 && reset($stockCounts) === 0) {
+                        // If all variants have stock 0
+
+                        $outOfStockProductIds[] = $product_g->id;
+
+                    }
+                }
+            });
+
+        if($request->stock!="")
+        {
+            if($request->stock=='in-stock'){
+
+                $res->whereIn('id', $inStockProductIds)->get();
+
+
+
+            }elseif ($request->stock=='out-of-stock'){
+
+                $res->whereIn('id', $outOfStockProductIds)->get();
+
+            }
+
+        }
+
+
         $products=$res->get();
 
 
-        ApproveAllProducts::dispatch($products,$request->all());
+    $log=new Log();
+    $log->name='Approve Product Push';
+    $log->date = now()->format('F j, Y');
+    $log->start_time =now();
+    $log->status='Processing';
+    $log->filters=json_encode($request->all());
+    $log->save();
+
+
+        ApproveAllProducts::dispatch($products,$log->id);
 
         return json_encode(array('status'=>'success'));
 
@@ -3736,13 +3812,28 @@ $tag_array=array();
 
     public function updateProductPricesByProductType(Request $request){
 
-        UpdateProductPricesByProductType::dispatch($request->id,$request->store);
+        $currentTime = now();
+        $log=new Log();
+        $log->name='Update Product Price in Database ('.$request->store.')';
+        $log->date = $currentTime->format('F j, Y');
+        $log->start_time = $currentTime->toTimeString();
+        $log->status='Processing';
+        $log->save();
+
+        UpdateProductPricesByProductType::dispatch($request->id,$log->id);
         return json_encode(array('status'=>'success'));
     }
 
     public function updateShopifyPricesByProductType(Request $request){
+        $currentTime = now();
+        $log=new Log();
+        $log->name='Update Price in Shopify ('.$request->store.')';
+        $log->date = $currentTime->format('F j, Y');
+        $log->start_time = $currentTime->toTimeString();
+        $log->status='Processing';
+        $log->save();
 
-        UpdateShopifyPricesByProductType::dispatch($request->id,$request->store);
+        UpdateShopifyPricesByProductType::dispatch($request->id,$log->id);
         return json_encode(array('status'=>'success'));
     }
 
@@ -3789,7 +3880,14 @@ $tag_array=array();
     {
         $vendor = Store::find($id);
         if($vendor){
-            ProductsSyncFromApi::dispatch($id);
+
+            $log = new Log();
+            $log->name = 'Fetch Product From Json ('.$vendor->name.')';
+            $log->date = now()->format('F j, Y');
+            $log->start_time = now()->toTimeString();
+            $log->status = 'Processing';
+            $log->save();
+            ProductsSyncFromApi::dispatch($id,$log->id);
             return redirect()->back()->with('success', 'Products Sync In-Progress');
         }
     }
@@ -3823,7 +3921,7 @@ $tag_array=array();
 
 
 
-        $products=Product::whereNotNull('shopify_id')->where('vendor',59)->get();
+        $products=Product::whereNotNull('shopify_id')->where('vendor',66)->get();
         foreach ($products as $product){
 
             $data['product']=array(
@@ -3854,6 +3952,7 @@ $tag_array=array();
             curl_close ($curl);
 
         }
+        dd('done');
         }
 
 

@@ -30,6 +30,7 @@
         <div class="subpagetitle fit-title">
             <h1>{{$data->title}}</h1>
             <p><a href="{{url('superadmin/products')}}">Product List</a> / <b>View Product</b></p>
+            <p style="text-align: right;"><b>Product Available: </b>@if($data->is_available==1){{'True'}}@else{{'False'}}@endif</p>
         </div>
         <section class="section up-banner">
 
@@ -169,7 +170,7 @@
                                                     <p><b>Weight(GM):</b> {{$row->grams}}</p>
                                                     <p><b>Pricing Weight(GM):</b> {{$row->pricing_weight}}  </p>
 
-                                                    <p><b>Quantity:</b> {{$row->stock}}</p>
+                                                    <p><b>Available: </b>@if($row->stock==1){{'True'}}@else{{'False'}}@endif</p>
 
 
                                                     <p><b>Dimensions(H-W-L):</b> {{$row->dimensions}}</p>

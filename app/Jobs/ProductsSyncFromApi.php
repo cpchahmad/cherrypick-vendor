@@ -11,6 +11,7 @@ use App\Models\Log;
 use App\Models\Product;
 use App\Models\ProductImages;
 use App\Models\ProductInfo;
+use App\Models\ProductLog;
 use App\Models\ProductType;
 use App\Models\Setting;
 use App\Models\Store;
@@ -32,6 +33,7 @@ class ProductsSyncFromApi implements ShouldQueue
 
     public $timeout = 10000;
     protected $vendor_id;
+    protected $log_id;
 
     /**
      * Create a new job instance.
@@ -39,9 +41,10 @@ class ProductsSyncFromApi implements ShouldQueue
      * @return void
      */
 
-    public function __construct($vendor_id)
+    public function __construct($vendor_id,$log_id)
     {
         $this->vendor_id = $vendor_id;
+        $this->log_id = $log_id;
     }
 
 
@@ -58,10 +61,7 @@ class ProductsSyncFromApi implements ShouldQueue
         if ($vendor) {
 
             $currentTime = now();
-            $log = new Log();
-            $log->name = 'Fetch Product From Json ('.$vendor->name.')';
-            $log->date = $currentTime->format('F j, Y');
-            $log->start_time = $currentTime->toTimeString();
+            $log = Log::where('id',$this->log_id)->first();
             $log->status = 'In-Progress';
             $log->save();
 
@@ -86,6 +86,8 @@ class ProductsSyncFromApi implements ShouldQueue
 
                 }
                 //$vid=0;
+                $total_products=0;
+
                 for ($i = 1; $i <= 100; $i++) {
                     $str = file_get_contents("https://" . $json_url->url . "/collections/all/products.json?page=" . $i . "&limit=250", false, $context);
                     $extra=new Extra();
@@ -93,17 +95,18 @@ class ProductsSyncFromApi implements ShouldQueue
                     $extra->save();
                     $arr = json_decode($str, true);
 
+                    $total_products=$total_products+count($arr['products']);
 
                     if (count($arr['products']) < 250) {
                         $extra=new Extra();
                         $extra->log=json_encode($arr);
                         $extra->save();
                         $superAdminController=new SuperadminController();
-                        $superAdminController->saveStoreFetchProductsFromJson($arr['products'], $vid, '');
+                        $superAdminController->saveStoreFetchProductsFromJson($arr['products'], $vid, '',$log->id);
 
                     } else {
                         $superAdminController=new SuperadminController();
-                        $superAdminController->saveStoreFetchProductsFromJson($arr['products'], $vid, '');
+                        $superAdminController->saveStoreFetchProductsFromJson($arr['products'], $vid, '',$log->id);
 
                     }
                     //echo "<pre>"; print_r($arr['products']); die();
@@ -247,9 +250,16 @@ class ProductsSyncFromApi implements ShouldQueue
 
                 Product::where('vendor', $vid)->update(['is_updated_by_url' => 0]);
 
+
+                $product_log_ids=ProductLog::where('log_id',$log->id)->pluck('product_id')->toArray();
+                $product_log_ids=array_unique($product_log_ids);
+                $product_log_ids=implode(',',$product_log_ids);
+
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->end_time = $currentTime->toTimeString();
+                $log->total_product=$total_products;
+                $log->product_ids=$product_log_ids;
                 $log->status = 'Complete';
                 $log->save();
             }

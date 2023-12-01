@@ -68,6 +68,7 @@
                         <option value="Paused" {{ Request::get('status') == "Paused" ? 'selected' : '' }}>Pause</option>
                         <option value="In-Queue" {{ Request::get('status') == "In-Queue" ? 'selected' : '' }}>In-Queue</option>
                         <option value="On-Hold" {{ Request::get('status') == "On-Hold" ? 'selected' : '' }}>On-Hold</option>
+                        <option value="Processing" {{ Request::get('status') == "Processing" ? 'selected' : '' }}>Processing</option>
                         <option value="Failed" {{ Request::get('status') == "Failed" ? 'selected' : '' }}>Failed</option>
 
                     </select>
@@ -133,6 +134,8 @@
                                         $status=null;
                                         $shopify_status=null;
                                         $product_type=null;
+                                        $stock=null;
+
 
                                             $data = json_decode($log->filters, true);
                                             if($data){
@@ -158,6 +161,9 @@
                                             if($product_type){
                                                 $product_type_data=\App\Models\ProductType::find($product_type);
                                                 $product_type=$product_type_data->product_type;
+                                            }
+                                            if(isset($data['stock'])){
+                                            $stock=$data['stock'];
                                             }
                                             }
                                     @endphp
@@ -195,6 +201,10 @@
                                                     @if($shopify_status!==null)
                                                 <p>Shopify Status: {{$shopify_status}} </p>
                                                         @endif
+
+                                                    @if($stock!==null)
+                                                        <p>Stock Type: {{$stock}} </p>
+                                                    @endif
                                             </div>
                                         </div>
                                             @endif
@@ -208,7 +218,7 @@
 
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @elseif ($log->status=='Paused') <span class="en-dismissed"></span>{{'Pause'}} @else <span class="en-dismissed"></span>{{$log->status}}@endif</td>
 
-                                    <td>{{ \Illuminate\Support\Carbon::parse($log->running_at)->format('F j, Y H:i:s') }}</td>
+                                    <td>@if($log->running_at){{ \Illuminate\Support\Carbon::parse($log->running_at)->format('F j, Y H:i:s') }}@endif</td>
                                     <td>
                                         @if($log->name=='Approve Product Push')
                                             @if($log->status=='In-Progress' || $log->status=='On-Hold')

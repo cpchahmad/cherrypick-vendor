@@ -30,7 +30,7 @@ class UpdateProductPricesByProductType implements ShouldQueue
 
     public $timeout = 10000;
     protected $id;
-    protected $store;
+    protected $log_id;
 
     /**
      * Create a new job instance.
@@ -38,10 +38,10 @@ class UpdateProductPricesByProductType implements ShouldQueue
      * @return void
      */
 
-    public function __construct($id,$store)
+    public function __construct($id,$log_id)
     {
         $this->id = $id;
-        $this->store = $store;
+        $this->log_id = $log_id;
 
 
     }
@@ -60,18 +60,17 @@ class UpdateProductPricesByProductType implements ShouldQueue
 
             $products=Product::where('product_type_id',$this->id)->get();
             $product_ids=Product::where('product_type_id',$this->id)->pluck('id')->toArray();
+            $currentTime = now();
             if(count($products) > 0 ) {
                 $product_count=count($products);
-                    $currentTime = now();
-                    $log=new Log();
-                    $log->name='Update Product Price in Database ('.$this->store.')';
-                    $log->date = $currentTime->format('F j, Y');
+
+                    $log=Log::where('id',$this->log_id)->first();
+                    if($log){
                     $log->total_product = $product_count;
-                    $log->start_time = $currentTime->toTimeString();
                      $log->product_ids=implode(',',$product_ids);
                     $log->status='In-Progress';
                     $log->save();
-
+                    }
                 foreach ($products as $product) {
 
                     $product_variants = ProductInfo::where('product_id', $product->id)->get();
@@ -93,20 +92,32 @@ class UpdateProductPricesByProductType implements ShouldQueue
                 }
 
                 $currentTime = now();
-                $log->date = $currentTime->format('F j, Y');
-                $log->end_time = $currentTime->toTimeString();
-                $log->status='Complete';
-                $log->save();
+                if($log) {
+                    $log->date = $currentTime->format('F j, Y');
+                    $log->end_time = $currentTime->toTimeString();
+                    $log->status = 'Complete';
+                    $log->save();
+                }
+            }else{
 
+                $log=Log::where('id',$this->log_id)->first();
+                if($log) {
+                    $log->end_time = $currentTime->toTimeString();
+                    $log->status = 'Complete';
+                    $log->save();
+                }
             }
 
         }catch (\Exception $exception){
             $currentTime = now();
-            $log->date = $currentTime->format('F j, Y');
-            $log->status = 'Failed';
-            $log->end_time = $currentTime->toTimeString();
-            $log->message=json_encode($exception->getMessage());
-            $log->save();
+            $log=Log::where('id',$this->log_id)->first();
+            if($log) {
+                $log->date = $currentTime->format('F j, Y');
+                $log->status = 'Failed';
+                $log->end_time = $currentTime->toTimeString();
+                $log->message = json_encode($exception->getMessage());
+                $log->save();
+            }
 
         }
 

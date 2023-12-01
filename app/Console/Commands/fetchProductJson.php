@@ -106,6 +106,7 @@ class fetchProductJson extends Command
             $log->status = 'In-Progress';
             $log->save();
             try{
+
             foreach ($vendor_data as $val) {
 
                 $vid = $val->vendor_id;
@@ -129,7 +130,7 @@ class fetchProductJson extends Command
 
                     if (sizeof($product) > 0) {
 
-                        $this->saveStoreFetchProductsFromJson($product, $vid, '');
+                        $this->saveStoreFetchProductsFromJson($product, $vid, '',$log->id);
                         //echo "updated";
                         //return back()->with('success','Product imported successfully');
 
@@ -281,10 +282,17 @@ class fetchProductJson extends Command
 
             }
 
+
+                $product_log_ids=ProductLog::where('log_id',$log->id)->pluck('product_id')->toArray();
+                $product_log_ids=array_unique($product_log_ids);
+                $product_log_ids=implode(',',$product_log_ids);
+
+
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->end_time = $currentTime->toTimeString();
                 $log->status = 'Complete';
+                $log->product_ids=$product_log_ids;
                 $log->save();
             }catch (\Exception $exception){
                 $currentTime = now();
@@ -483,7 +491,7 @@ class fetchProductJson extends Command
 //	}
 
 
-    function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null)
+    function saveStoreFetchProductsFromJson($products,$vid,$tag_url=null,$log_id=null)
     {
 
 
@@ -567,6 +575,7 @@ class fetchProductJson extends Command
                 $product_logs->title='Product Created';
                 $product_logs->date_time=now()->format('F j, Y H:i:s');
                 $product_logs->product_id=$product_id;
+                $product_logs->log_id = $log_id;
                 $product_logs->save();
 
 
@@ -706,6 +715,7 @@ class fetchProductJson extends Command
                 $product_logs->title='Product Update';
                 $product_logs->date_time=now()->format('F j, Y H:i:s');
                 $product_logs->product_id=$product_id;
+                $product_logs->log_id = $log_id;
                 $product_logs->save();
 
                 $i=0;

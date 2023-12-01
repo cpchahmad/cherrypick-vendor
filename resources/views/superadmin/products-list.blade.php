@@ -128,6 +128,16 @@
               </select>
           </div>
 
+
+          <div class="label-area mt-4 sort-area mx-2">
+              <select class="form-select" aria-label="Default select example" onchange='filterByStock(this.value)'>
+                  <option value=''  selected="">Select Stock Type</option>
+                  <option value="in-stock" {{ Request::get('stock') == "in-stock" ? 'selected' : '' }}>In-Stock</option>
+                  <option value="out-of-stock" {{ Request::get('stock') == "out-of-stock" ? 'selected' : '' }}>Out-of-Stock</option>
+              </select>
+          </div>
+
+
 {{--          <div class="label-area sort-area mx-2">--}}
 {{--              @php--}}
 
@@ -227,7 +237,8 @@
          var productTypeSelect = document.querySelector('.js-example-basic-multiple');
          var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
          var productTypeParam = selectedOptions.join(',');
-          window.location.href='products?search='+search+'&vendor='+id+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status;
+         var stock='{{Request::get('stock')}}';
+          window.location.href='products?search='+search+'&vendor='+id+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock;
      }
 
      function filterByStatus(id)
@@ -240,7 +251,8 @@
          var productTypeSelect = document.querySelector('.js-example-basic-multiple');
          var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
          var productTypeParam = selectedOptions.join(',');
-         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+id+'&shopify_status='+shopify_status;
+         var stock='{{Request::get('stock')}}';
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+id+'&shopify_status='+shopify_status+'&stock='+stock;
      }
 
      function filterByShopifyStatus(val)
@@ -253,8 +265,9 @@
          var productTypeSelect = document.querySelector('.js-example-basic-multiple');
          var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
          var productTypeParam = selectedOptions.join(',');
+         var stock='{{Request::get('stock')}}';
 
-         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+val;
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+val+'&stock='+stock;
      }
 
      function filterByName(val)
@@ -269,7 +282,8 @@
              var date='{{Request::get('date')}}';
              var status='{{Request::get('status')}}';
              var shopify_status='{{Request::get('shopify_status')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status;
+             var stock='{{Request::get('stock')}}';
+             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock;
          }
      }
      function filterByDate(val)
@@ -283,7 +297,8 @@
              var vendor='{{Request::get('vendor')}}';
              var status='{{Request::get('status')}}';
              var shopify_status='{{Request::get('shopify_status')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+val+'&status='+status+'&shopify_status='+shopify_status;
+             var stock='{{Request::get('stock')}}';
+             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+val+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock;
          }
      }
 
@@ -299,8 +314,9 @@
          var status='{{Request::get('status')}}';
          var shopify_status='{{Request::get('shopify_status')}}';
          var vendor='{{Request::get('vendor')}}';
+         var stock='{{Request::get('stock')}}';
 
-         window.location.href = 'products?search=' + search + '&vendor='+vendor+ '&product_type=' + productTypeParam + '&date=' + date + '&status=' + status+'&shopify_status='+shopify_status;
+         window.location.href = 'products?search=' + search + '&vendor='+vendor+ '&product_type=' + productTypeParam + '&date=' + date + '&status=' + status+'&shopify_status='+shopify_status+'&stock='+stock;
      }
 
 
@@ -324,6 +340,24 @@
      }
 
 
+     function filterByStock(val)
+     {
+
+         var search='{{Request::get('search')}}';
+         var vendor='{{Request::get('vendor')}}';
+         var date='{{Request::get('date')}}';
+         var status='{{Request::get('status')}}';
+         var shopify_status='{{Request::get('shopify_status')}}';
+         var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+         var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+         var productTypeParam = selectedOptions.join(',');
+
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+val;
+     }
+
+
+
+
      function approveMultiple()
      {
         var array = $.map($('input[name="products[]"]:checked'), function(c){return c.value; });
@@ -336,6 +370,7 @@
             var date='{{Request::get('date')}}';
             var status='{{Request::get('status')}}';
             var shopify_status='{{Request::get('shopify_status')}}';
+            var stock='{{Request::get('stock')}}';
 
             var productTypeSelect = document.querySelector('.js-example-basic-multiple');
             var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
@@ -357,7 +392,8 @@
                     date: date,
                     status: status,
                     shopify_status:shopify_status,
-                    product_type:productTypeParam
+                    product_type:productTypeParam,
+                    stock:stock
 
                 },
                 success: function (response) {
@@ -480,6 +516,7 @@
                 var date='{{Request::get('date')}}';
                 var status='{{Request::get('status')}}';
             var shopify_status='{{Request::get('shopify_status')}}';
+            var stock='{{Request::get('stock')}}';
 
             var productTypeSelect = document.querySelector('.js-example-basic-multiple');
             var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
@@ -494,7 +531,8 @@
                     date: date,
                     status: status,
                     shopify_status:shopify_status,
-                    product_type:productTypeParam
+                    product_type:productTypeParam,
+                    stock:stock
 
                 },
                 success: function (response) {

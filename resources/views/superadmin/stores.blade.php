@@ -13,15 +13,17 @@
                  @endif
     <section class="section up-banner">
         <div class="rcv-doc">
-        <a class="btn btn-primary" href="{{url('superadmin/uploade-product-form')}}">Uploade Products</a>&nbsp; &nbsp;<a class="btn btn-primary" href="{{url('superadmin/fetch-product-form')}}">Fetch From Json Url</a>
-        <div class="table-responsive">
+        <a class="btn btn-primary" href="{{url('superadmin/uploade-product-form')}}">Upload Products</a>
+            &nbsp; &nbsp;<a class="btn btn-primary" href="{{url('superadmin/fetch-product-form')}}">Fetch From Json Url</a>
+            &nbsp; &nbsp;<a class="btn btn-primary" href="{{url('superadmin/fetch-product-api')}}">Fetch From Api</a>
+        <div class="table-responsive mt-2">
             <table class="table table-bordered table-white">
               <thead>
                 <tr>
                   <th scope="col">S.No</th>
                   <th scope="col">Vendor Name</th>
                   <th scope="col">Product CSV</th>
-				  
+
                 </tr>
               </thead>
               <tbody>
@@ -31,7 +33,7 @@
                   <td scope="row">{{$k+1}}</td>
                   <td>{{$row->name}}</td>
                   <td class="download-doc"><i class="bi bi-download"></i><a href="{{url('superadmin/store-products-csv')}}/{{$row->id}}">Export Products</a></td>
-				  
+
                 </tr>
                 @endforeach
               </tbody>

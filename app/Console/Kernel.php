@@ -43,6 +43,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('products:approvenew')->everyMinute()->withoutOverlapping();
         $schedule->command('clear:old-records')->daily()->withoutOverlapping();
 
+        $schedule->command('sync:api-categories')->daily()->withoutOverlapping();
+        $schedule->command('sync:api-product-attributes')->daily()->withoutOverlapping();
+        $schedule->command('fetch:product-api')->weekly()->withoutOverlapping();
+        $schedule->command('sync:api-inventory')->daily()->withoutOverlapping();
+
+
 //        $schedule->command('fetch:jsonproductandupdateprice')->monthly();
     }
 

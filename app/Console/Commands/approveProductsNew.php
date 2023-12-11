@@ -152,16 +152,30 @@ class approveProductsNew extends Command
                                     if ($v->stock) {
                                         $upload_product = 1;
                                     }
-                                    $variants[] = array(
-                                        "option1" => $v->varient_value,
-                                        "option2" => $v->varient1_value,
-                                        "sku" => $v->sku,
-                                        "price" => $v->price_usd,
-                                        "grams" => $v->pricing_weight,
-                                        "taxable" => false,
-                                        "inventory_management" => ($v->stock ? null : "shopify"),
+
+                                    if($vendor->name=='Kalamandir') {
+                                        $variants[] = array(
+                                            "option1" => $v->varient_value,
+                                            "option2" => $v->varient1_value,
+                                            "sku" => $v->sku,
+                                            "price" => $v->price_usd,
+                                            "grams" => $v->pricing_weight,
+                                            "taxable" => false,
+                                            "inventory_management" => "shopify",
+                                        "inventory_quantity" => $v->qty
+                                        );
+                                    }else{
+                                        $variants[] = array(
+                                            "option1" => $v->varient_value,
+                                            "option2" => $v->varient1_value,
+                                            "sku" => $v->sku,
+                                            "price" => $v->price_usd,
+                                            "grams" => $v->pricing_weight,
+                                            "taxable" => false,
+                                            "inventory_management" => ($v->stock ? null : "shopify"),
 //                            "inventory_quantity" => $v->stock
-                                    );
+                                        );
+                                    }
 
                                     $varientName = $v->varient_name;
                                     $varientValue = $v->varient_value;

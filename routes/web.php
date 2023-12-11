@@ -32,7 +32,7 @@ use App\Http\Controllers\ForgotPasswordController;
 Route::get('UpdatePricingWeight',[SuperadminController::class,'UpdatePricingWeight']);
 
 
-Route::get('demotest',[ProductController::class,'demoTestProduct']);
+Route::get('demotest',[SuperadminController::class,'getThirdPartyAPIInventory']);
 Route::get('sync-products',[ProductController::class,'shopifyProductTest']);
 Route::get('sync/{cid}',[ProductController::class,'shopifyProductSync']);
 Route::get('createcollection',[TestController::class,'createCollection']);
@@ -141,11 +141,17 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
       Route::get('/change',[SuperadminController::class,'changestatus'])->name('change-status');
       Route::get('banner-list',[SuperadminController::class,'bannerlist'])->name('banner-list');
 
+      //fetch from json
 	  Route::get('fetch-product-form',function(){ return view('superadmin.fetch-product-url');});
 	  Route::post('fetch-product-url',[SuperadminController::class,'fetchProductUrl'])->name('fetch-product-url');
 
+      //upload product from csv
 	  Route::get('uploade-product-form',function(){ return view('superadmin.uploade-product-form');});
 	  Route::post('uploade-bulk-products',[SuperadminController::class,'uploadeBulkProducts']);
+
+        //fetch from api
+    Route::get('fetch-product-api',function(){ return view('superadmin.fetch-product-api');});
+    Route::post('fetch-product-from-api',[SuperadminController::class,'fetchProductFromAPI'])->name('fetch-product-from-api');
 
 
     Route::get('vendors',[SuperadminController::class,'vendors'])->name('vendors');

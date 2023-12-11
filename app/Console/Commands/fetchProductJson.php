@@ -95,7 +95,7 @@ class fetchProductJson extends Command
                 )
             );
 
-	   $vendor_data=DB::table('cron_json_url')->get();
+	   $vendor_data=DB::table('cron_json_url')->where('type','fetch_from_url')->get();
 
         if(count($vendor_data) > 0) {
             $currentTime = now();
@@ -678,7 +678,7 @@ class fetchProductJson extends Command
                 }
                 foreach($row['images'] as $img_val)
                 {
-                    $imgCheck=ProductImages::where('image_id',$img_val['id'])->exists();
+                    $imgCheck=ProductImages::where('image_id',$img_val['id'])->where('product_id',$product_id)->exists();
                     if (!$imgCheck)
                     {
                         $url = $img_val['src'];
@@ -867,7 +867,7 @@ class fetchProductJson extends Command
 
                 foreach($row['images'] as $img_val)
                 {
-                    $imgCheck=ProductImages::where('image_id',$img_val['id'])->exists();
+                    $imgCheck=ProductImages::where('image_id',$img_val['id'])->where('product_id',$product_id)->exists();
                     if (!$imgCheck)
                     {
                         $url = $img_val['src'];

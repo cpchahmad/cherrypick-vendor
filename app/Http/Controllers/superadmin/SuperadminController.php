@@ -20,7 +20,11 @@ use App\Models\ProductLog;
 use App\Models\ProductType;
 use App\Models\ProductTypeSubCategory;
 use App\Models\Setting;
+use App\Models\ThirdPartyAPICategory;
+use App\Models\ThirdPartyAPIProductAttribute;
+use App\Models\ThirdPartyAPIProductAttributeOptions;
 use App\Models\VariantChange;
+use http\Client;
 use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\Payment;
@@ -1273,18 +1277,31 @@ class SuperadminController extends Controller
                         $upload_product = 1;
                     }
 
-                    $variants[] = array(
+                    if($store->name=='Kalamandir'){
+                        $variants[] = array(
 //                    "title" => $v->varient_name,
-                        "option1" => $v->varient_value,
-                        "option2" => $v->varient1_value,
-                        "sku" => $v->sku,
-                        "price" => $v->price_usd,
-                        "grams" => $v->pricing_weight,
-                        "taxable" => false,
-                        "inventory_management" => ($v->stock ? null : "shopify"),
-//                    "inventory_quantity" => $v->stock
-                    );
+                            "option1" => $v->varient_value,
+                            "option2" => $v->varient1_value,
+                            "sku" => $v->sku,
+                            "price" => $v->price_usd,
+                            "grams" => $v->pricing_weight,
+                            "taxable" => false,
+                            "inventory_management" => "shopify",
+                            "inventory_quantity" => $v->qty,
+                        );
+                    }else {
 
+                        $variants[] = array(
+//                    "title" => $v->varient_name,
+                            "option1" => $v->varient_value,
+                            "option2" => $v->varient1_value,
+                            "sku" => $v->sku,
+                            "price" => $v->price_usd,
+                            "grams" => $v->pricing_weight,
+                            "taxable" => false,
+                            "inventory_management" => ($v->stock ? null : "shopify"),
+                        );
+                    }
                     $varientName = $v->varient_name;
                     $varientValue = $v->varient_value;
 
@@ -1924,31 +1941,63 @@ class SuperadminController extends Controller
 
 
                         if ($product_info->varient_name != '' && $product_info->varient_value != '') {
-                            $data['variant'] = array(
-                                "id" => $invid,
-                                "option1" => $product_info->varient_value,
-                                "option2" => $product_info->varient1_value,
-                                "sku" => $product_info->sku,
-                                "price" => $product_info->price_usd,
-                                "compare_at_price" => $product_info->price_usd,
-                                "grams" => $product_info->pricing_weight,
-                                "taxable" => false,
-                                "inventory_management" => ($product_info->stock) ? null : "shopify",
-                            );
+                            if($store->name=='Kalamandir'){
+                                $data['variant'] = array(
+                                    "id" => $invid,
+                                    "option1" => $product_info->varient_value,
+                                    "option2" => $product_info->varient1_value,
+                                    "sku" => $product_info->sku,
+                                    "price" => $product_info->price_usd,
+                                    "compare_at_price" => $product_info->price_usd,
+                                    "grams" => $product_info->pricing_weight,
+                                    "taxable" => false,
+                                    "inventory_management" => "shopify",
+                                    "inventory_quantity" => $product_info->qty,
+                                );
+
+                            }else {
+
+                                $data['variant'] = array(
+                                    "id" => $invid,
+                                    "option1" => $product_info->varient_value,
+                                    "option2" => $product_info->varient1_value,
+                                    "sku" => $product_info->sku,
+                                    "price" => $product_info->price_usd,
+                                    "compare_at_price" => $product_info->price_usd,
+                                    "grams" => $product_info->pricing_weight,
+                                    "taxable" => false,
+                                    "inventory_management" => ($product_info->stock) ? null : "shopify",
+                                );
+                            }
 
 
 
 
                         } else {
-                            $data['variant'] = array(
-                                "id" => $invid,
-                                "sku" => $product_info->sku,
-                                "price" => $product_info->price_usd,
-                                "compare_at_price" => $product_info->price_usd,
-                                "grams" => $product_info->pricing_weight,
-                                "taxable" => false,
-                                "inventory_management" => ($product_info->stock) ? null : "shopify",
-                            );
+
+                            if ($store->name == 'Kalamandir') {
+
+                                $data['variant'] = array(
+                                    "id" => $invid,
+                                    "sku" => $product_info->sku,
+                                    "price" => $product_info->price_usd,
+                                    "compare_at_price" => $product_info->price_usd,
+                                    "grams" => $product_info->pricing_weight,
+                                    "taxable" => false,
+                                    "inventory_management" => "shopify",
+                                    "inventory_quantity" => $product_info->qty,
+                                );
+                            }else{
+                                $data['variant'] = array(
+                                    "id" => $invid,
+                                    "sku" => $product_info->sku,
+                                    "price" => $product_info->price_usd,
+                                    "compare_at_price" => $product_info->price_usd,
+                                    "grams" => $product_info->pricing_weight,
+                                    "taxable" => false,
+                                    "inventory_management" => ($product_info->stock) ? null : "shopify",
+                                );
+                            }
                         }
 
 
@@ -2264,7 +2313,7 @@ class SuperadminController extends Controller
 
 		$vendor=Store::where('name', $request->username)->first();
 
-		$check=DB::table('cron_json_url')->where('url',$request->url)->get();
+		$check=DB::table('cron_json_url')->where('url',$request->url)->where('type','fetch_from_url')->get();
 
 		if($vendor)
 		{
@@ -2287,7 +2336,7 @@ class SuperadminController extends Controller
 
 
 		if(sizeof($check) == 0){
-		DB::table('cron_json_url')->insert(['vendor_id' =>$vid , 'url' => $request->url]);
+		DB::table('cron_json_url')->insert(['vendor_id' =>$vid , 'url' => $request->url,'type'=>'fetch_from_url']);
 
 		}
 
@@ -2397,6 +2446,481 @@ class SuperadminController extends Controller
                    "grams"   => $product_variant->pricing_weight,
                    "taxable" => false,
                    "inventory_management" => ($product_variant->stock ? null :"shopify"),
+               );
+           }
+
+           $products_array = array(
+               "product" => array(
+                   "status"=>'active',
+                   "variants"=>$variants,
+               )
+           );
+           if($upload_product) {
+
+               $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$update_product->shopify_id.json";
+               $curl = curl_init();
+               curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+               $headers = array(
+                   "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                   "Content-Type: application/json",
+                   "X-Shopify-Api-Features: include-presentment-prices",
+                   "charset: utf-8"
+               );
+               curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+               curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+               curl_setopt($curl, CURLOPT_VERBOSE, 0);
+               //curl_setopt($curl, CURLOPT_HEADER, 1);
+               curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+//                    curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+               curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+               curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+               curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+               $response = curl_exec($curl);
+               curl_close($curl);
+
+           }else{
+
+               $products_array = array(
+                   "product" => array(
+                       "status"=>'draft',
+                       "variants"=>$variants,
+
+                   )
+               );
+               $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$update_product->shopify_id.json";
+               $curl = curl_init();
+               curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+               $headers = array(
+                   "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                   "Content-Type: application/json",
+                   "X-Shopify-Api-Features: include-presentment-prices",
+                   "charset: utf-8"
+               );
+               curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+               curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+               curl_setopt($curl, CURLOPT_VERBOSE, 0);
+               //curl_setopt($curl, CURLOPT_HEADER, 1);
+               curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+//                    curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+               curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+               curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+               curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+               $response = curl_exec($curl);
+               curl_close($curl);
+           }
+
+
+       }
+
+
+       Product::where('vendor',$vid)->update(['is_updated_by_url'=>0]);
+
+
+   }
+   public function fetchProductFromAPI(Request $request)
+   {
+
+
+       set_time_limit(0);
+       $request->validate([
+           'username' => 'required',
+           'api_link' => 'required|min:6',
+           'password' => 'required|min:8',
+       ]);
+
+       $vendor = Store::where('name', $request->username)->first();
+
+       $check = DB::table('cron_json_url')->where('api_link', $request->api_link)->where('type', 'fetch_from_api')->get();
+
+       if ($vendor) {
+           $vid = $vendor->id;
+
+       } else {
+           $store = new Store;
+           $store->name = $request->username;
+           $store->email = $request->username . '@gmail.com';
+           $store->role = 'Vendor';
+           $store->username = $request->username;
+           $store->password = Hash::make($request->password);
+           $store->save();
+           $adminController = new AdminController();
+           $collection_id = $adminController->createCollection($request->username);
+           Store::where('id', $store->id)->update(['collections_ids' => $collection_id]);
+           $vid = $store->id;
+       }
+
+
+       if (sizeof($check) == 0) {
+           DB::table('cron_json_url')->insert(['vendor_id' => $vid, 'api_link' => $request->api_link, 'type' => 'fetch_from_api', 'authorization_token' => $request->authorization_token]);
+
+       }
+
+       Product::where('vendor', $vid)->update(['is_available' => 0]);
+
+
+
+
+       $curl = curl_init();
+
+       curl_setopt_array($curl, array(
+           CURLOPT_URL => $request->api_link,
+           CURLOPT_RETURNTRANSFER => true,
+           CURLOPT_ENCODING => '',
+           CURLOPT_MAXREDIRS => 10,
+           CURLOPT_TIMEOUT => 0,
+           CURLOPT_FOLLOWLOCATION => true,
+           CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+           CURLOPT_CUSTOMREQUEST => 'GET',
+           CURLOPT_HTTPHEADER => array(
+               'Authorization: Bearer ' . $request->authorization_token,
+               'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+           ),
+       ));
+
+       $response = curl_exec($curl);
+
+       curl_close($curl);
+       $data = json_decode($response, true);
+
+
+       foreach ($data['items'] as $index => $row) {
+
+               $description = null;
+               $stock = 0;
+               $qty = 0;
+               if (isset($row['extension_attributes']) && isset($row['extension_attributes']) && isset($row['extension_attributes']['stock_item'])) {
+                   $stock = $row['extension_attributes']['stock_item']['is_in_stock'];
+                   $qty = $row['extension_attributes']['stock_item']['qty'];
+               }
+
+               $attribute_array = array();
+               if (isset($row['custom_attributes']) && count($row['custom_attributes']) > 0) {
+                   foreach ($row['custom_attributes'] as $attribute) {
+
+                       if ($attribute['attribute_code'] === 'description') {
+
+                           $description = $attribute['value'] . '<br>';
+                       }
+
+                       if ($attribute['attribute_code'] === 'fabric') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'print_pattern') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'border_type') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'border_size') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'color') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'weave') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'blouse_included') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'blouse_fabric') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'blouse_type') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+
+                       if ($attribute['attribute_code'] === 'size') {
+
+                           array_push($attribute_array, $attribute);
+                       }
+                   }
+               }
+
+
+               $description .= "<h1>SPECIFICATIONS</h1>";
+               $description .= "<ul>";
+
+               foreach ($attribute_array as $get_attribute) {
+
+                   $product_attribute_option = ThirdPartyAPIProductAttributeOptions::where('value', $get_attribute['value'])->first();
+
+                   if ($product_attribute_option) {
+
+                       $product_attribute_title = ThirdPartyAPIProductAttribute::where('attribute_id', $product_attribute_option->product_attribute_id)->first();
+                       if ($product_attribute_title) {
+                           $description .= "<li><b>" . $product_attribute_title->default_frontend_label . ":</b> $product_attribute_option->label</li>";
+                       } else {
+
+                           $title = ucwords(str_replace('_', ' ', $get_attribute['attribute_code']));
+                           $description .= "<li><b>" . $title . ":</b> $product_attribute_option->label</li>";
+                       }
+                   } else {
+
+                       $title = ucwords(str_replace('_', ' ', $get_attribute['attribute_code']));
+                       $description .= "<li><b>" . $title . ":</b> " . $get_attribute['value'] . "</li>";
+
+                   }
+               }
+
+
+               $description .= "</ul>";
+
+
+               $title = $row['name'];
+               $id = $row['id'];
+               $store_id = $vid;
+               $description = $description;
+
+               $tags = '';
+               if (isset($row['extension_attributes']) && count($row['extension_attributes']) > 0) {
+                   if (isset($row['extension_attributes']['category_links']) && count($row['extension_attributes']['category_links']) > 0) {
+
+                       foreach ($row['extension_attributes']['category_links'] as $category_link) {
+                           $get_tag = ThirdPartyAPICategory::where('category_id', $category_link['category_id'])->where('vendor_id', $vid)->first();
+                           if ($get_tag) {
+                               $tags = $tags . ',' . $get_tag->name;
+                           }
+                       }
+                   }
+
+               }
+
+
+               $category_id = isset($row['extension_attributes']['category_links'])?$row['extension_attributes']['category_links'][0]['category_id']:null;
+
+               $product_type = $this->GetProductType($category_id, $vid);
+           $product_type_id=null;
+               if($product_type){
+                    $product_type_id=$product_type->id;
+                }
+
+               $product_check = Product::where('reference_shopify_id', $row['id'])->where('vendor', $vid)->first();
+               if ($product_check == null)  ////////New Product
+               {
+
+                   $product = new Product;
+                   $product->title = $title;
+                   $product->reference_shopify_id = $id;
+                   $product->body_html = $description;
+                   $product->vendor = $store_id;
+                   $product->is_updated_by_url = 1;
+                   $product->tags = $tags;
+                   $product->is_available = 1;
+                   $product->product_type_id = $product_type_id;
+                   $product->save();
+                   $product_id = $product->id;
+
+
+                   $store = Store::find($vid);
+                   $grams = $row['weight'];
+                   if ($grams == 0) {
+                       if ($store && $store->base_weight) {
+                           $grams = $store->base_weight;
+                       }
+                       if ($product_type && $product_type->base_weight) {
+                           $grams = $product_type->base_weight;
+                       }
+
+                   }
+                   $pricing_weight = $grams;
+                   if ($product_type && $product_type->base_weight) {
+                       $pricing_weight = max($grams, $product_type->base_weight);
+                   }
+
+
+                   $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $row['price'], $pricing_weight);
+                   $product_info = new ProductInfo;
+                   $product_info->product_id = $product_id;
+                   $product_info->sku = $row['sku'];
+                   $product_info->price = $prices['inr'];
+                   $product_info->price_usd = $prices['usd'];
+                   $product_info->price_nld = $prices['nld'];
+                   $product_info->price_gbp = $prices['gbp'];
+                   $product_info->price_cad = $prices['cad'];
+                   $product_info->price_aud = $prices['aud'];
+                   $product_info->price_irl = $prices['nld'];
+                   $product_info->price_ger = $prices['nld'];
+                   $product_info->base_price = $prices['base_price'];
+                   $product_info->grams = $grams;
+                   $product_info->pricing_weight = $pricing_weight;
+                   $product_info->stock = $stock;
+                   $product_info->qty = $qty;
+                   $product_info->vendor_id = $store_id;
+                   $product_info->dimensions = '0-0-0';
+                   $product_info->save();
+
+               }
+               else {
+
+                   $product_check->title = $title;
+                   $product_check->body_html = $description;
+                   $product_check->is_updated_by_url = 1;
+                   $product_check->product_type_id = $product_type_id;
+                   $product_check->is_available = 1;
+                   $product_check->tags = $tags;
+                   $product_check->save();
+
+                   $check_info_v = ProductInfo::where('product_id', $product_check->id)->get();
+                   foreach ($check_info_v as $v_get) {
+
+                       if ($v_get->inventory_id == null) {
+                           if ($v_get->manual_weight == 0) {
+                               $v_get->delete();
+                           }
+                       }
+                   }
+
+                   $store = Store::find($vid);
+                   $grams = $row['weight'];
+                   if ($grams == 0) {
+                       if ($store && $store->base_weight) {
+                           $grams = $store->base_weight;
+                       }
+                       if ($product_type && $product_type->base_weight) {
+                           $grams = $product_type->base_weight;
+                       }
+                   }
+
+                   $pricing_weight = $grams;
+                   if ($product_type && $product_type->base_weight) {
+                       $pricing_weight = max($grams, $product_type->base_weight);
+                   }
+
+
+                   $product_info = ProductInfo::where('product_id', $product_check->id)->where('sku', $row['sku'])->first();
+                   if ($product_info == null) {
+                       $product_info = new ProductInfo;
+                   }
+                   $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $row['price'], $pricing_weight);
+                   $product_info->product_id = $product_check->id;
+                   $product_info->sku = $row['sku'];
+                   $product_info->price = $prices['inr'];
+                   $product_info->price_usd = $prices['usd'];
+                   $product_info->price_nld = $prices['nld'];
+                   $product_info->price_gbp = $prices['gbp'];
+                   $product_info->price_cad = $prices['cad'];
+                   $product_info->price_aud = $prices['aud'];
+                   $product_info->price_irl = $prices['nld'];
+                   $product_info->price_ger = $prices['nld'];
+                   $product_info->base_price = $prices['base_price'];
+                   $product_info->grams = $grams;
+                   $product_info->pricing_weight = $pricing_weight;
+                   $product_info->stock = $stock;
+                   $product_info->qty = $qty;
+                   $product_info->vendor_id = $store_id;
+                   $product_info->dimensions = '0-0-0';
+                   $product_info->save();
+               }
+               if (count($row['media_gallery_entries']) > 0) {
+                   foreach ($row['media_gallery_entries'] as $img_val) {
+                       if ($img_val['id'] && $product_check) {
+                           $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_check->id)->exists();
+                           if (!$imgCheck) {
+                               $url = 'https://kalamandir.com/media/catalog/product' . $img_val['file'];
+                               $img_name = $url;
+                               $product_img = new ProductImages;
+                               $product_img->image = $img_name;
+                               $product_img->image_id = $img_val['id'];
+                               $product_img->product_id = $product_check->id;
+                               $product_img->save();
+                           }
+                       }
+                   }
+               }
+
+
+
+       }
+
+       $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
+       foreach ($delete_products as $delete_product){
+
+           ProductInfo::where('product_id',$delete_product->id)->delete();
+           $delete_product->delete();
+       }
+
+       $setting=Setting::first();
+       if($setting){
+           $API_KEY =$setting->api_key;
+           $PASSWORD = $setting->password;
+           $SHOP_URL =$setting->shop_url;
+
+       }else{
+           $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+           $PASSWORD = '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';
+           $SHOP_URL = 'cityshop-company-store.myshopify.com';
+       }
+
+       $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->get();
+       $update_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',1)->get();
+
+
+       $data['product']=array(
+           "status" =>'draft',
+       );
+
+       foreach ($draft_products as $draft_product){
+
+
+
+           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
+           $curl = curl_init();
+           curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+           $headers = array(
+               "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+               "Content-Type: application/json",
+               "charset: utf-8"
+           );
+           curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+           curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+           curl_setopt($curl, CURLOPT_VERBOSE, 0);
+           //curl_setopt($curl, CURLOPT_HEADER, 1);
+           curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+           //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+           curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+           curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+           curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+           $response = curl_exec ($curl);
+           curl_close ($curl);
+       }
+
+       foreach ($update_products as $update_product){
+           $upload_product=0;
+           $product_variants=ProductInfo::where('product_id',$update_product->id)->get();
+           $variants=[];
+           foreach ($product_variants as $product_variant){
+               if($product_variant->stock) {
+                   $upload_product = 1;
+               }
+               $variants[]=array(
+
+                   "sku"     => $product_variant->sku,
+                   "price"   => $product_variant->price_usd,
+                   "grams"   => $product_variant->pricing_weight,
+                   "taxable" => false,
+                   "inventory_management" => ($product_variant->stock ? null :"shopify"),
+
                );
            }
 
@@ -2839,7 +3363,7 @@ class SuperadminController extends Controller
                         Product::where('id', $product_id)->update(['is_variants' => 1]);
                     }
                     foreach ($row['images'] as $img_val) {
-                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->exists();
+                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id',$product_id)->exists();
                         if (!$imgCheck) {
                             $url = $img_val['src'];
 //								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
@@ -3016,7 +3540,7 @@ class SuperadminController extends Controller
                         Product::where('id', $product_id)->update(['is_variants' => 1]);
                     }
                     foreach ($row['images'] as $img_val) {
-                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->exists();
+                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id',$product_id)->exists();
                         if (!$imgCheck) {
                             $url = $img_val['src'];
 //								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
@@ -3438,16 +3962,22 @@ class SuperadminController extends Controller
 
         $product_types=ProductType::where('vendor_id',$id)->get();
         foreach ($product_types as $product_type) {
-
+            $flag=0;
             if ($product_type->size_chart_html || $product_type->size_chart_image) {
+                $flag=1;
+            }
+
                 $product_type_categories = ProductTypeSubCategory::where('product_type_id', $product_type->id)->get();
                 $product_type_category_array = array();
                 foreach ($product_type_categories as $product_type_category) {
+                    if ($product_type_category->size_chart_html || $product_type_category->size_chart_image) {
 
-                    $data_type['tags'] = $product_type_category->tags;
-                    $data_type['sizechart_html'] = $product_type_category->size_chart_html;
-                    $data_type['sizechart_file'] = $product_type_category->size_chart_image;
-                    array_push($product_type_category_array, $data_type);
+                       $flag=1;
+                        $data_type['tags'] = $product_type_category->tags;
+                        $data_type['sizechart_html'] = $product_type_category->size_chart_html;
+                        $data_type['sizechart_file'] = $product_type_category->size_chart_image;
+                        array_push($product_type_category_array, $data_type);
+                    }
                 }
 
                 usort($product_type_category_array, function ($a, $b) {
@@ -3461,13 +3991,15 @@ class SuperadminController extends Controller
                     return $tagsB - $tagsA; // Sort by the number of tags in descending order
                 });
 
-                $data['product_type'] = $product_type->product_type;
-                $data['sizechart_html'] = $product_type->size_chart_html;
-                $data['sizechart_file'] = $product_type->size_chart_image;
-                $data['product_type_tags'] = $product_type_category_array;
+                if($flag==1) {
+                    $data['product_type'] = $product_type->product_type;
+                    $data['sizechart_html'] = $product_type->size_chart_html;
+                    $data['sizechart_file'] = $product_type->size_chart_image;
+                    $data['product_type_tags'] = $product_type_category_array;
 
-                array_push($product_type_array, $data);
-            }
+                    array_push($product_type_array, $data);
+                }
+
         }
 
 
@@ -3955,5 +4487,405 @@ $tag_array=array();
         dd('done');
         }
 
+
+
+//        public function SyncThirdPartyAPICategories(){
+//
+//
+//        $store=Store::where('name','Kalamandir')->first();
+//        if($store) {
+//            $curl = curl_init();
+//            curl_setopt_array($curl, array(
+//                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/categories',
+//                CURLOPT_RETURNTRANSFER => true,
+//                CURLOPT_ENCODING => '',
+//                CURLOPT_MAXREDIRS => 10,
+//                CURLOPT_TIMEOUT => 0,
+//                CURLOPT_FOLLOWLOCATION => true,
+//                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+//                CURLOPT_CUSTOMREQUEST => 'GET',
+//                CURLOPT_HTTPHEADER => array(
+//                    'Authorization: Bearer dm8qawgncp0qr66kmk5o4azixm59qe9c',
+//                    'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+//                ),
+//            ));
+//
+//            $response = curl_exec($curl);
+//
+//            curl_close($curl);
+//            $category = json_decode($response, true);
+//
+//            $category_data = ThirdPartyAPICategory::where('category_id', $category['id'])->where('level', 1)->first();
+//            if ($category_data == null) {
+//                $category_data = new ThirdPartyAPICategory();
+//            }
+//            $category_data->category_id = $category['id'];
+//            $category_data->parent_id = $category['parent_id'];
+//            $category_data->name = $category['name'];
+//            $category_data->is_active = $category['is_active'];
+//            $category_data->position = $category['position'];
+//            $category_data->level = $category['level'];
+//            $category_data->product_count = $category['product_count'];
+//            $category_data->vendor_id = $store->id;
+//            $category_data->save();
+//
+//
+//            if (isset($category['children_data']) && count($category['children_data']) > 0) {
+//
+//                foreach ($category['children_data'] as $children_data) {
+//
+//                    $category_data = ThirdPartyAPICategory::where('category_id', $children_data['id'])->where('level', 2)->first();
+//                    if ($category_data == null) {
+//                        $category_data = new ThirdPartyAPICategory();
+//                    }
+//                    $category_data->category_id = $children_data['id'];
+//                    $category_data->parent_id = $children_data['parent_id'];
+//                    $category_data->name = $children_data['name'];
+//                    $category_data->is_active = $children_data['is_active'];
+//                    $category_data->position = $children_data['position'];
+//                    $category_data->level = $children_data['level'];
+//                    $category_data->product_count = $children_data['product_count'];
+//                    $category_data->vendor_id = $store->id;
+//                    $category_data->save();
+//
+//
+//                    $product_type = ProductType::where('product_type', $children_data['name'])->where('vendor_id', $store->id)->first();
+//                    if ($product_type == null) {
+//                        $product_type = new ProductType();
+//                    }
+//                    $product_type->product_type = $children_data['name'];
+//                    $product_type->vendor_id = $store->id;
+//                    $product_type->save();
+//
+//
+//
+//                    if (isset($children_data['children_data']) && count($children_data['children_data']) > 0) {
+//                        foreach ($children_data['children_data'] as $children_data_sub_category) {
+//
+//                            $category_data = ThirdPartyAPICategory::where('category_id', $children_data_sub_category['id'])->where('level', 3)->first();
+//                            if ($category_data == null) {
+//                                $category_data = new ThirdPartyAPICategory();
+//                            }
+//                            $category_data->category_id = $children_data_sub_category['id'];
+//                            $category_data->parent_id = $children_data_sub_category['parent_id'];
+//                            $category_data->name = $children_data_sub_category['name'];
+//                            $category_data->is_active = $children_data_sub_category['is_active'];
+//                            $category_data->position = $children_data_sub_category['position'];
+//                            $category_data->level = $children_data_sub_category['level'];
+//                            $category_data->product_count = $children_data_sub_category['product_count'];
+//                            $category_data->vendor_id = $store->id;
+//                            $category_data->save();
+//
+//                            if (isset($children_data_sub_category['children_data']) && count($children_data_sub_category['children_data']) > 0) {
+//                                foreach ($children_data_sub_category['children_data'] as $children_data_sub_sub_category) {
+//
+//                                    $category_data = ThirdPartyAPICategory::where('category_id', $children_data_sub_sub_category['id'])->where('level', 4)->first();
+//                                    if ($category_data == null) {
+//                                        $category_data = new ThirdPartyAPICategory();
+//                                    }
+//                                    $category_data->category_id = $children_data_sub_sub_category['id'];
+//                                    $category_data->parent_id = $children_data_sub_sub_category['parent_id'];
+//                                    $category_data->name = $children_data_sub_sub_category['name'];
+//                                    $category_data->is_active = $children_data_sub_sub_category['is_active'];
+//                                    $category_data->position = $children_data_sub_sub_category['position'];
+//                                    $category_data->level = $children_data_sub_sub_category['level'];
+//                                    $category_data->product_count = $children_data_sub_sub_category['product_count'];
+//                                    $category_data->vendor_id = $store->id;
+//                                    $category_data->save();
+//
+//
+//                                }
+//                            }
+//
+//
+//                        }
+//
+//                    }
+//
+//                }
+//            }
+//
+//        }
+//
+//        }
+        public function SyncThirdPartyAPICategories(){
+
+
+        $store=Store::where('name','Kalamandir')->first();
+        if($store) {
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/categories',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer dm8qawgncp0qr66kmk5o4azixm59qe9c',
+                    'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+            $category = json_decode($response, true);
+
+
+
+
+            $category_data = ThirdPartyAPICategory::where('category_id', $category['id'])->where('level', 1)->first();
+            if ($category_data == null) {
+                $category_data = new ThirdPartyAPICategory();
+            }
+            $category_data->category_id = $category['id'];
+            $category_data->parent_id = $category['parent_id'];
+            $category_data->name = $category['name'];
+            $category_data->is_active = $category['is_active'];
+            $category_data->position = $category['position'];
+            $category_data->level = $category['level'];
+            $category_data->product_count = $category['product_count'];
+            $category_data->vendor_id = $store->id;
+            $category_data->save();
+
+
+
+
+            if (isset($category['children_data']) && count($category['children_data']) > 0) {
+
+
+
+                $sortedCategories = collect([]);
+
+                // Get top-level categories (parents)
+
+                $parents = json_decode(json_encode($category['children_data']), false);
+                foreach ($parents as $parent) {
+                    $this->sortChildrenRecursively($parent, $parent->children_data, $sortedCategories);
+                }
+
+
+                foreach ($sortedCategories as $children_data) {
+
+                    $category_data = ThirdPartyAPICategory::where('category_id', $children_data->id)->first();
+                    if ($category_data == null) {
+                        $category_data = new ThirdPartyAPICategory();
+                    }
+                    $category_data->category_id = $children_data->id;
+                    $category_data->parent_id = $children_data->parent_id;
+                    $category_data->name = $children_data->name;
+                    $category_data->is_active = $children_data->is_active;
+                    $category_data->position = $children_data->position;
+                    $category_data->level = $children_data->level;
+                    $category_data->product_count = $children_data->product_count;
+                    $category_data->vendor_id = $store->id;
+                    $category_data->save();
+
+
+                        if($category_data->level==2){
+                            $product_type = ProductType::where('product_type', $children_data->name)->where('vendor_id', $store->id)->first();
+                            if ($product_type == null) {
+                                $product_type = new ProductType();
+                            }
+                            $product_type->product_type = $children_data->name;
+                            $product_type->vendor_id = $store->id;
+                            $product_type->save();
+                        }
+                }
+            }
+
+        }
+
+        }
+
+
+
+    private function sortChildrenRecursively($parent, $categories, &$sortedCategories)
+    {
+
+        $sortedCategories->push($parent);
+
+//        // Get children of the parent category
+//        $children = $categories->where('parent_id', $parent->id);
+
+        // Sort and push children recursively
+        foreach ($categories as $child) {
+            $this->sortChildrenRecursively($child, $child->children_data, $sortedCategories);
+        }
+    }
+
+        public function SyncThirdPartyAPIAttributes(){
+
+            $store=Store::where('name','Kalamandir')->first();
+            if($store) {
+            $curl = curl_init();
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/products/attributes?searchCriteria',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer dm8qawgncp0qr66kmk5o4azixm59qe9c',
+                    'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+            $product_attributes = json_decode($response, true);
+
+            if(count($product_attributes['items']) > 0) {
+                foreach ($product_attributes['items'] as $product_attribute) {
+
+
+
+                        $api_product_attribute = ThirdPartyAPIProductAttribute::where('attribute_id', $product_attribute['attribute_id'])->first();
+                        if ($api_product_attribute == null) {
+                            $api_product_attribute = new ThirdPartyAPIProductAttribute();
+                        }
+                        $api_product_attribute->attribute_id = $product_attribute['attribute_id'];
+                        $api_product_attribute->default_frontend_label = isset($product_attribute['default_frontend_label']) ? $product_attribute['default_frontend_label'] : null;
+                        $api_product_attribute->vendor_id = $store->id;
+                        $api_product_attribute->save();
+
+                        if (count($product_attribute['options']) > 0) {
+
+                            foreach ($product_attribute['options'] as $option) {
+
+                                $api_product_attribute_option = ThirdPartyAPIProductAttributeOptions::where('product_attribute_id', $product_attribute['attribute_id'])->where('value', $option['value'])->first();
+                                if ($api_product_attribute_option == null) {
+                                    $api_product_attribute_option = new ThirdPartyAPIProductAttributeOptions();
+                                }
+                                $api_product_attribute_option->product_attribute_id = $product_attribute['attribute_id'];
+                                $api_product_attribute_option->label = $option['label'];
+                                $api_product_attribute_option->value = $option['value'];
+                                $api_product_attribute_option->vendor_id = $store->id;
+                                $api_product_attribute_option->save();
+                            }
+                        }
+
+
+                }
+            }
+        }
+
+
+
+
+
+        }
+
+
+        public function GetProductType($category_id,$vid){
+
+
+            $check_category = ThirdPartyAPICategory::where('category_id', $category_id)->where('vendor_id', $vid)->first();
+            if($check_category){
+                if ($check_category->level == 2) {
+                    $product_type = ProductType::where('product_type', $check_category->name)->where('vendor_id', $vid)->first();
+
+                    return $product_type;
+                }else{
+                    return $this->GetProductType($check_category->parent_id, $vid);
+                }
+            }
+
+        }
+
+
+        public function getThirdPartyAPIInventory(){
+
+            $store=Store::where('name','Kalamandir')->first();
+            if($store) {
+
+            $curl = curl_init();
+            $vid=$store->id;
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/products?searchCriteria[filter_groups][0][filters][0][field]=visibility&searchCriteria[filter_groups][0][filters][0][value]=4',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: Bearer dm8qawgncp0qr66kmk5o4azixm59qe9c',
+                    'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+            $data = json_decode($response, true);
+                foreach ($data['items'] as $index => $row) {
+
+                    $stock = 0;
+                    $qty = 0;
+                    if (isset($row['extension_attributes']) && isset($row['extension_attributes']) && isset($row['extension_attributes']['stock_item'])) {
+                        $stock = $row['extension_attributes']['stock_item']['is_in_stock'];
+                        $qty = $row['extension_attributes']['stock_item']['qty'];
+                    }
+
+                    $product_check = Product::where('reference_shopify_id', $row['id'])->where('vendor', $vid)->first();
+                    if($product_check){
+                        $product_info = ProductInfo::where('product_id', $product_check->id)->where('sku', $row['sku'])->first();
+                        if($product_info){
+                            $category_id = isset($row['extension_attributes']['category_links'])?$row['extension_attributes']['category_links'][0]['category_id']:null;
+
+                            $product_type = $this->GetProductType($category_id, $vid);
+                            $product_type_id=null;
+                            if($product_type){
+                                $product_type_id=$product_type->id;
+                            }
+
+                            $grams = $row['weight'];
+                            if ($grams == 0) {
+                                if ($store && $store->base_weight) {
+                                    $grams = $store->base_weight;
+                                }
+                                if ($product_type && $product_type->base_weight) {
+                                    $grams = $product_type->base_weight;
+                                }
+                            }
+
+                            $pricing_weight = $grams;
+                            if ($product_type && $product_type->base_weight) {
+                                $pricing_weight = max($grams, $product_type->base_weight);
+                            }
+
+                            $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $row['price'], $pricing_weight);
+
+                            $product_info->price = $prices['inr'];
+                            $product_info->price_usd = $prices['usd'];
+                            $product_info->price_nld = $prices['nld'];
+                            $product_info->price_gbp = $prices['gbp'];
+                            $product_info->price_cad = $prices['cad'];
+                            $product_info->price_aud = $prices['aud'];
+                            $product_info->price_irl = $prices['nld'];
+                            $product_info->price_ger = $prices['nld'];
+                            $product_info->base_price = $prices['base_price'];
+                            $product_info->grams = $grams;
+                            $product_info->pricing_weight = $pricing_weight;
+                            $product_info->stock = $stock;
+                            $product_info->qty = $qty;
+                            $product_info->save();
+
+                        }
+                    }
+
+                }
+        }
+        }
 
 }

@@ -171,6 +171,7 @@
                                                     <p><b>Pricing Weight(GM):</b> {{$row->pricing_weight}}  </p>
 
                                                     <p><b>Available: </b>@if($row->stock==1){{'True'}}@else{{'False'}}@endif</p>
+                                                    @if($row->qty)<p><b>Quantity: </b>{{$row->qty}}</p>@endif
 
 
                                                     <p><b>Dimensions(H-W-L):</b> {{$row->dimensions}}</p>

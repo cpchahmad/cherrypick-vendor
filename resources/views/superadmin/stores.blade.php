@@ -15,7 +15,7 @@
         <div class="rcv-doc">
         <a class="btn btn-primary" href="{{url('superadmin/uploade-product-form')}}">Upload Products</a>
             &nbsp; &nbsp;<a class="btn btn-primary" href="{{url('superadmin/fetch-product-form')}}">Fetch From Json Url</a>
-            &nbsp; &nbsp;<a class="btn btn-primary" href="{{url('superadmin/fetch-product-api')}}">Fetch From Api</a>
+{{--            &nbsp; &nbsp;<a class="btn btn-primary" href="{{url('superadmin/fetch-product-api')}}">Fetch From Api</a>--}}
         <div class="table-responsive mt-2">
             <table class="table table-bordered table-white">
               <thead>

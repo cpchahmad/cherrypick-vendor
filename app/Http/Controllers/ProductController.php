@@ -885,7 +885,8 @@ class ProductController extends Controller
 			$product_info->price_ger = $prices['ger'];
 			$product_info->base_price = $request->price;
             $product_info->grams = $request->grams;
-            $product_info->stock = $request->quantity;
+            $product_info->qty = $request->quantity;
+            $product_info->stock = 1;
             $product_info->shelf_life = $request->shelf_life;
             $product_info->temp_require = $request->temp;
             $product_info->dimensions = $request->height.'-'.$request->width.'-'.$request->length;
@@ -928,9 +929,10 @@ class ProductController extends Controller
 			$product_info->price_ger = $prices['ger'];
 			$product_info->base_price = $request->varient_price[$key];
             $product_info->grams = $request->varient_grams[$key];
-            $product_info->stock = $request->varient_quantity[$key];
+            $product_info->qty = $request->varient_quantity[$key];
             $product_info->shelf_life = $request->varient_shelf_life[$key];
             $product_info->temp_require = $request->varient_temp[$key];
+            $product_info->stock = 1;
             $product_info->dimensions = $request->varient_height[$key].'-'.$request->varient_width[$key].'-'.$request->varient_length[$key];
             $product_info->save();
 			$info=$product_info->id;
@@ -1163,7 +1165,7 @@ class ProductController extends Controller
     public function updateStock(Request $request)
     {
         $product =ProductInfo::find($request->id);
-        $product->stock = $request->qty;
+        $product->qty = $request->qty;
         $product->save();
         if($product->inventory_item_id!=null)
         {

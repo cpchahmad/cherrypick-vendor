@@ -2657,7 +2657,7 @@ class SuperadminController extends Controller
                }
 
 
-               $description .= "<h1>SPECIFICATIONS</h1>";
+               $description .= "<b>SPECIFICATIONS</b>";
                $description .= "<ul>";
 
                foreach ($attribute_array as $get_attribute) {
@@ -3819,7 +3819,12 @@ class SuperadminController extends Controller
         $vendor_product_types=ProductType::where('vendor_id',$vendor->id)->get();
         $payment = Payment::where('vendor_id',$id)->first();
         $markets=Markets::all();
-        return view('superadmin.vendor-setting',compact('vendor','vendor_product_types','markets','payment'));
+
+        $thirdPartyApiCategories = ThirdPartyAPICategory::where('vendor_id', $vendor->id)->where('parent_id',1)
+            ->with('childrenRecursive')
+            ->get();
+
+        return view('superadmin.vendor-setting',compact('vendor','vendor_product_types','markets','payment','thirdPartyApiCategories'));
     }
 
 

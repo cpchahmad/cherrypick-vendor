@@ -212,7 +212,7 @@ class ProductsSyncFromApi implements ShouldQueue
                                 }
                             }
 
-                            $description .= "<h1>SPECIFICATIONS</h1>";
+                            $description .= "<b>SPECIFICATIONS</b>";
                             $description .= "<ul>";
 
                             foreach ($attribute_array as $get_attribute) {

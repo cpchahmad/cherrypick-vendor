@@ -309,7 +309,8 @@
 
 
                                                 @php
-                                                    $info_query=\App\Models\Category::where(['id' => $data->category])->pluck('category')->first();
+                                                    //$info_query=\App\Models\Category::where(['id' => $data->category])->pluck('category')->first();
+                                                    $info_query=\App\Models\ProductType::where(['id' => $data->product_type_id])->pluck('product_type')->first();
                                                 @endphp
                                                 <div class="form-group mt-2">
                                                     <label class="col-form-label" for="formGroupExampleInput">Product Type</label>

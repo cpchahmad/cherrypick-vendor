@@ -160,7 +160,8 @@ class UploadBulkProducts implements ShouldQueue
                         $product_info->pricing_weight = $pricing_weight;
                         $product_info->hex_code = $row[8];
                         $product_info->swatch_image = $row[9];
-                        $product_info->stock = $row[15];
+                        $product_info->stock=1;
+                        $product_info->qty = $row[15];
                         //zain
                         $product_info->dimensions_text = $row[12];
                         $product_info->volume = $row[13];
@@ -253,7 +254,8 @@ class UploadBulkProducts implements ShouldQueue
                             $product_info->grams = $grams;
                             $product_info->pricing_weight = $pricing_weight;
 
-                            $product_info->stock = $row[15];
+                            $product_info->stock = 1;
+                            $product_info->qty = $row[15];
                             $product_info->dimensions = $row[18] . "-" . $row[19] . "-" . $row[20];
                             $product_info->varient_name = $row[4];
                             $product_info->varient_value = $row[5];
@@ -279,7 +281,8 @@ class UploadBulkProducts implements ShouldQueue
                             $data['base_price'] = $row[10];
                             $data['grams'] = $grams;
                             $data['pricing_weight'] = $pricing_weight;
-                            $data['stock'] = $row[15];
+                            $data['stock'] = 1;
+                            $data['qty'] = $row[15];
                             $data['hex_code'] = $row[8];
                             $data['swatch_image'] = $row[9];
                             $data['dimensions'] = $row[18] . "-" . $row[19] . "-" . $row[20];

@@ -69,6 +69,9 @@
                             <button class="nav-link" id="v-pills-messages1-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages1" type="button" role="tab" aria-controls="v-pills-messages1" aria-selected="false">Payment Configuration</button>
                             <button class="nav-link" id="v-pills-messages2-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages2" type="button" role="tab" aria-controls="v-pills-messages2" aria-selected="false">Bulk Price Update</button>
                             <button class="nav-link" id="v-pills-messages3-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages3" type="button" role="tab" aria-controls="v-pills-messages3" aria-selected="false">HSN and Weight</button>
+                            @if($vendor->name=='Kalamandir')
+                            <button class="nav-link" id="v-pills-messages5-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages5" type="button" role="tab" aria-controls="v-pills-messages3" aria-selected="false">Categories (API)</button>
+                                @endif
                             <button class="nav-link" id="v-pills-messages4-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages4" type="button" role="tab" aria-controls="v-pills-messages4" aria-selected="false">Settings</button>
 
 {{--                            <ul class="nav nav-tabs flex-column" id="v-pills-tab" role="tablist" aria-orientation="vertical">--}}
@@ -485,6 +488,36 @@
                                             @endif
                                         </div>
 
+                                    </div>
+
+                                    <div class="tab-pane fade" id="v-pills-messages5" role="tabpanel" aria-labelledby="v-pills-messages5-tab">
+                                        <label for="inputNanme4" class="form-label">Categories</label>
+
+                                        @if(count($thirdPartyApiCategories) > 0)
+                                            <ul>
+                                                @foreach($thirdPartyApiCategories as $category)
+                                                    <li>
+                                                        {{ $category->name }} {{-- Assuming your category model has a 'name' attribute --}}
+                                                        @if(count($category->childrenRecursive) > 0)
+                                                            @php
+                                                                $renderChildren = function ($categories) use (&$renderChildren) {
+                                                                    echo '<ul>';
+                                                                    foreach ($categories as $childCategory) {
+                                                                        echo '<li>' . $childCategory->name; // Assuming your category model has a 'name' attribute
+                                                                        if (count($childCategory->childrenRecursive) > 0) {
+                                                                            $renderChildren($childCategory->childrenRecursive);
+                                                                        }
+                                                                        echo '</li>';
+                                                                    }
+                                                                    echo '</ul>';
+                                                                };
+                                                                $renderChildren($category->childrenRecursive);
+                                                            @endphp
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
                                     </div>
 
                                     <div class="tab-pane fade" id="v-pills-messages4" role="tabpanel" aria-labelledby="v-pills-messages4-tab">

@@ -12,6 +12,6 @@ class ThirdPartyAPICategory extends Model
 
     public function childrenRecursive()
     {
-        return $this->hasMany(ThirdPartyAPICategory::class, 'parent_id')->with('childrenRecursive');
+        return $this->hasMany(ThirdPartyAPICategory::class, 'parent_id','category_id')->with('childrenRecursive');
     }
 }

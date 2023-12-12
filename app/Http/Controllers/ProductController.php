@@ -6,6 +6,7 @@ use App\Imports\BluckProductImport;
 use App\Jobs\UploadBulkProducts;
 use App\Models\ProductChange;
 use App\Models\ProductImagesNew;
+use App\Models\ProductType;
 use App\Models\Setting;
 use App\Models\VariantChange;
 use Illuminate\Http\Request;
@@ -823,14 +824,31 @@ class ProductController extends Controller
         'category'=>'required',
         ]);
        }
+
+
         $vendor=$this->vendorId();
-        $product = new Product;
+       $product_type_id=null;
+       $category=Category::find($request->category);
+       if($category) {
+           $product_type = ProductType::where('product_type', $category->category)->where('vendor_id', $vendor)->first();
+           if ($product_type == null) {
+               $product_type = new ProductType();
+           }
+           $product_type->product_type = $category->category;
+           $product_type->vendor_id = $vendor;
+           $product_type->save();
+           $product_type_id=$product_type->id;
+       }
+
+
+       $product = new Product;
         $product->title = $request->name;
         $product->body_html = $request->description;
         $product->vendor = $vendor;
         $product->tags = $request->tags;
         $product->is_variants = $request->payradious;
         $product->category = $request->category;
+        $product->product_type_id = $product_type_id;
         $product->save();
         $product_id=$product->id;
 		$Tags=explode(",",$request->tags);
@@ -955,6 +973,21 @@ class ProductController extends Controller
             'tags'=>'required',
            ]));
         $product =Product::find($request->pid);
+
+         $category=Category::find($request->category);
+         $product_type_id=null;
+         if($category) {
+             $product_type = ProductType::where('product_type', $category->category)->where('vendor_id', $product->vendor)->first();
+             if ($product_type == null) {
+                 $product_type = new ProductType();
+             }
+             $product_type->product_type = $category->category;
+             $product_type->vendor_id = $product->vendor;
+             $product_type->save();
+             $product_type_id=$product_type->id;
+         }
+
+
          //zain
          $product_change=new ProductChange();
          $product_change->title = $product->title;
@@ -968,6 +1001,8 @@ class ProductController extends Controller
         $product->body_html = $request->description;
         $product->tags = $request->tags;
         $product->category = $request->category;
+        $product->product_type_id = $product_type_id;
+
         if($product->status==3)
         {
             $product->status = 0;
@@ -982,6 +1017,8 @@ class ProductController extends Controller
              $product->tags= $request->tags;
              $product->category=$category->id;
          }
+
+
 
         $product->save();
 

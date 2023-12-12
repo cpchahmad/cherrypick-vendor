@@ -1277,7 +1277,7 @@ class SuperadminController extends Controller
                         $upload_product = 1;
                     }
 
-                    if($store->name=='Kalamandir'){
+                    if($v->qty){
                         $variants[] = array(
 //                    "title" => $v->varient_name,
                             "option1" => $v->varient_value,
@@ -1290,7 +1290,6 @@ class SuperadminController extends Controller
                             "inventory_quantity" => $v->qty,
                         );
                     }else {
-
                         $variants[] = array(
 //                    "title" => $v->varient_name,
                             "option1" => $v->varient_value,
@@ -1941,7 +1940,7 @@ class SuperadminController extends Controller
 
 
                         if ($product_info->varient_name != '' && $product_info->varient_value != '') {
-                            if($store->name=='Kalamandir'){
+                            if($product_info->qty){
                                 $data['variant'] = array(
                                     "id" => $invid,
                                     "option1" => $product_info->varient_value,
@@ -1975,7 +1974,7 @@ class SuperadminController extends Controller
 
                         } else {
 
-                            if ($store->name == 'Kalamandir') {
+                            if ($product_info->qty) {
 
                                 $data['variant'] = array(
                                     "id" => $invid,
@@ -4891,6 +4890,14 @@ $tag_array=array();
 
                 }
         }
+        }
+
+
+
+        public function UpdateSomeProduct(){
+
+        ProductInfo::where('vendor_id',63)->update(['stock'=>1]);
+
         }
 
 }

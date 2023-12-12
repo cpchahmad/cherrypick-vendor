@@ -153,7 +153,7 @@ class approveProductsNew extends Command
                                         $upload_product = 1;
                                     }
 
-                                    if($vendor->name=='Kalamandir') {
+                                    if($v->qty) {
                                         $variants[] = array(
                                             "option1" => $v->varient_value,
                                             "option2" => $v->varient1_value,

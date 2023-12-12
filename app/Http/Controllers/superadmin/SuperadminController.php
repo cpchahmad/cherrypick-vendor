@@ -1347,7 +1347,9 @@ class SuperadminController extends Controller
                 $result1_options = array_values($groupedData1);
 
 
-//        dd($result_options,$result1_options);
+
+
+
                 foreach ($result_options as $index => $result_option) {
 
                     array_push($options_array, [
@@ -1396,6 +1398,10 @@ class SuperadminController extends Controller
                     }
                 }
 
+
+                if($product->options){
+                    $options_array=json_decode($product->options);
+                }
 
                 $products_array = array(
                     "product" => array(
@@ -1884,6 +1890,11 @@ class SuperadminController extends Controller
                     $tags = $tags . ',HSN:' . $store->hsn_code;
                 }
             }
+
+            if($product->options){
+                $options_array=json_decode($product->options);
+            }
+
 
             $data['product']=array(
                     "id" => $shopify_id,
@@ -3185,10 +3196,17 @@ class SuperadminController extends Controller
 
 
         //echo "<pre>"; print_r($products); die;
-		foreach($products as $index=> $row)
-		{
+		foreach($products as $index=> $row) {
 
-//            if($row['id']==8439899652389) {
+
+
+
+                // Extract the first two options
+                $selectedOptions=null;
+                if(count($row['options']) > 0){
+                    $selectedOptions = array_slice($row['options'], 0, 2);
+                }
+
 
                 $html = $row['body_html'];
 
@@ -3211,7 +3229,7 @@ class SuperadminController extends Controller
                 }
 
 // Output the modified HTML
-                $html=$modifiedHtml;
+                $html = $modifiedHtml;
 
                 $product_check = Product::where('reference_shopify_id', $row['id'])->where('vendor', $vid)->first();
 
@@ -3252,6 +3270,7 @@ class SuperadminController extends Controller
                     $product->body_html = $description;
                     $product->vendor = $store_id;
                     $product->orignal_vendor = $vendor;
+                    $product->options = json_encode($selectedOptions);
                     $product->tags = $tags;
                     $product->category = $category_id;
                     $product->product_type_id = $product_type->id;
@@ -3362,7 +3381,7 @@ class SuperadminController extends Controller
                         Product::where('id', $product_id)->update(['is_variants' => 1]);
                     }
                     foreach ($row['images'] as $img_val) {
-                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id',$product_id)->exists();
+                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_id)->exists();
                         if (!$imgCheck) {
                             $url = $img_val['src'];
 //								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
@@ -3389,6 +3408,7 @@ class SuperadminController extends Controller
                     $data['orignal_vendor'] = $vendor;
                     $data['is_updated_by_url'] = 1;
                     $data['is_available'] = 1;
+                    $data['options'] = json_encode($selectedOptions);
                     Product::where('id', $product_check->id)->update($data);
                     $product_id = $product_check->id;
 
@@ -3539,7 +3559,7 @@ class SuperadminController extends Controller
                         Product::where('id', $product_id)->update(['is_variants' => 1]);
                     }
                     foreach ($row['images'] as $img_val) {
-                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id',$product_id)->exists();
+                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_id)->exists();
                         if (!$imgCheck) {
                             $url = $img_val['src'];
 //								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
@@ -3558,8 +3578,8 @@ class SuperadminController extends Controller
                     }
                 }
 
-            }
 
+        }
 //        }
 
 	}
@@ -4896,7 +4916,36 @@ $tag_array=array();
 
         public function UpdateSomeProduct(){
 
-        ProductInfo::where('vendor_id',63)->update(['stock'=>1]);
+
+            $store=Store::where('name','Kalamandir')->first();
+            if($store) {
+
+                $curl = curl_init();
+                $vid = $store->id;
+                curl_setopt_array($curl, array(
+                    CURLOPT_URL => 'https://brandmandir.com/rest/V1/products?searchCriteria[filter_groups][0][filters][0][field]=visibility&searchCriteria[filter_groups][0][filters][0][value]=4&searchCriteria[filter_groups][0][filters][0][condition_type]=eq&searchCriteria[filter_groups][1][filters][1][field]=status&searchCriteria[filter_groups][1][filters][1][value]=1&searchCriteria[filter_groups][1][filters][1][condition_type]=eq&searchCriteria[filter_groups][2][filters][2][field]=type_id&searchCriteria[filter_groups][2][filters][2][condition_type]=eq&searchCriteria[filter_groups][2][filters][2][value]=simple&searchCriteria[sortOrders][0][direction]=DESC ',
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 0,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => 'GET',
+                    CURLOPT_HTTPHEADER => array(
+                        'Authorization: Bearer dm8qawgncp0qr66kmk5o4azixm59qe9c',
+                        'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+                    ),
+                ));
+
+                $response = curl_exec($curl);
+
+                curl_close($curl);
+                $data = json_decode($response, true);
+                dd($data);
+
+            }
+
+//        ProductInfo::where('vendor_id',63)->update(['stock'=>1]);
 
         }
 

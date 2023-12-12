@@ -218,7 +218,7 @@
 
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @elseif ($log->status=='Paused') <span class="en-dismissed"></span>{{'Pause'}} @else <span class="en-dismissed"></span>{{$log->status}}@endif</td>
 
-                                    <td>@if($log->running_at){{ \Illuminate\Support\Carbon::parse($log->running_at)->format('F j, Y H:i:s') }}@endif</td>
+                                    <td>@if($log->status=='On-Hold' && $log->running_at){{ \Illuminate\Support\Carbon::parse($log->running_at)->format('F j, Y H:i:s') }}@endif</td>
                                     <td>
                                         @if($log->name=='Approve Product Push')
                                             @if($log->status=='In-Progress' || $log->status=='On-Hold')

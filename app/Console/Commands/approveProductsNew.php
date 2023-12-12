@@ -260,6 +260,10 @@ class approveProductsNew extends Command
                                         $tags = $tags . ',HSN:' . $vendor->hsn_code;
                                     }
                                 }
+                                if($product->options){
+                                    $options_array=json_decode($product->options);
+                                }
+
 
                                 $products_array = array(
                                     "product" => array(

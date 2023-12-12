@@ -501,6 +501,14 @@ class fetchProductJson extends Command
             $html=$row['body_html'];
                 $html = preg_replace('/<img[^>]*>/', '', $html);
 
+            // Extract the first two options
+            $selectedOptions=null;
+            if(count($row['options']) > 0){
+                $selectedOptions = array_slice($row['options'], 0, 2);
+            }
+
+
+
             $linkToRemove = 'https://www.violetandpurple.com/index.php/faq';
 // Find the position of the link
             $position = strpos($html, $linkToRemove);
@@ -564,6 +572,7 @@ class fetchProductJson extends Command
                 $product->tags = $tags;
                 $product->orignal_vendor = $vendor;
                 $product->category = $category_id;
+                $product->options = json_encode($selectedOptions);
                 $product->product_type_id=$product_type->id;
                 $product->is_updated_by_url=1;
                 $product->is_available=1;
@@ -707,6 +716,7 @@ class fetchProductJson extends Command
                 $data['orignal_vendor'] = $vendor;
                 $data['is_updated_by_url'] = 1;
                 $data['is_available'] = 1;
+                $data['options'] = json_encode($selectedOptions);
                 Product::where('id',$product_check->id)->update($data);
                 $product_id=$product_check->id;
 

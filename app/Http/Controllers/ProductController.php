@@ -777,8 +777,9 @@ class ProductController extends Controller
       //echo "<pre>"; print_r($request->file()); die();
         if($request->hasfile('profile')){
             $file = $request->file('profile');
-            $extension = $file->getClientOriginalExtension();
-            $filename = time().'.'.$extension;
+//            $extension = $file->getClientOriginalExtension();
+//            $filename = time().'.'.$extension;
+            $filename = time() . '.jpg';
             $file->move('uploads/profile/',$filename);
             $product = new ProductImages;
             $product->image = url('uploads/profile/'.$filename);
@@ -798,6 +799,7 @@ class ProductController extends Controller
    }
    public function saveproducts(Request $request){
      $input = $request->all();
+
 
     if($request->payradious =='1'){
        $this->validate($request,([
@@ -894,19 +896,25 @@ class ProductController extends Controller
             $product_info->save();
 			$info=$product_info->id;
 			///image
-		if($request->hasfile('image')){
-            $file = $request->file('image');
-            $extension = $file->getClientOriginalExtension();
-            $filename = $info."-".time().'.'.$extension;
-            $file->move('uploads/profile/',$filename);
-			$img_full_path=url('uploads/profile/'.$filename);
-			ProductImages::updateOrCreate(['variant_ids' => $info],
-				['image' => $img_full_path, 'product_id' => $product_id, 'variant_ids' => $info],
-			);
-          }
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = $info . "-" . time() . '.jpg'; // Force the extension to be jpg
+                // Save the file
+                $file->move('uploads/profile/', $filename);
+
+                // Get the full path of the saved image
+                $img_full_path = url('uploads/profile/' . $filename);
+
+                // Update or create a record in the database
+                ProductImages::updateOrCreate(['variant_ids' => $info],
+                    ['image' => $img_full_path, 'product_id' => $product_id, 'variant_ids' => $info],
+                );
+            }
+
         }
         else
         {
+
             foreach($request->varient_name as $key => $value) {
 				$volumetric_Weight = 0;
 			if( $request->varient_height[$key]!='' && $request->varient_width[$key]!='' && $request->varient_length[$key]!='')
@@ -944,8 +952,8 @@ class ProductController extends Controller
             $extension = $file[$key]->getClientOriginalExtension();
 			if($extension!=''){
             $file = $file[$key];
-            $extension = $file->getClientOriginalExtension();
-            $filename = $info."-".time().'.'.$extension;
+//            $extension = $file->getClientOriginalExtension();
+                $filename = $info . "-" . time() . '.jpg';
             $file->move('uploads/profile/',$filename);
 			$img_full_path=url('uploads/profile/'.$filename);
 			ProductImages::updateOrCreate(['variant_ids' => $info],
@@ -1081,8 +1089,9 @@ class ProductController extends Controller
 		}
 		if($request->hasfile('image')){
             $file = $request->file('image');
-            $extension = $file->getClientOriginalExtension();
-            $filename = $request->pid."-".time().'.'.$extension;
+//            $extension = $file->getClientOriginalExtension();
+//            $filename = $request->pid."-".time().'.'.$extension;
+            $filename = $request->pid . "-" . time() . '.jpg';
             $file->move('uploads/profile/',$filename);
             $product1 = new ProductImages;
             $product1->image = url('uploads/profile/'.$filename);
@@ -1464,8 +1473,8 @@ class ProductController extends Controller
 		///image
 		if($request->hasfile('image')){
             $file = $request->file('image');
-            $extension = $file->getClientOriginalExtension();
-            $filename = $request->id."-".time().'.'.$extension;
+//            $extension = $file->getClientOriginalExtension();
+            $filename = $request->id."-".time(). '.jpg';
             $file->move('uploads/profile/',$filename);
 			$img_full_path=url('uploads/profile/'.$filename);
 			ProductImages::updateOrCreate(['variant_ids' => $product_info->id],
@@ -1798,8 +1807,8 @@ class ProductController extends Controller
 		///image
 		if($request->hasfile('image')){
             $file = $request->file('image');
-            $extension = $file->getClientOriginalExtension();
-            $filename = $info_id."-".time().'.'.$extension;
+//            $extension = $file->getClientOriginalExtension();
+            $filename = $info_id."-".time(). '.jpg';
             $file->move('uploads/profile/',$filename);
             $product = new ProductImages;
             $product->image = url('uploads/profile/'.$filename);

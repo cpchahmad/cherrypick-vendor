@@ -1891,11 +1891,6 @@ class SuperadminController extends Controller
                 }
             }
 
-            if($product->options){
-                $options_array=json_decode($product->options);
-            }
-
-
             $data['product']=array(
                     "id" => $shopify_id,
                     "title" => $product->title,

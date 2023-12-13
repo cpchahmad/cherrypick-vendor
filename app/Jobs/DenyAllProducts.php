@@ -63,7 +63,7 @@ class DenyAllProducts implements ShouldQueue
                 $log->name='Deny Products';
                 $log->date = $currentTime->format('F j, Y');
                 $log->total_product = count($this->products);
-                $log->start_time = $currentTime->toTimeString();
+                $log->start_time = $currentTime;
                 $log->status='In-Progress';
                 $log->save();
                 foreach ($this->products as $product){
@@ -85,7 +85,7 @@ class DenyAllProducts implements ShouldQueue
                 }
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->status='Complete';
                 $log->save();
             }
@@ -96,7 +96,7 @@ class DenyAllProducts implements ShouldQueue
             $currentTime = now();
             $log->date = $currentTime->format('F j, Y');
             $log->status = 'Failed';
-            $log->end_time = $currentTime->toTimeString();
+            $log->end_time = $currentTime;
             $log->message=json_encode($exception->getMessage());
             $log->save();
         }

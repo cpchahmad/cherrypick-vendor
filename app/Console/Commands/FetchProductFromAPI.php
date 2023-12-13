@@ -53,7 +53,7 @@ class FetchProductFromAPI extends Command
             $log = new Log();
             $log->name = 'Fetch Product From Kalamandir API';
             $log->date = $currentTime->format('F j, Y');
-            $log->start_time = $currentTime->toTimeString();
+            $log->start_time = $currentTime;
             $log->status = 'In-Progress';
             $log->save();
 
@@ -536,7 +536,7 @@ class FetchProductFromAPI extends Command
 
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->status = 'Complete';
                 $log->total_product = $total_products;
                 $log->product_ids=$product_log_ids;
@@ -547,7 +547,7 @@ class FetchProductFromAPI extends Command
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->message=json_encode($exception->getMessage());
                 $log->save();
             }

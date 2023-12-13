@@ -579,7 +579,7 @@ class ProductsSyncFromApi implements ShouldQueue
 
                     $currentTime = now();
                     $log->date = $currentTime->format('F j, Y');
-                    $log->end_time = $currentTime->toTimeString();
+                    $log->end_time = $currentTime;
                     $log->total_product = $total_products;
                     $log->product_ids = $product_log_ids;
                     $log->status = 'Complete';

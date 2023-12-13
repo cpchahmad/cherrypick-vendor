@@ -47,7 +47,7 @@ class updatePriceNewConvesionRate extends Command
             $log=new Log();
             $log->name='Update Product Price in Database';
             $log->date = $currentTime->format('F j, Y');
-            $log->start_time = $currentTime->toTimeString();
+            $log->start_time = $currentTime;
             $log->status='In-Progress';
             $log->save();
 
@@ -80,7 +80,7 @@ class updatePriceNewConvesionRate extends Command
 
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->product_ids=implode(',',$product_ids);
                 $log->status='Complete';
                 $log->save();
@@ -88,7 +88,7 @@ class updatePriceNewConvesionRate extends Command
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->message=json_encode($exception->getMessage());
                 $log->save();
             }

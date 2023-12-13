@@ -371,7 +371,7 @@ class PauseProductsCron extends Command
 
                     $update_log->date = $currentTime->format('F j, Y');
                     $update_log->status = 'Complete';
-                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->end_time = $currentTime;
                     $update_log->save();
                 }
 
@@ -383,7 +383,7 @@ class PauseProductsCron extends Command
 
                 $update_log->date = $currentTime->format('F j, Y');
                 $update_log->status = 'Failed';
-                $update_log->end_time = $currentTime->toTimeString();
+                $update_log->end_time = $currentTime;
                 $update_log->message = json_encode($exception->getMessage());
                 $update_log->save();
             }

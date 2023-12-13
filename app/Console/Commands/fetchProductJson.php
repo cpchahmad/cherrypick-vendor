@@ -102,7 +102,7 @@ class fetchProductJson extends Command
             $log = new Log();
             $log->name = 'Fetch Product From Json';
             $log->date = $currentTime->format('F j, Y');
-            $log->start_time = $currentTime->toTimeString();
+            $log->start_time = $currentTime;
             $log->status = 'In-Progress';
             $log->save();
             try{
@@ -290,7 +290,7 @@ class fetchProductJson extends Command
 
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->status = 'Complete';
                 $log->product_ids=$product_log_ids;
                 $log->save();
@@ -298,7 +298,7 @@ class fetchProductJson extends Command
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->message=json_encode($exception->getMessage());
                 $log->save();
             }

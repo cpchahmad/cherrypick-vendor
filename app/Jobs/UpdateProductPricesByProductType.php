@@ -94,7 +94,7 @@ class UpdateProductPricesByProductType implements ShouldQueue
                 $currentTime = now();
                 if($log) {
                     $log->date = $currentTime->format('F j, Y');
-                    $log->end_time = $currentTime->toTimeString();
+                    $log->end_time = $currentTime;
                     $log->status = 'Complete';
                     $log->save();
                 }
@@ -102,7 +102,7 @@ class UpdateProductPricesByProductType implements ShouldQueue
 
                 $log=Log::where('id',$this->log_id)->first();
                 if($log) {
-                    $log->end_time = $currentTime->toTimeString();
+                    $log->end_time = $currentTime;
                     $log->status = 'Complete';
                     $log->save();
                 }
@@ -114,7 +114,7 @@ class UpdateProductPricesByProductType implements ShouldQueue
             if($log) {
                 $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->message = json_encode($exception->getMessage());
                 $log->save();
             }

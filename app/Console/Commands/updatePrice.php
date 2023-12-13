@@ -53,7 +53,7 @@ class updatePrice extends Command
                 $log = new Log();
                 $log->name = 'Update Price in Shopify';
             $log->date = $currentTime->format('F j, Y');
-            $log->start_time = $currentTime->toTimeString();
+            $log->start_time = $currentTime;
                 $log->status = 'In-Progress';
                 $log->save();
                 $log_id=$log->id;
@@ -258,7 +258,7 @@ class updatePrice extends Command
                     $update_log = Log::where('id', $log_id)->first();
                     $update_log->date = $currentTime->format('F j, Y');
                     $update_log->status = 'Complete';
-                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->end_time = $currentTime;
                     $update_log->product_ids=implode(',',$product_ids);
                     $update_log->save();
 
@@ -267,7 +267,7 @@ class updatePrice extends Command
                     $update_log = Log::where('id', $log_id)->first();
                     $currentTime = now();
                     $update_log->date = $currentTime->format('F j, Y');
-                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->end_time = $currentTime;
                     $update_log->status = 'Failed';
                     $update_log->message=json_encode($exception->getMessage());
                     $update_log->save();

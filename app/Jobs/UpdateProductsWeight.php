@@ -92,14 +92,14 @@ class UpdateProductsWeight implements ShouldQueue
 
                 $currentTime = now();
                     if($log) {
-                        $log->end_time = $currentTime->toTimeString();
+                        $log->end_time = $currentTime;
                         $log->status = 'Complete';
                         $log->save();
                     }
             }else{
                 $log=Log::where('id',$this->log_id)->first();
                 if($log) {
-                    $log->end_time = $currentTime->toTimeString();
+                    $log->end_time = $currentTime;
                     $log->status = 'Complete';
                     $log->save();
                 }
@@ -110,7 +110,7 @@ class UpdateProductsWeight implements ShouldQueue
             $currentTime = now();
             $log->date = $currentTime->format('F j, Y');
             $log->status = 'Failed';
-            $log->end_time = $currentTime->toTimeString();
+            $log->end_time = $currentTime;
             $log->message=json_encode($exception->getMessage());
             $log->save();
         }

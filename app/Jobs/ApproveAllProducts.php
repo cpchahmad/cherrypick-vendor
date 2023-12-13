@@ -122,7 +122,7 @@ class ApproveAllProducts implements ShouldQueue
 
                     $check_log=Log::where('id',$this->log_id)->first();
                     $check_log->status='Complete';
-                    $check_log->end_time = now()->format('F j, Y');
+                    $check_log->end_time = now();
                     $check_log->save();
 
                 }

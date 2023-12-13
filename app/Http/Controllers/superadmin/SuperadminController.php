@@ -3886,7 +3886,7 @@ class SuperadminController extends Controller
         $log=new Log();
         $log->name='Update Products Weight by Product Type ('.$request->store.')';
         $log->date = $currentTime->format('F j, Y');
-        $log->start_time = $currentTime->toTimeString();
+        $log->start_time = $currentTime;
         $log->status='Processing';
         $log->save();
 
@@ -4399,7 +4399,7 @@ $tag_array=array();
         $log=new Log();
         $log->name='Update Product Price in Database ('.$request->store.')';
         $log->date = $currentTime->format('F j, Y');
-        $log->start_time = $currentTime->toTimeString();
+        $log->start_time = $currentTime;
         $log->status='Processing';
         $log->save();
 
@@ -4412,7 +4412,7 @@ $tag_array=array();
         $log=new Log();
         $log->name='Update Price in Shopify ('.$request->store.')';
         $log->date = $currentTime->format('F j, Y');
-        $log->start_time = $currentTime->toTimeString();
+        $log->start_time = $currentTime;
         $log->status='Processing';
         $log->save();
 
@@ -4469,7 +4469,7 @@ $tag_array=array();
             $log = new Log();
             $log->name = 'Fetch Product From Json ('.$vendor->name.')';
             $log->date = now()->format('F j, Y');
-            $log->start_time = now()->toTimeString();
+            $log->start_time = now();
             $log->status = 'Processing';
             $log->save();
             ProductsSyncFromApi::dispatch($id,$log->id);

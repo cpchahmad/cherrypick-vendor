@@ -55,7 +55,7 @@ class approveProductsNew extends Command
         if($log->is_retry == 1){
             $log->is_retry=0;
             $log->retry=0;
-            $log->start_time = now()->toTimeString();
+            $log->start_time = now();
             $log->save();
         }
         $product_ids=explode(',',$log->product_ids);
@@ -73,8 +73,10 @@ class approveProductsNew extends Command
 //                $product_data = Product::where('status', 1)->whereNull('shopify_id')->where('shopify_status', 'Pending')->whereIn('id',$product_ids)->chunk(10, function ($products) use ($log_id,$stop_processing) {
 //                });
 
+                Retry:
+
                 $products=Product::where('status', 1)->whereNull('shopify_id')->where('shopify_status', 'Pending')->whereIn('id',$product_ids)->get();
-                foreach ($products as $product) {
+                foreach ($products as $p_index=> $product) {
                     try {
                         $check_log = Log::where('id', $log_id)->first();
                         if ($check_log->is_enabled == 1) {
@@ -313,6 +315,12 @@ class approveProductsNew extends Command
 
                                     curl_close($curl);
                                     $result = json_decode($response, true);
+
+
+//                                    if($p_index > 4){
+//                                        $result=null;
+//                                    }
+
                                     if (isset($result['product'])) {
 
 
@@ -397,7 +405,8 @@ class approveProductsNew extends Command
                                         $product_logs->product_id=$product->id;
                                         $product_logs->save();
 
-                                    } else {
+                                    }
+                                    else {
 
                                         $product->shopify_status = 'Pending';
                                         $product->save();
@@ -412,12 +421,26 @@ class approveProductsNew extends Command
                                         $update_log->save();
                                         if($update_log->retry==10) {
 
+                                            $startTime = Carbon::parse($update_log->start_time);
+
+                                            // Get the current time as a Carbon instance
+                                            $currentTime = Carbon::now();
+
+                                            // Calculate the difference between current time and start time
+                                            $timeDifference = $currentTime->diff($startTime);
+                                            $days = $timeDifference->days;
+
+                                            if($days > 0) {
+                                                $update_log->running_at = now()->addHours(24)->toDateTimeString();
+                                            }else{
+                                                $update_log->running_at = $startTime->addHours(24)->toDateTimeString();
+                                            }
                                             $update_log->status = 'On-Hold';
-                                            $update_log->running_at = now()->addHours(24)->toDateTimeString();
                                             $update_log->is_retry=1;
                                             $update_log->save();
                                             break;
                                         }
+
 
 
                                     }
@@ -445,9 +468,15 @@ class approveProductsNew extends Command
                     }
                 }
 
+
                 $update_log = Log::where('id', $log_id)->first();
                 $currentTime = now();
                 if($update_log->is_enabled && $update_log->is_retry==0) {
+                    $l_product_count=Product::where('status', 1)->whereNull('shopify_id')->where('shopify_status', 'Pending')->whereIn('id',$product_ids)->count();
+
+                    if($l_product_count > 0 && $update_log->retry < 10){
+                        goto Retry;
+                    }
 
                     $update_log->date = $currentTime->format('F j, Y');
                     $update_log->status = 'Complete';
@@ -461,6 +490,7 @@ class approveProductsNew extends Command
 
                         $log_update->is_running=1;
                         $log_update->status='In-Progress';
+                        $log_update->start_time=now();
                         $log_update->running_at=now();
                         $log_update->save();
                     }

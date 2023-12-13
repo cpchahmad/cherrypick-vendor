@@ -1137,6 +1137,7 @@ class SuperadminController extends Controller
                 $check_log->status='In-Progress';
                 $check_log->is_running=1;
                 $check_log->is_complete=0;
+                $check_log->start_time = $currentTime;
 
             }else{
                 $check_log=new Log();
@@ -1152,7 +1153,7 @@ class SuperadminController extends Controller
             $check_log->total_product = count($product_array_id);
             $check_log->product_left = count($product_array_id);
             $check_log->product_pushed = 0;
-            $check_log->start_time = $currentTime->toTimeString();
+
             $check_log->product_ids=implode(',',$product_array_id);
             $check_log->filters=json_encode($request->all());
             $check_log->save();
@@ -1891,15 +1892,33 @@ class SuperadminController extends Controller
                 }
             }
 
-            $data['product']=array(
+            if($product->options){
+                $options_array=json_decode($product->options);
+            }
+
+            if(count($options_array) > 0) {
+
+                $data['product'] = array(
                     "id" => $shopify_id,
                     "title" => $product->title,
-                    "tags"   => $tags,
+                    "tags" => $tags,
                     "product_type" => $category->category,
-                "options"     =>  $options_array,
-                "metafields"=>$metafield_data
+                    "options" => $options_array,
+                    "metafields" => $metafield_data
 
                 );
+            }else{
+                $data['product'] = array(
+                    "id" => $shopify_id,
+                    "title" => $product->title,
+                    "tags" => $tags,
+                    "product_type" => $category->category,
+                    "metafields" => $metafield_data
+
+                );
+            }
+
+
 
 
 
@@ -1924,21 +1943,23 @@ class SuperadminController extends Controller
 
             $response = curl_exec ($curl);
 
+
             curl_close ($curl);
             Product::where('id', $product['id'])->update(['edit_status' => 0, 'status' => '1', 'approve_date' => Carbon::now()]);
 
 
-
             if(count($product_infos) > 0) {
-
+                $variant_ids_array = array();
                 foreach ($product_infos as $index=> $product_info) {
                     try {
 
+                        array_push($variant_ids_array, $product_info->inventory_id);
+
                         //update stock on live store
                         $productController = new ProductController();
-                        $productController->updateStockLiveStore($product_info->inventory_id, $product_info->stock, $product_info->inventory_item_id);
+//                        $productController->updateStockLiveStore($product_info->inventory_id, $product_info->stock, $product_info->inventory_item_id);
                         //update variant
-                        $productController->updateVarianatLiveStore($product_info->id);
+//                        $productController->updateVarianatLiveStore($product_info->id);
                         ///create new varient
                         $invid = $product_info->inventory_id;
 
@@ -2032,40 +2053,48 @@ class SuperadminController extends Controller
                         $response = curl_exec($curl);
                         curl_close($curl);
                         $res = json_decode($response, true);
+
+
                         //echo "<pre>"; print_r($data); print_r($res); die();
 
                         ////Update Image for variant
                         $productDetails = Product::find($product_info->product_id);
                         if ($productDetails->shopify_id != null && $productDetails->status == 1) {
-                            $shopify_product_id = $productDetails->shopify_id;
-                            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_product_id/images.json";
-                            $variant_id = $product_info->id;
-                            $imagesResult = ProductImages::where('variant_ids', $variant_id)->first();
-                            if ($imagesResult) {
-                                $data['image'] = array(
-                                    'src' => $imagesResult->image,
-                                    'variant_ids' => array($product_info->inventory_id),
-                                );
-                                $curl = curl_init();
-                                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
-                                $headers = array(
-                                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
-                                    "Content-Type: application/json",
-                                    "charset: utf-8"
-                                );
-                                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-                                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                                curl_setopt($curl, CURLOPT_VERBOSE, 0);
-                                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-                                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-                                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
-                                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-                                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-                                $response = curl_exec($curl);
-                                curl_close($curl);
-                                $img_result = json_decode($response, true);
-                                ProductImages::where('id', $imagesResult->id)->update(['image_id' => $img_result['image']['id']]);
-                            }
+
+
+//                            $shopify_product_id = $productDetails->shopify_id;
+//                            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_product_id/images.json";
+//                            $variant_id = $product_info->id;
+//
+//                            $imagesResult = ProductImages::where('variant_ids', $variant_id)->first();
+//                            if ($imagesResult) {
+//                                $data['image'] = array(
+//                                    'src' => $imagesResult->image,
+//                                    'variant_ids' => array($product_info->inventory_id),
+//                                );
+//                                $curl = curl_init();
+//                                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+//                                $headers = array(
+//                                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+//                                    "Content-Type: application/json",
+//                                    "charset: utf-8"
+//                                );
+//                                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+//                                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+//                                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+//                                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+//                                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+//                                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+//                                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+//                                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+//                                $response = curl_exec($curl);
+//                                curl_close($curl);
+//                                $img_result = json_decode($response, true);
+//
+//
+//
+//                                ProductImages::where('id', $imagesResult->id)->update(['image_id' => $img_result['image']['id']]);
+//                            }
                         }
                         $location_id = Helpers::DiffalultLocation();
                         ProductInventoryLocation::updateOrCreate(
@@ -2078,6 +2107,7 @@ class SuperadminController extends Controller
                         dd($exception->getMessage());
                     }
             }
+                $this->shopifyUploadeImage($product->id, $product->shopify_id,$variant_ids_array);
             }
 
 
@@ -2154,6 +2184,8 @@ class SuperadminController extends Controller
 
                 );
             }
+
+
 
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
@@ -4402,6 +4434,7 @@ $tag_array=array();
             $log->is_enabled=1;
             $log->status='In-Progress';
             $log->is_running=1;
+            $log->start_time=now();
             $log->save();
         }
         return redirect()->back()->with('success', 'Changed Successfully');
@@ -4421,6 +4454,7 @@ $tag_array=array();
         if($check_log){
             $check_log->status='In-Progress';
             $check_log->is_running=1;
+            $check_log->start_time=now();
             $check_log->save();
         }
         return redirect()->back()->with('success', 'Changed Successfully');

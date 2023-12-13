@@ -210,8 +210,20 @@
                                             @endif
 
                                     </td>
-                                    <td>{{ $log->start_time }}</td>
-                                    <td>{{ $log->end_time }}</td>
+                                    <td>
+                                        @if (strlen($log->start_time) > 8)
+                                        {{ \Carbon\Carbon::parse($log->start_time)->format('m-d-Y H:i:s') }}
+                                        @else
+                                        {{$log->start_time}}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if (strlen($log->end_time) > 8)
+                                        {{ \Carbon\Carbon::parse($log->end_time)->format('m-d-Y H:i:s') }}
+                                        @else
+                                            {{$log->end_time}}
+                                        @endif
+                                    </td>
                                     <td>{{ $log->total_product }}</td>
                                     <td>{{ $log->product_pushed }}</td>
                                     <td>{{ $log->product_left }}</td>

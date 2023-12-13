@@ -9,6 +9,7 @@ use App\Models\ProductImagesNew;
 use App\Models\ProductType;
 use App\Models\Setting;
 use App\Models\VariantChange;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Auth;
@@ -2709,4 +2710,50 @@ echo "ok";
 		$res->delete();
 		return redirect()->to('/category')->with('success', 'Category Deleted Successfully!!');
 	}
+
+
+    public function ChangeImageUrl(){
+
+//        $get_images=ProductImages::where('image', 'like', '%.jfif')->get();
+        $get_images=ProductImages::orderBy('updated_at', 'desc')->limit('66')->get();
+
+        foreach ($get_images as $image){
+
+            try {
+//            $imageUrl = str_replace('https://vendor.cherrypick.city', '', $image->image);
+
+
+//                $contents = file_get_contents($image->image);
+//                $filename='/uploads/profile/'.time().'.jpg';
+//                $path = public_path($filename);
+//                file_put_contents($path, $contents );
+
+
+                // New image path with the ".jpg" extension
+//                $newImagePath = str_replace('.jfif', '.jpg', $originalImagePath);
+
+
+//            dd($originalImagePath,$newImagePath);
+
+
+
+                // Update the database record
+            $image->image = asset($image->image);
+            $image->save();
+
+
+            }catch (\Exception $exception){
+
+                dump($exception->getMessage());
+
+            }
+
+
+        }
+        dd(2);
+
+    }
+
+
+
 }

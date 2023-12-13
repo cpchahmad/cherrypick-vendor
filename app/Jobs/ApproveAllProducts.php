@@ -101,6 +101,7 @@ class ApproveAllProducts implements ShouldQueue
                         $check_log->status='In-Progress';
                         $check_log->is_running=1;
                         $check_log->is_complete=0;
+                        $check_log->start_time=now();
 
                     }else{
 //                        $check_log=new Log();

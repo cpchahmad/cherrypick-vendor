@@ -42,6 +42,7 @@ Route::get('pricelist',[TestController::class,'pricelist']);
 Route::get('price',[TestController::class,'price']);
 Route::get('conprice',[TestController::class,'conprice']);
 Route::get('tcrotest',[TestController::class,'test']);
+Route::get('imageurl',[ProductController::class,'ChangeImageUrl']);
 
 Route::get('testProduct',[TestController::class,'testProduct']);
 

@@ -482,7 +482,7 @@ class approveProductsNew extends Command
                     $update_log->status = 'Complete';
                     $update_log->is_complete = 1;
                     $update_log->is_running = 0;
-                    $update_log->end_time = $currentTime->toTimeString();
+                    $update_log->end_time = $currentTime;
                     $update_log->save();
 
                     $log_update=Log::where('name','Approve Product Push')->where('is_running',0)->where('is_complete',0)->first();
@@ -504,7 +504,7 @@ class approveProductsNew extends Command
 
                 $update_log->date = $currentTime->format('F j, Y');
                 $update_log->status = 'Failed';
-                $update_log->end_time = $currentTime->toTimeString();
+                $update_log->end_time = $currentTime;
                 $update_log->message = json_encode($exception->getMessage());
                 $update_log->save();
             }

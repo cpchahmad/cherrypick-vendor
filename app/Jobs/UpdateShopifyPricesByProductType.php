@@ -230,7 +230,7 @@ class UpdateShopifyPricesByProductType implements ShouldQueue
                 if($log) {
                     $currentTime = now();
                     $log->date = $currentTime->format('F j, Y');
-                    $log->end_time = $currentTime->toTimeString();
+                    $log->end_time = $currentTime;
                     $log->status = 'Complete';
                     $log->save();
                 }
@@ -243,7 +243,7 @@ class UpdateShopifyPricesByProductType implements ShouldQueue
                 $currentTime = now();
                 $log->date = $currentTime->format('F j, Y');
                 $log->status = 'Failed';
-                $log->end_time = $currentTime->toTimeString();
+                $log->end_time = $currentTime;
                 $log->message = json_encode($exception->getMessage());
                 $log->save();
             }

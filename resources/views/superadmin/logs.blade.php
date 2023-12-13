@@ -210,8 +210,8 @@
                                             @endif
 
                                     </td>
-                                    <td>{{ $log->start_time }}</td>
-                                    <td>{{ $log->end_time }}</td>
+                                    <td> {{ \Carbon\Carbon::parse($log->start_time)->format('m-d-Y H:i:s') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($log->end_time)->format('m-d-Y H:i:s') }}</td>
                                     <td>{{ $log->total_product }}</td>
                                     <td>{{ $log->product_pushed }}</td>
                                     <td>{{ $log->product_left }}</td>

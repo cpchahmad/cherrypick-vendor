@@ -148,6 +148,7 @@ class approveProductsNew extends Command
                                 $product_info = ProductInfo::where('product_id', $product->id)->get();
                                 $groupedData = [];
                                 $groupedData1 = [];
+                                $groupedData2 = [];
                                 $options_array = [];
                                 $upload_product = 0;
                                 foreach ($product_info as $v) {
@@ -159,6 +160,7 @@ class approveProductsNew extends Command
                                         $variants[] = array(
                                             "option1" => $v->varient_value,
                                             "option2" => $v->varient1_value,
+                                            "option3" => $v->varient2_value,
                                             "sku" => $v->sku,
                                             "price" => $v->price_usd,
                                             "grams" => $v->pricing_weight,
@@ -170,6 +172,7 @@ class approveProductsNew extends Command
                                         $variants[] = array(
                                             "option1" => $v->varient_value,
                                             "option2" => $v->varient1_value,
+                                            "option3" => $v->varient2_value,
                                             "sku" => $v->sku,
                                             "price" => $v->price_usd,
                                             "grams" => $v->pricing_weight,
@@ -185,6 +188,10 @@ class approveProductsNew extends Command
 
                                     $varient1Name = $v->varient1_name;
                                     $varient1Value = $v->varient1_value;
+
+
+                                    $varient2Name = $v->varient2_name;
+                                    $varient2Value = $v->varient2_value;
 
                                     if ($varientName != '' || $varientName != null) {
                                         // Check if the varient_name already exists in the grouped data array
@@ -205,12 +212,27 @@ class approveProductsNew extends Command
                                         // Check if the varient_name already exists in the grouped data array
                                         if (array_key_exists($varient1Name, $groupedData1)) {
                                             // If it exists, add the varient_value to the existing array
-                                            $grouped1Data[$varient1Name]['value'][] = $varient1Value;
+                                            $groupedData1[$varient1Name]['value'][] = $varient1Value;
                                         } else {
                                             // If it doesn't exist, create a new entry with the varient_name and an array containing the varient_value
-                                            $groupedData[$varient1Name] = [
+                                            $groupedData1[$varient1Name] = [
                                                 'name' => $varient1Name,
                                                 'value' => [$varient1Value]
+                                            ];
+                                        }
+                                    }
+
+
+                                    if ($varient2Name != '' || $varient2Name != null) {
+                                        // Check if the varient_name already exists in the grouped data array
+                                        if (array_key_exists($varient2Name, $groupedData2)) {
+                                            // If it exists, add the varient_value to the existing array
+                                            $groupedData2[$varient2Name]['value'][] = $varient2Value;
+                                        } else {
+                                            // If it doesn't exist, create a new entry with the varient_name and an array containing the varient_value
+                                            $groupedData2[$varient2Name] = [
+                                                'name' => $varient2Name,
+                                                'value' => [$varient2Value]
                                             ];
                                         }
                                     }
@@ -220,6 +242,7 @@ class approveProductsNew extends Command
 
                                 $result_options = array_values($groupedData);
                                 $result1_options = array_values($groupedData1);
+                                $result2_options = array_values($groupedData2);
 
                                 foreach ($result_options as $index => $result_option) {
 
@@ -234,6 +257,14 @@ class approveProductsNew extends Command
                                         'name' => $result1_option['name'],
                                         'position' => $index + 1,
                                         'values' => $result1_option['value']
+                                    ]);
+                                }
+
+                                foreach ($result2_options as $index => $result2_option) {
+                                    array_push($options_array, [
+                                        'name' => $result2_option['name'],
+                                        'position' => $index + 1,
+                                        'values' => $result2_option['value']
                                     ]);
                                 }
 

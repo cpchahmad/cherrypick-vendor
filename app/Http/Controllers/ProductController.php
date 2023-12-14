@@ -871,13 +871,19 @@ class ProductController extends Controller
             }
         if($request->payradious!=1)
         {
+            $grams=$request->grams;
+            $pricing_weight=$grams;
+            if($product_type && $product_type->base_weight){
+                $pricing_weight=max($grams, $product_type->base_weight);
+            }
+
 			$volumetric_Weight = 0;
 			if( $request->height!='' && $request->width!='' && $request->length!='')
 				$volumetric_Weight = $request->height * $request->width * $request->length/5000;
             $product_info = new ProductInfo;
             $product_info->product_id = $product_id;
             $product_info->sku = $request->sku;
-			$prices=Helpers::calc_price_new($request->price,$request->grams,$request->tags,$volumetric_Weight,$vendor);
+			$prices=Helpers::calc_price_new($request->price,$pricing_weight,$request->tags,$volumetric_Weight,$vendor);
 			$product_info->price = $prices['inr'];
 			$product_info->price_usd = $prices['usd'];
 			$product_info->price_aud = $prices['aud'];
@@ -887,7 +893,8 @@ class ProductController extends Controller
 			$product_info->price_irl = $prices['irl'];
 			$product_info->price_ger = $prices['ger'];
 			$product_info->base_price = $request->price;
-            $product_info->grams = $request->grams;
+            $product_info->grams = $grams;
+            $product_info->pricing_weight = $pricing_weight;
             $product_info->qty = $request->quantity;
             $product_info->stock = 1;
             $product_info->shelf_life = $request->shelf_life;
@@ -917,6 +924,13 @@ class ProductController extends Controller
         {
 
             foreach($request->varient_name as $key => $value) {
+
+                $grams=$request->varient_grams[$key];
+                $pricing_weight=$grams;
+                if($product_type && $product_type->base_weight){
+                    $pricing_weight=max($grams, $product_type->base_weight);
+                }
+
 				$volumetric_Weight = 0;
 			if( $request->varient_height[$key]!='' && $request->varient_width[$key]!='' && $request->varient_length[$key]!='')
 				$volumetric_Weight = $request->varient_height[$key] * $request->varient_width[$key] * $request->varient_length[$key]/5000;
@@ -927,7 +941,7 @@ class ProductController extends Controller
             $product_info->varient_name = $request->varient_name[$key];
             $product_info->varient_value = $request->varient_value[$key];
 			//$prices=Helpers::($request->varient_price[$key],$request->varient_grams[$key],$is_saree,$is_furniture,$volumetric_Weight);
-			$prices=Helpers::calc_price_new($request->varient_price[$key],$request->varient_grams[$key],$request->tags,$volumetric_Weight,$vendor);
+			$prices=Helpers::calc_price_new($request->varient_price[$key],$pricing_weight,$request->tags,$volumetric_Weight,$vendor);
 			$product_info->price = $prices['inr'];
 			$product_info->price_usd = $prices['usd'];
 			$product_info->price_aud = $prices['aud'];
@@ -937,7 +951,8 @@ class ProductController extends Controller
 			$product_info->price_irl = $prices['irl'];
 			$product_info->price_ger = $prices['ger'];
 			$product_info->base_price = $request->varient_price[$key];
-            $product_info->grams = $request->varient_grams[$key];
+            $product_info->grams = $grams;
+            $product_info->pricing_weight = $pricing_weight;
             $product_info->qty = $request->varient_quantity[$key];
             $product_info->shelf_life = $request->varient_shelf_life[$key];
             $product_info->temp_require = $request->varient_temp[$key];
@@ -1434,8 +1449,18 @@ class ProductController extends Controller
             $product_info->varient_name = $request->varient_name;
             $product_info->varient_value = $request->varient_value;
         }
+
+
+        $grams=$request->grams;
+        $pricing_weight=$grams;
+
+        $product_type=ProductType::where('id',$products->product_type_id)->first();
+        if($product_type && $product_type->base_weight){
+            $pricing_weight=max($grams, $product_type->base_weight);
+        }
+
 		//$prices=Helpers::calc_price($request->price,$request->grams,$is_saree,$is_furniture,$volumetric_Weight);
-		$prices=Helpers::calc_price_new($request->price,$request->grams,$products->tags,$volumetric_Weight,$product_info->vendor_id);
+		$prices=Helpers::calc_price_new($request->price,$pricing_weight,$products->tags,$volumetric_Weight,$product_info->vendor_id);
         $product_info->sku = $request->sku;
         //$product_info->price = $price;
 			$product_info->price = $prices['inr'];
@@ -1463,7 +1488,8 @@ class ProductController extends Controller
 				$product_info->discounted_ger = $prices_dis['ger'];
 			}
 		$product_info->base_price = $request->price;
-        $product_info->grams = $request->grams;
+        $product_info->grams = $grams;
+        $product_info->pricing_weight = $pricing_weight;
         $product_info->stock = $request->quantity;
         $product_info->shelf_life = $request->shelf_life;
         $product_info->temp_require = $request->temp;

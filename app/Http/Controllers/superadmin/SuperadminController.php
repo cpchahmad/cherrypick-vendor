@@ -1269,6 +1269,7 @@ class SuperadminController extends Controller
                 $option1_value = [];
                 $groupedData = [];
                 $groupedData1 = [];
+                $groupedData2 = [];
 
 
                 $upload_product = 0;
@@ -1283,6 +1284,7 @@ class SuperadminController extends Controller
 //                    "title" => $v->varient_name,
                             "option1" => $v->varient_value,
                             "option2" => $v->varient1_value,
+                            "option3" => $v->varient2_value,
                             "sku" => $v->sku,
                             "price" => $v->price_usd,
                             "grams" => $v->pricing_weight,
@@ -1295,6 +1297,7 @@ class SuperadminController extends Controller
 //                    "title" => $v->varient_name,
                             "option1" => $v->varient_value,
                             "option2" => $v->varient1_value,
+                            "option3" => $v->varient2_value,
                             "sku" => $v->sku,
                             "price" => $v->price_usd,
                             "grams" => $v->pricing_weight,
@@ -1308,6 +1311,9 @@ class SuperadminController extends Controller
 
                     $varient1Name = $v->varient1_name;
                     $varient1Value = $v->varient1_value;
+
+                    $varient2Name = $v->varient2_name;
+                    $varient2Value = $v->varient2_value;
 
 
                     if ($varientName != '' || $varientName != null) {
@@ -1339,6 +1345,20 @@ class SuperadminController extends Controller
                         }
                     }
 
+                    if ($varient2Name != '' || $varient2Name != null) {
+                        // Check if the varient_name already exists in the grouped data array
+                        if (array_key_exists($varient2Name, $groupedData2)) {
+                            // If it exists, add the varient_value to the existing array
+                            $groupedData2[$varient2Name]['value'][] = $varient2Value;
+                        } else {
+                            // If it doesn't exist, create a new entry with the varient_name and an array containing the varient_value
+                            $groupedData2[$varient2Name] = [
+                                'name' => $varient2Name,
+                                'value' => [$varient2Value]
+                            ];
+                        }
+                    }
+
 
                 }
 
@@ -1346,6 +1366,7 @@ class SuperadminController extends Controller
 // Convert the grouped data into a simple indexed array
                 $result_options = array_values($groupedData);
                 $result1_options = array_values($groupedData1);
+                $result2_options = array_values($groupedData2);
 
 
 
@@ -1364,6 +1385,13 @@ class SuperadminController extends Controller
                         'name' => $result1_option['name'],
                         'position' => $index + 1,
                         'values' => $result1_option['value']
+                    ]);
+                }
+                foreach ($result2_options as $index => $result2_option) {
+                    array_push($options_array, [
+                        'name' => $result2_option['name'],
+                        'position' => $index + 1,
+                        'values' => $result2_option['value']
                     ]);
                 }
 
@@ -1752,6 +1780,7 @@ class SuperadminController extends Controller
             $product_infos =ProductInfo::where('product_id',$product['id'])->get();
             $groupedData = [];
             $groupedData1 = [];
+            $groupedData2 = [];
             $values = array();
             foreach ($product_infos as $index=> $product_info) {
 
@@ -1777,6 +1806,9 @@ class SuperadminController extends Controller
                 $varient1Name = $product_info->varient1_name;
                 $varient1Value = $product_info->varient1_value;
 
+                $varient2Name = $product_info->varient2_name;
+                $varient2Value = $product_info->varient2_value;
+
 
                 if($varientName!=''|| $varientName!=null){
                     // Check if the varient_name already exists in the grouped data array
@@ -1797,12 +1829,27 @@ class SuperadminController extends Controller
                     // Check if the varient_name already exists in the grouped data array
                     if (array_key_exists($varient1Name, $groupedData1)) {
                         // If it exists, add the varient_value to the existing array
-                        $grouped1Data[$varient1Name]['value'][] = $varient1Value;
+                        $groupedData1[$varient1Name]['value'][] = $varient1Value;
                     } else {
                         // If it doesn't exist, create a new entry with the varient_name and an array containing the varient_value
-                        $groupedData[$varient1Name] = [
+                        $groupedData1[$varient1Name] = [
                             'name' => $varient1Name,
                             'value' => [$varient1Value]
+                        ];
+                    }
+                }
+
+
+                if($varient2Name!=''|| $varient2Name!=null){
+                    // Check if the varient_name already exists in the grouped data array
+                    if (array_key_exists($varient2Name, $groupedData2)) {
+                        // If it exists, add the varient_value to the existing array
+                        $groupedData2[$varient2Name]['value'][] = $varient2Value;
+                    } else {
+                        // If it doesn't exist, create a new entry with the varient_name and an array containing the varient_value
+                        $groupedData2[$varient2Name] = [
+                            'name' => $varient2Name,
+                            'value' => [$varient2Value]
                         ];
                     }
                 }
@@ -1847,6 +1894,7 @@ class SuperadminController extends Controller
 
             $result_options = array_values($groupedData);
             $result1_options = array_values($groupedData1);
+            $result2_options = array_values($groupedData2);
 
             foreach ($result_options as $index=>  $result_option) {
 
@@ -1862,6 +1910,13 @@ class SuperadminController extends Controller
                     'name' => $result1_option['name'],
                     'position' => $index + 1,
                     'values' => $result1_option['value']
+                ]);
+            }
+            foreach ($result2_options as $index=>  $result2_option) {
+                array_push($options_array, [
+                    'name' => $result2_option['name'],
+                    'position' => $index + 1,
+                    'values' => $result2_option['value']
                 ]);
             }
 
@@ -1972,6 +2027,7 @@ class SuperadminController extends Controller
                                     "id" => $invid,
                                     "option1" => $product_info->varient_value,
                                     "option2" => $product_info->varient1_value,
+                                    "option3" => $product_info->varient2_value,
                                     "sku" => $product_info->sku,
                                     "price" => $product_info->price_usd,
                                     "compare_at_price" => $product_info->price_usd,
@@ -1987,6 +2043,7 @@ class SuperadminController extends Controller
                                     "id" => $invid,
                                     "option1" => $product_info->varient_value,
                                     "option2" => $product_info->varient1_value,
+                                    "option3" => $product_info->varient2_value,
                                     "sku" => $product_info->sku,
                                     "price" => $product_info->price_usd,
                                     "compare_at_price" => $product_info->price_usd,
@@ -2107,6 +2164,8 @@ class SuperadminController extends Controller
                         dd($exception->getMessage());
                     }
             }
+
+
                 $this->shopifyUploadeImage($product->id, $product->shopify_id,$variant_ids_array);
             }
 
@@ -2478,6 +2537,7 @@ class SuperadminController extends Controller
                $variants[]=array(
                    "option1" => $product_variant->varient_value,
                    "option2" => $product_variant->varient1_value,
+                   "option3" => $product_variant->varient2_value,
                    "sku"     => $product_variant->sku,
                    "price"   => $product_variant->price_usd,
                    "grams"   => $product_variant->pricing_weight,
@@ -3231,7 +3291,8 @@ class SuperadminController extends Controller
                 // Extract the first two options
                 $selectedOptions=null;
                 if(count($row['options']) > 0){
-                    $selectedOptions = array_slice($row['options'], 0, 2);
+//                    $selectedOptions = array_slice($row['options'], 0, 2);
+                    $selectedOptions = $row['options'];
                 }
 
 
@@ -3399,8 +3460,12 @@ class SuperadminController extends Controller
                             if (isset($row['options']) && isset($row['options'][1])) {
                                 $product_info->varient1_name = $row['options'][1]['name'];
                             }
+                            if (isset($row['options']) && isset($row['options'][2])) {
+                                $product_info->varient2_name = $row['options'][2]['name'];
+                            }
                             $product_info->varient_value = $var['option1'];
                             $product_info->varient1_value = $var['option2'];
+                            $product_info->varient2_value = $var['option3'];
                             $product_info->save();
                         }
                     }
@@ -3542,8 +3607,13 @@ class SuperadminController extends Controller
                             if (isset($row['options']) && isset($row['options'][1])) {
                                 $product_info->varient1_name = $row['options'][1]['name'];
                             }
+                            if (isset($row['options']) && isset($row['options'][2])) {
+                                $product_info->varient2_name = $row['options'][2]['name'];
+                            }
+
                             $product_info->varient_value = $var['option1'];
                             $product_info->varient1_value = $var['option2'];
+                            $product_info->varient2_value = $var['option3'];
 
                             $product_info->save();
                         } else   //update variants
@@ -3577,8 +3647,13 @@ class SuperadminController extends Controller
                             if (isset($row['options']) && isset($row['options'][1])) {
                                 $info['varient1_name'] = $row['options'][1]['name'];
                             }
+
+                            if (isset($row['options']) && isset($row['options'][2])) {
+                                $info['varient2_name'] = $row['options'][2]['name'];
+                            }
                             $info['varient_value'] = $var['option1'];
                             $info['varient1_value'] = $var['option2'];
+                            $info['varient2_value'] = $var['option3'];
                             ProductInfo::where('id', $info_id)->update($info);
                         }
                     }
@@ -4863,7 +4938,7 @@ $tag_array=array();
             $curl = curl_init();
             $vid=$store->id;
             curl_setopt_array($curl, array(
-                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/products?searchCriteria[filter_groups][0][filters][0][field]=visibility&searchCriteria[filter_groups][0][filters][0][value]=4',
+                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/stockItems/SKU-174524',
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -4879,8 +4954,10 @@ $tag_array=array();
 
             $response = curl_exec($curl);
 
+
             curl_close($curl);
             $data = json_decode($response, true);
+            dd($data);
                 foreach ($data['items'] as $index => $row) {
 
                     $stock = 0;

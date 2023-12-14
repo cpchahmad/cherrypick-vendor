@@ -32,7 +32,7 @@ use App\Http\Controllers\ForgotPasswordController;
 Route::get('UpdatePricingWeight',[SuperadminController::class,'UpdatePricingWeight']);
 
 
-Route::get('demotest',[SuperadminController::class,'UpdateSomeProduct']);
+Route::get('demotest',[SuperadminController::class,'getThirdPartyAPIInventory']);
 Route::get('sync-products',[ProductController::class,'shopifyProductTest']);
 Route::get('sync/{cid}',[ProductController::class,'shopifyProductSync']);
 Route::get('createcollection',[TestController::class,'createCollection']);

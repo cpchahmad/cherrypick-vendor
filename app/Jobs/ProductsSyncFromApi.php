@@ -34,7 +34,7 @@ class ProductsSyncFromApi implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 10000;
+    public $timeout = 1000000;
     protected $vendor_id;
     protected $log_id;
 

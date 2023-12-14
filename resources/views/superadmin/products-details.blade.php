@@ -163,6 +163,9 @@
 
                                                     <p><b>Varaint 2 Name:</b> {{$row->varient1_name}}</p>
                                                     <p><b>Varaint 2 Value:</b> {{$row->varient1_value}}</p>
+
+                                                  <p><b>Varaint 3 Name:</b> {{$row->varient2_name}}</p>
+                                                  <p><b>Varaint 3 Value:</b> {{$row->varient2_value}}</p>
                                                 </div>
                                                 @endif
                                                 <div class="col-6 font_size">

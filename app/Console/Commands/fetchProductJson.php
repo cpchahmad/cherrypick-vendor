@@ -203,6 +203,7 @@ class fetchProductJson extends Command
                         $variants[]=array(
                             "option1" => $product_variant->varient_value,
                             "option2" => $product_variant->varient1_value,
+                            "option3" => $product_variant->varient2_value,
                             "sku"     => $product_variant->sku,
                             "price"   => $product_variant->price_usd,
                             "grams"   => $product_variant->grams,

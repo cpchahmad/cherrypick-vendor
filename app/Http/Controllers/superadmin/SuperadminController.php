@@ -4863,7 +4863,7 @@ $tag_array=array();
             $curl = curl_init();
             $vid=$store->id;
             curl_setopt_array($curl, array(
-                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/products?searchCriteria[filter_groups][0][filters][0][field]=visibility&searchCriteria[filter_groups][0][filters][0][value]=4',
+                CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/stockItems/SKU-174524',
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -4879,8 +4879,10 @@ $tag_array=array();
 
             $response = curl_exec($curl);
 
+
             curl_close($curl);
             $data = json_decode($response, true);
+            dd($data);
                 foreach ($data['items'] as $index => $row) {
 
                     $stock = 0;

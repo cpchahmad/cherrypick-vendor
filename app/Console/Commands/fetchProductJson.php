@@ -504,7 +504,8 @@ class fetchProductJson extends Command
             // Extract the first two options
             $selectedOptions=null;
             if(count($row['options']) > 0){
-                $selectedOptions = array_slice($row['options'], 0, 2);
+//                $selectedOptions = array_slice($row['options'], 0, 2);
+                $selectedOptions = $row['options'];
             }
 
 
@@ -676,8 +677,13 @@ class fetchProductJson extends Command
                         if(isset($row['options']) && isset($row['options'][1])){
                             $product_info->varient1_name =$row['options'][1]['name'];
                         }
+                        if(isset($row['options']) && isset($row['options'][2])){
+                            $product_info->varient2_name =$row['options'][2]['name'];
+                        }
+
                         $product_info->varient_value = $var['option1'];
                         $product_info->varient1_value= $var['option2'];
+                        $product_info->varient2_value= $var['option3'];
                         $product_info->save();
                     }
                 }
@@ -830,8 +836,13 @@ class fetchProductJson extends Command
                         if(isset($row['options']) && isset($row['options'][1])){
                             $product_info->varient1_name =$row['options'][1]['name'];
                         }
+
+                        if(isset($row['options']) && isset($row['options'][2])){
+                            $product_info->varient2_name =$row['options'][2]['name'];
+                        }
                         $product_info->varient_value = $var['option1'];
                         $product_info->varient1_value= $var['option2'];
+                        $product_info->varient2_value= $var['option3'];
 
                         $product_info->save();
                     }
@@ -865,8 +876,13 @@ class fetchProductJson extends Command
                         if(isset($row['options']) && isset($row['options'][1])){
                             $info['varient1_name'] =$row['options'][1]['name'];
                         }
+
+                        if(isset($row['options']) && isset($row['options'][2])){
+                            $info['varient2_name'] =$row['options'][2]['name'];
+                        }
                         $info['varient_value']=$var['option1'];
                         $info['varient1_value']=$var['option2'];
+                        $info['varient2_value']=$var['option3'];
                         ProductInfo::where('id', $info_id)->update($info);
                     }
                 }

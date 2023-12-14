@@ -1453,6 +1453,8 @@ class ProductController extends Controller
 
         $grams=$request->grams;
         $pricing_weight=$grams;
+
+        $product_type=ProductType::where('id',$products->product_type_id)->first();
         if($product_type && $product_type->base_weight){
             $pricing_weight=max($grams, $product_type->base_weight);
         }

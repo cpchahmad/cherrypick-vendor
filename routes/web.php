@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Log;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
@@ -30,6 +32,21 @@ use App\Http\Controllers\ForgotPasswordController;
 |
 */
 Route::get('UpdatePricingWeight',[SuperadminController::class,'UpdatePricingWeight']);
+
+
+Route::get('/function', function() {
+
+        $running_at = Carbon::parse('2023-12-12 10:47:54');
+
+        // Calculate the difference between current time and start time
+        $timeDifference = now()->diff($running_at);
+        $days = $timeDifference->days;
+
+dd($days);
+
+
+
+});
 
 
 Route::get('demotest',[SuperadminController::class,'getThirdPartyAPIInventory']);

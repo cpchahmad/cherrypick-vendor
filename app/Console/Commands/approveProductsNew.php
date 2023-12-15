@@ -59,6 +59,7 @@ class approveProductsNew extends Command
             $log->save();
         }
         $product_ids=explode(',',$log->product_ids);
+
 //        Product::whereIn('id',$product_ids)->update(['in_queue' => '1']);
         $product_count=count($product_ids);
 
@@ -76,6 +77,7 @@ class approveProductsNew extends Command
                 Retry:
 
                 $products=Product::where('status', 1)->whereNull('shopify_id')->where('shopify_status', 'Pending')->whereIn('id',$product_ids)->get();
+
                 foreach ($products as $p_index=> $product) {
                     try {
                         $check_log = Log::where('id', $log_id)->first();
@@ -348,7 +350,7 @@ class approveProductsNew extends Command
                                     $result = json_decode($response, true);
 
 
-//                                    if($p_index > 0){
+//                                    if($p_index > 1){
 //                                        $result=null;
 //                                    }
 
@@ -368,6 +370,9 @@ class approveProductsNew extends Command
                                                 ['items_id' => $prd['inventory_item_id'], 'stock' => $prd['inventory_quantity'], 'location_id' => $location_id]
                                             );
                                         }
+
+
+                                        $count_variants=count($variant_ids_array);
 
                                         $values = array();
                                         foreach ($product_info as $index => $v) {
@@ -426,6 +431,7 @@ class approveProductsNew extends Command
                                         $update_log = Log::where('id', $log_id)->first();
                                         $update_log->product_pushed = $update_log->product_pushed + 1;
                                         $update_log->product_left = $update_log->product_left - 1;
+                                        $update_log->variant_pushed = $update_log->variant_pushed + $count_variants;
                                         $update_log->save();
                                         $product->shopify_status = 'Complete';
                                         $product->save();
@@ -439,47 +445,67 @@ class approveProductsNew extends Command
                                     }
                                     else {
 
-                                        $product->shopify_status = 'Pending';
-                                        $product->save();
+                                        if(isset($result['errors']['product']) && $result['errors']['product']=='Daily variant creation limit reached. Please try again later. See https://help.shopify.com/api/getting-started/api-call-limit for more information about rate limits and how to avoid them.'){
+                                            $product->shopify_status = 'Pending';
+                                            $product->save();
 
-                                        $extra = new Extra();
-                                        $extra->log = json_encode($result);
-                                        $extra->record = 'Push Product to Shopify'.$product->id;
-                                        $extra->save();
+                                            $extra = new Extra();
+                                            $extra->log = json_encode($result);
+                                            $extra->record = 'Push Product to Shopify'.$product->id;
+                                            $extra->save();
 
-                                        $update_log = Log::where('id', $log_id)->first();
-                                        $update_log->retry = $update_log->retry + 1;
-                                        $update_log->save();
-                                        if($update_log->retry==10) {
-
-                                            $startTime = Carbon::parse($update_log->start_time);
-
-                                            // Get the current time as a Carbon instance
-                                            $currentTime = Carbon::now();
-
-                                            // Calculate the difference between current time and start time
-                                            $timeDifference = $currentTime->diff($startTime);
-                                            $days = $timeDifference->days;
-
-                                           $get_hold_log=Log::where('name','Approve Product Push')->where('status','On-Hold')->first();
-                                           if($get_hold_log){
-                                               $running_at=$get_hold_log->running_at;
-                                           }else{
-                                               if($days > 0) {
-                                                   $running_at = now()->addHours(24)->toDateTimeString();
-                                               }else{
-                                                   $running_at=$startTime->addHours(24)->toDateTimeString();
-                                               }
-                                           }
-
-
-
-                                            $update_log->running_at =$running_at;
-                                            $update_log->status = 'On-Hold';
-                                            $update_log->is_retry=1;
+                                            $update_log = Log::where('id', $log_id)->first();
+                                            $update_log->retry = $update_log->retry + 1;
                                             $update_log->save();
-                                            break;
+                                            if($update_log->retry==10) {
+
+                                                $startTime = Carbon::parse($update_log->start_time);
+                                                $currentTime = Carbon::now();
+
+
+                                                $get_hold_log=Log::where('name','Approve Product Push')->where('status','On-Hold')->first();
+                                                if($get_hold_log){
+                                                    $running_at = Carbon::parse($get_hold_log->running_at);
+
+                                                    // Calculate the difference between current time and start time
+                                                    $timeDifference = $running_at->diff($currentTime);
+                                                    $days = $timeDifference->days;
+
+
+                                                    if($days > 0){
+                                                        $running_at = $startTime->addHours(24)->toDateTimeString();
+                                                    }else{
+                                                        $running_at=$running_at->toDateTimeString();
+                                                    }
+
+                                                }else{
+
+                                                    // Calculate the difference between current time and start time
+                                                    $timeDifference = $currentTime->diff($startTime);
+                                                    $days = $timeDifference->days;
+                                                    if($days > 0) {
+                                                        $running_at = now()->addHours(24)->toDateTimeString();
+                                                    }else{
+                                                        $running_at=$startTime->addHours(24)->toDateTimeString();
+                                                    }
+                                                }
+
+
+
+                                                $update_log->running_at =$running_at;
+                                                $update_log->status = 'On-Hold';
+                                                $update_log->is_retry=1;
+                                                $update_log->save();
+                                                break;
+                                            }
+
+                                        }else{
+                                            $product->shopify_status = 'Failed';
+                                            $product->shopify_error = json_encode($result['errors']);
+                                            $product->save();
                                         }
+
+
 
 
 

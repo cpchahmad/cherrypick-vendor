@@ -348,7 +348,7 @@ class approveProductsNew extends Command
                                     $result = json_decode($response, true);
 
 
-//                                    if($p_index > 4){
+//                                    if($p_index > 0){
 //                                        $result=null;
 //                                    }
 
@@ -461,11 +461,20 @@ class approveProductsNew extends Command
                                             $timeDifference = $currentTime->diff($startTime);
                                             $days = $timeDifference->days;
 
-                                            if($days > 0) {
-                                                $update_log->running_at = now()->addHours(24)->toDateTimeString();
-                                            }else{
-                                                $update_log->running_at = $startTime->addHours(24)->toDateTimeString();
-                                            }
+                                           $get_hold_log=Log::where('name','Approve Product Push')->where('status','On-Hold')->first();
+                                           if($get_hold_log){
+                                               $running_at=$get_hold_log->running_at;
+                                           }else{
+                                               if($days > 0) {
+                                                   $running_at = now()->addHours(24)->toDateTimeString();
+                                               }else{
+                                                   $running_at=$startTime->addHours(24)->toDateTimeString();
+                                               }
+                                           }
+
+
+
+                                            $update_log->running_at =$running_at;
                                             $update_log->status = 'On-Hold';
                                             $update_log->is_retry=1;
                                             $update_log->save();

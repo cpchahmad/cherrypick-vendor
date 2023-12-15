@@ -94,6 +94,7 @@
                                 <th scope="col">Total Products</th>
                                 <th scope="col">Products Pushed</th>
                                 <th scope="col">Products Left</th>
+                                <th scope="col">Variants Pushed</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Run At</th>
                                 <th scope="col">Action</th>
@@ -227,6 +228,7 @@
                                     <td>{{ $log->total_product }}</td>
                                     <td>{{ $log->product_pushed }}</td>
                                     <td>{{ $log->product_left }}</td>
+                                    <td>{{ $log->variant_pushed }}</td>
 
                                     <td>@if($log->status=='In-Progress') <span class="en-in-progress"></span> In Progress @elseif($log->status=='Complete') <span class="en-recovered"></span>{{'Completed'}} @elseif ($log->status=='Paused') <span class="en-dismissed"></span>{{'Pause'}} @else <span class="en-dismissed"></span>{{$log->status}}@endif</td>
 

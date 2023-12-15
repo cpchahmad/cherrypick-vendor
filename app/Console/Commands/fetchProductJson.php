@@ -109,6 +109,7 @@ class fetchProductJson extends Command
 
             foreach ($vendor_data as $val) {
 
+                try{
                 $vid = $val->vendor_id;
                 $url = $val->url;
 
@@ -120,6 +121,7 @@ class fetchProductJson extends Command
 
                     $data = collect($arr['products']);
 
+
                     $date = date('Y-m-d');
                     //$date='2023-06-24';
 
@@ -130,7 +132,7 @@ class fetchProductJson extends Command
 
                     if (sizeof($product) > 0) {
 
-                        $this->saveStoreFetchProductsFromJson($product, $vid, '',$log->id);
+                        $this->saveStoreFetchProductsFromJson($product, $vid, '', $log->id);
                         //echo "updated";
                         //return back()->with('success','Product imported successfully');
 
@@ -138,47 +140,46 @@ class fetchProductJson extends Command
 
                 }
 
-                $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
-                foreach ($delete_products as $delete_product){
+                $delete_products = Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available', 0)->get();
+                foreach ($delete_products as $delete_product) {
 
-                    ProductInfo::where('product_id',$delete_product->id)->delete();
+                    ProductInfo::where('product_id', $delete_product->id)->delete();
                     $delete_product->delete();
                 }
 
 
-                $setting=Setting::first();
-                if($setting){
-                    $API_KEY =$setting->api_key;
+                $setting = Setting::first();
+                if ($setting) {
+                    $API_KEY = $setting->api_key;
                     $PASSWORD = $setting->password;
-                    $SHOP_URL =$setting->shop_url;
+                    $SHOP_URL = $setting->shop_url;
 
-                }else{
+                } else {
                     $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
                     $PASSWORD = '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';
                     $SHOP_URL = 'cityshop-company-store.myshopify.com';
                 }
 
-                $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->get();
-                $update_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',1)->get();
+                $draft_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 0)->get();
+                $update_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 1)->get();
 
 
-                $data['product']=array(
-                    "status" =>'draft',
+                $data['product'] = array(
+                    "status" => 'draft',
                 );
 
-                foreach ($draft_products as $draft_product){
-
+                foreach ($draft_products as $draft_product) {
 
 
                     $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
                     $curl = curl_init();
                     curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
                     $headers = array(
-                        "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+                        "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
                         "Content-Type: application/json",
                         "charset: utf-8"
                     );
-                    curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+                    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
                     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
                     curl_setopt($curl, CURLOPT_VERBOSE, 0);
                     //curl_setopt($curl, CURLOPT_HEADER, 1);
@@ -188,37 +189,37 @@ class fetchProductJson extends Command
                     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
                     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
 
-                    $response = curl_exec ($curl);
-                    curl_close ($curl);
+                    $response = curl_exec($curl);
+                    curl_close($curl);
                 }
 
-                foreach ($update_products as $update_product){
-                    $upload_product=0;
-                    $product_variants=ProductInfo::where('product_id',$update_product->id)->get();
-                    $variants=[];
-                    foreach ($product_variants as $product_variant){
-                        if($product_variant->stock) {
+                foreach ($update_products as $update_product) {
+                    $upload_product = 0;
+                    $product_variants = ProductInfo::where('product_id', $update_product->id)->get();
+                    $variants = [];
+                    foreach ($product_variants as $product_variant) {
+                        if ($product_variant->stock) {
                             $upload_product = 1;
                         }
-                        $variants[]=array(
+                        $variants[] = array(
                             "option1" => $product_variant->varient_value,
                             "option2" => $product_variant->varient1_value,
                             "option3" => $product_variant->varient2_value,
-                            "sku"     => $product_variant->sku,
-                            "price"   => $product_variant->price_usd,
-                            "grams"   => $product_variant->grams,
+                            "sku" => $product_variant->sku,
+                            "price" => $product_variant->price_usd,
+                            "grams" => $product_variant->grams,
                             "taxable" => false,
-                            "inventory_management" => ($product_variant->stock ? null :"shopify"),
+                            "inventory_management" => ($product_variant->stock ? null : "shopify"),
                         );
                     }
 
                     $products_array = array(
                         "product" => array(
-                            "status"=>'active',
-                            "variants"=>$variants,
+                            "status" => 'active',
+                            "variants" => $variants,
                         )
                     );
-                    if($upload_product) {
+                    if ($upload_product) {
 
                         $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$update_product->shopify_id.json";
                         $curl = curl_init();
@@ -242,12 +243,12 @@ class fetchProductJson extends Command
                         $response = curl_exec($curl);
                         curl_close($curl);
 
-                    }else{
+                    } else {
 
                         $products_array = array(
                             "product" => array(
-                                "status"=>'draft',
-                                "variants"=>$variants,
+                                "status" => 'draft',
+                                "variants" => $variants,
 
                             )
                         );
@@ -278,8 +279,11 @@ class fetchProductJson extends Command
                 }
 
 
-              Product::where('vendor',$vid)->update(['is_updated_by_url'=>0]);
+              Product::where('vendor', $vid)->update(['is_updated_by_url' => 0]);
+}catch (\Exception $exception){
 
+                    continue;
+                }
 
             }
 

@@ -206,7 +206,7 @@
                                          @else
                                    <a target="_blank" href="{{route('superadmin.logs.detail',$log->id)}}">
 
-                                  {{ $log->name }}   @if($log->name=='Approve Product Push')
+                                  {{ $log->name }}   @if($log->name=='Approve Product Push' || $log->name=='Deny Products')
 
                                            <i class="bi bi-question-circle items"></i> @endif
                                    </a>
@@ -215,7 +215,7 @@
                                      <small>{{ $log->date }}</small>
 
 
-                                        @if($log->name=='Approve Product Push')
+                                        @if($log->name=='Approve Product Push' || $log->name=='Deny Products')
                                         <div class="tool-tip">
                                             <div class="row" style="text-align: start">
                                                 @if ($searchData !== null)

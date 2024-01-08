@@ -61,7 +61,11 @@ class ApproveAllProducts implements ShouldQueue
 
 
             $product_array_id=array();
-
+            $check_log=Log::where('id',$this->log_id)->first();
+            $deny_product_ids=$check_log->deny_product_ids;
+            if($deny_product_ids){
+                $deny_product_ids=explode(',',$deny_product_ids);
+            }
             if(count($this->products) > 0){
                 $currentTime = now();
 //                $log=new Log();
@@ -132,6 +136,16 @@ class ApproveAllProducts implements ShouldQueue
 
 
             }
+            elseif (count($deny_product_ids) > 0){
+
+                $check_log=Log::where('id',$this->log_id)->first();
+                $check_log->total_product = count($deny_product_ids);
+                $check_log->is_running=1;
+                $check_log->running_at=now();
+                $check_log->save();
+
+            }
+
 
 
         }catch (\Exception $exception){

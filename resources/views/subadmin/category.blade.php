@@ -56,7 +56,7 @@
 
 {{--   </div>--}}
 
-    <div class="row">
+    <div class="row mt-3">
         <div class="col-4">
             <div class="pagetitle">
             <h1>View Category</h1>
@@ -70,7 +70,7 @@
 
         </div>
     </div>
-     <div class="member-plan-search header onetime-search">
+     <div class="member-plan-search header onetime-search mt-2">
             <div class="search-bar">
 
               </div>

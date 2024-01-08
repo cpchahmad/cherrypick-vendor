@@ -70,7 +70,6 @@ class ProcessProductLog implements ShouldQueue
 
 //        Product::whereIn('id',$product_ids)->update(['in_queue' => '1']);
             $product_count=count($product_ids);
-
             if($product_count > 0) {
 
                 $log_id=$log->id;
@@ -318,7 +317,8 @@ class ProcessProductLog implements ShouldQueue
                                             "tags" => explode(",", $tags),
                                             "variants" => $variants,
                                             "options" => $options_array,
-                                            "metafields" => $metafield_data
+                                            "metafields" => $metafield_data,
+                                            "status" => $product->product_status
                                         )
                                     );
 
@@ -598,6 +598,14 @@ class ProcessProductLog implements ShouldQueue
                     $update_log->message = json_encode($exception->getMessage());
                     $update_log->save();
                 }
+            }else{
+                $update_log = Log::where('id', $log->id)->first();
+                $update_log->date = now()->format('F j, Y');
+                $update_log->status = 'Complete';
+                $update_log->is_complete = 1;
+                $update_log->is_running = 0;
+                $update_log->end_time = now();
+                $update_log->save();
             }
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\ActiveDenyProducts;
 use App\Jobs\ProcessProductLog;
 use App\Models\Extra;
 use App\Models\Log;
@@ -55,6 +56,7 @@ class approveProductsNew extends Command
 
         foreach ($logs as $log){
             Log::where('id', $log->id)->update(['status' => 'In-Progress']);
+            ActiveDenyProducts::dispatch($log);
             ProcessProductLog::dispatch($log);
         }
 

@@ -608,22 +608,60 @@
             var v_token = "{{csrf_token()}}";
             var formData= new FormData();
             formData.append('ids' , array);
+
+            var search='{{Request::get('search')}}';
+            var vendor='{{Request::get('vendor')}}';
+            console.log(vendor);
+            var date='{{Request::get('date')}}';
+            var status='{{Request::get('status')}}';
+            var shopify_status='{{Request::get('shopify_status')}}';
+            var stock='{{Request::get('stock')}}';
+
+            var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+            var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+            var productTypeParam = selectedOptions.join(',');
+            console.log(productTypeParam);
+
+            {{--var v_token = "{{csrf_token()}}";--}}
+            {{--var formData= new FormData();--}}
+            {{--formData.append('ids' , array);--}}
+
+
+            var selectedFilter = $('#dropdownMenuButton').data('filter');
+            var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+            var minimum_value=$('.minimum_field_price').val();
+            var maximum_value=$('.maximum_field_price').val();
+
+            var maximum_value_weight=$('.maximum_field_weight').val();
+            var minimum_value_weight=$('.minimum_field_weight').val();
+
+
             $.ajax({
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    type:'post',
-                    data:formData,
-                    headers: {'X-CSRF-Token': v_token},
-                    url:"{{ route('superadmin.bulk-reject-product') }}",
-                    success:function(response){
-                        var json = $.parseJSON(response);
-                        if(json.status=='success')
-                        {
-                            window.location.href='products';
-                        }
+                type: 'GET',
+                url: "{{ route('superadmin.bulk-reject-product') }}",
+                data: {
+                    ids:array,
+                    search: search,
+                    vendor: vendor,
+                    date: date,
+                    status: status,
+                    shopify_status:shopify_status,
+                    product_type:productTypeParam,
+                    stock:stock
+
+                },
+                success: function (response) {
+                    var json = $.parseJSON(response);
+                    if (json.status === 'success') {
+
+                        toastr.success("Products are In-Progress for Deny");
+                        // window.location.href = 'products';
                     }
-                });
+                }
+            });
+
+
         }
      }
     function checkAll(ele) {

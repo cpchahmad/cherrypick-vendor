@@ -104,7 +104,7 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
       Route::get('out-of-stock',[SuperadminController::class,'outofstockProduct'])->name('superadmin.out-of-stock');
 	  Route::get('out-of-stock-products/{id}',[SuperadminController::class,'outofstockProductLists'])->name('superadmin.out-of-stock-products');
       Route::get('bulk-approve-product',[SuperadminController::class,'bulkApproveProduct'])->name('superadmin.bulk-approve-product');
-	  Route::post('bulk-reject-product',[SuperadminController::class,'bulkRejectProduct'])->name('superadmin.bulk-reject-product');
+	  Route::get('bulk-reject-product',[SuperadminController::class,'bulkRejectProduct'])->name('superadmin.bulk-reject-product');
       Route::get('store-configuration',[SuperadminController::class,'vendorlist'])->name('superadmin.store-configuration');
       Route::get('products-details/{id}',[SuperadminController::class,'productDetails'])->name('superadmin.productdetails');
     Route::get('orders',[SuperadminController::class,'orderlist'])->name('superadmin.allorders');

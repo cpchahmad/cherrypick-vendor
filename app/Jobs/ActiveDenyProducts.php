@@ -6,6 +6,7 @@ use App\Helpers\Helpers;
 use App\Http\Controllers\superadmin\SuperadminController;
 use App\Imports\BluckProductImport;
 use App\Models\Category;
+use App\Models\Extra;
 use App\Models\Log;
 use App\Models\Product;
 use App\Models\ProductImages;
@@ -25,13 +26,12 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
-class DenyAllProducts implements ShouldQueue
+class ActiveDenyProducts implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 100000;
-    protected $products;
-    protected $log_id;
+    protected $log;
 
     /**
      * Create a new job instance.
@@ -39,11 +39,9 @@ class DenyAllProducts implements ShouldQueue
      * @return void
      */
 
-    public function __construct($products,$log_id)
+    public function __construct($log)
     {
-        $this->products = $products;
-        $this->log_id = $log_id;
-
+        $this->log = $log;
     }
 
 
@@ -54,39 +52,33 @@ class DenyAllProducts implements ShouldQueue
      */
     public function handle()
     {
+        $log = $this->log;
+        if ($log){
 
-
-        try {
             $setting = Setting::first();
-            if ($setting) {
-                $API_KEY = $setting->api_key;
-                $PASSWORD = $setting->password;
-                $SHOP_URL = $setting->shop_url;
+        if ($setting) {
+            $API_KEY = $setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL = $setting->shop_url;
 
-            } else {
-                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
-                $PASSWORD = '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';
-                $SHOP_URL = 'cityshop-company-store.myshopify.com';
-            }
+        } else {
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+        $currentTime = now();
 
-            if(count($this->products) > 0){
+            $deny_product_ids = explode(',', $log->deny_product_ids);
 
-                $currentTime = now();
-                $log=Log::where('id',$this->log_id)->first();
-                if($log) {
-                    $log->total_product = count($this->products);
-                    $log->product_ids = implode(',', $this->products);
-                    $log->status = 'In-Progress';
-                    $log->save();
-                }
+            if (count($deny_product_ids) > 0) {
 
-                foreach ($this->products as $product_id){
+                foreach ($deny_product_ids as $product_id) {
 
-                    $product=Product::find($product_id);
-                    if($product){
-                        if($product->shopify_id){
+                    $product = Product::find($product_id);
+                    if ($product) {
+                        if ($product->shopify_id) {
                             $data['product'] = array(
-                                "status" => 'draft',
+                                "status" => 'active',
                             );
 
                             $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$product->shopify_id.json";
@@ -114,42 +106,18 @@ class DenyAllProducts implements ShouldQueue
                                 Product::where('id', $product_id)->update(['product_status' => $shopify_product_status]);
                             }
                         }
-                       Product::where('id',$product->id)->update(['status'=>3,'approve_date' => Carbon::now()]);
+                        Product::where('id', $product->id)->update(['status' => 1, 'approve_date' => Carbon::now()]);
                     }
                 }
 
 
-                $log=Log::where('id',$this->log_id)->first();
-                if($log) {
-                    $currentTime = now();
-                    $log->end_time = $currentTime;
-                    $log->status = 'Complete';
-                    $log->save();
-                }
-            }
-            else{
+            } else {
 
-                $currentTime = now();
-                $log=Log::where('id',$this->log_id)->first();
-                if($log) {
-                    $log->end_time = $currentTime;
-                    $log->status = 'Complete';
-                    $log->save();
-                }
+
             }
 
-        }catch (\Exception $exception){
 
-            $currentTime = now();
-            $log=Log::where('id',$this->log_id)->first();
-            if($log) {
-                $log->date = $currentTime->format('F j, Y');
-                $log->status = 'Failed';
-                $log->end_time = $currentTime;
-                $log->message = json_encode($exception->getMessage());
-                $log->save();
-            }
-        }
+    }
 
     }
 

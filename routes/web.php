@@ -49,7 +49,10 @@ dd($days);
 });
 
 
-Route::get('demotest',[SuperadminController::class,'getThirdPartyAPIInventory']);
+Route::get('123',[SuperadminController::class,'Testing']);
+
+
+Route::get('demotest',[SuperadminController::class,'UpdateSomeProduct']);
 Route::get('sync-products',[ProductController::class,'shopifyProductTest']);
 Route::get('sync/{cid}',[ProductController::class,'shopifyProductSync']);
 Route::get('createcollection',[TestController::class,'createCollection']);
@@ -114,6 +117,8 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 
     Route::get('logs',[SuperadminController::class,'Logs'])->name('superadmin.logs');
     Route::get('logs-detail/{id}',[SuperadminController::class,'LogsDetail'])->name('superadmin.logs.detail');
+
+    Route::get('vendor-logs-detail/{id}',[SuperadminController::class,'VendorLogsDetail'])->name('superadmin.vendor.logs.detail');
 
 
     //15-06-2023
@@ -213,23 +218,38 @@ Route::group(['middleware'=>'superAdmin', 'prefix' => 'superadmin'],function(){
 Route::group(['middleware'=>'products'],function(){
      Route::get('product-list',[ProductController::class,'productlist'])->name('product-list');
      Route::get('add-product',[ProductController::class,'productview'])->name('add-product');
+
+     Route::post('add-product-type',[ProductController::class,'AddProductType'])->name('add-product-type');
      Route::post('save-product',[ProductController::class,'saveproduct'])->name('save-product');
      //Route::get('product-list',[ProductController::class,'productlist'])->name('product-list');
      Route::get('delete-product/{id}',[ProductController::class,'deleteproduct'])->name('delete-product');
      Route::get('edit-product/{id}',[ProductController::class,'editproduct'])->name('edit-product');
      Route::post('save-products',[ProductController::class,'saveproducts'])->name('save-products');
+     Route::post('update-product/{id}',[ProductController::class,'updateProduct'])->name('update-product');
+     Route::get('delete-product-existing-image',[ProductController::class,'deleteProductExistingImage'])->name('delete.product-existing-img');
+
+
+
      Route::get('edit-variant/{id}',[ProductController::class,'editVariant'])->name('edit-variant');
      Route::post('update-variant',[ProductController::class,'updateVariant']);
      Route::post('delete-variant',[ProductController::class,'deleteVariant'])->name('delete-variant');
      Route::get('add-new-variant/{id}',[ProductController::class,'addNewVariant']);
      Route::post('save-new-variant',[ProductController::class,'saveNewVariant']);
+    Route::get('get-variant-detail',[ProductController::class,'getVariantDetail'])->name('get.variant.detail');
+
+
 
 	 Route::get('category',[ProductController::class,'allCategory']);
+    Route::post('change-category-hierarchy-status',[ProductController::class,'changeCategoryHierarchyStatus'])->name('change-category-hierarchy-status');
 	 Route::get('add-category',[ProductController::class,'addCategory']);
 	 Route::post('save-category',[ProductController::class,'saveCategory'])->name('save-category');
 	 Route::get('edit-category/{id}',[ProductController::class,'editCategory']);
-	 Route::post('update-category',[ProductController::class,'updateCategory']);
+	 Route::post('update-category/{id}',[ProductController::class,'updateCategory']);
 	 Route::get('delete-category/{id}',[ProductController::class,'deleteCategory']);
+    Route::get('delete-category-image',[ProductController::class,'deleteCategoryImage'])->name('delete-category-image');
+
+
+
 });
 Route::group(['middleware'=>'marketing'],function(){
     Route::get('manage-discount',[DiscountController::class,'discountlist'])->name('manage-discount');

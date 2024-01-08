@@ -252,7 +252,8 @@ class ProductsSyncFromApi implements ShouldQueue
                                     foreach ($row['extension_attributes']['category_links'] as $category_link) {
                                         $get_tag = ThirdPartyAPICategory::where('category_id', $category_link['category_id'])->where('vendor_id', $vid)->first();
                                         if ($get_tag) {
-                                            $tags = $tags . ',' . $get_tag->name;
+                                            $superAdminController = new SuperadminController();
+                                            $tags = $superAdminController->UpdateTags($get_tag, $vid, $tags);
                                         }
                                     }
                                 }
@@ -493,15 +494,31 @@ class ProductsSyncFromApi implements ShouldQueue
                             if ($product_variant->stock) {
                                 $upload_product = 1;
                             }
-                            $variants[] = array(
-                                "option1" => $product_variant->varient_value,
-                                "option2" => $product_variant->varient1_value,
-                                "sku" => $product_variant->sku,
-                                "price" => $product_variant->price_usd,
-                                "grams" => $product_variant->pricing_weight,
-                                "taxable" => false,
-                                "inventory_management" => ($product_variant->stock ? null : "shopify"),
-                            );
+                            if($product_variant->qty) {
+                                $variants[] = array(
+                                    "option1" => $product_variant->varient_value,
+                                    "option2" => $product_variant->varient1_value,
+                                    "option3" => $product_variant->varient2_value,
+                                    "sku" => $product_variant->sku,
+                                    "price" => $product_variant->price_usd,
+                                    "grams" => $product_variant->pricing_weight,
+                                    "taxable" => false,
+                                    "inventory_management" => "shopify",
+                                    "inventory_quantity" => $product_variant->qty,
+                                );
+                            }
+                            else{
+                                $variants[] = array(
+                                    "option1" => $product_variant->varient_value,
+                                    "option2" => $product_variant->varient1_value,
+                                    "option3" => $product_variant->varient2_value,
+                                    "sku" => $product_variant->sku,
+                                    "price" => $product_variant->price_usd,
+                                    "grams" => $product_variant->pricing_weight,
+                                    "taxable" => false,
+                                    "inventory_management" => ($product_variant->stock ? null : "shopify"),
+                                );
+                            }
                         }
 
                         $products_array = array(

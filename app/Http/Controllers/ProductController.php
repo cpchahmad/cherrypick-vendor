@@ -8,7 +8,9 @@ use App\Models\ProductChange;
 use App\Models\ProductImagesNew;
 use App\Models\ProductType;
 use App\Models\Setting;
+use App\Models\ThirdPartyAPICategory;
 use App\Models\VariantChange;
+use App\Models\VendorCategory;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use App\Models\Product;
@@ -27,6 +29,11 @@ use Session;
 use App\Helpers\Helpers;
 use App\Models\ProductInventoryLocation;
 use Carbon\Carbon;
+use Gnikyt\BasicShopifyAPI\BasicShopifyAPI;
+use Gnikyt\BasicShopifyAPI\Options;
+use Illuminate\Support\Facades\Http;
+
+
 
 class ProductController extends Controller
 {
@@ -770,27 +777,59 @@ class ProductController extends Controller
     }
     public function productview(){
       $id = Auth::id();
-    	$category = Category::all();
-    	return view('subadmin.add-product',compact('category'));
+     $user=\Illuminate\Support\Facades\Auth::user();
+//    	$category = Category::all();
+        $product_types=ProductType::where('vendor_id',$id)->get();
+//    	return view('subadmin.add-product',compact('category'));
+
+        $categories_data= VendorCategory::where('vendor_id', $id)->whereNull('parent_id')
+            ->with('childrenRecursive')
+            ->get();
+
+    	return view('subadmin.add-product-new',compact('categories_data','product_types','user'));
     }
 
-    public function saveproduct(Request $request){
-      //echo "<pre>"; print_r($request->file()); die();
-        if($request->hasfile('profile')){
-            $file = $request->file('profile');
-//            $extension = $file->getClientOriginalExtension();
-//            $filename = time().'.'.$extension;
-            $filename = time() . '.jpg';
-            $file->move('uploads/profile/',$filename);
-            $product = new ProductImages;
-            $product->image = url('uploads/profile/'.$filename);
-            $product->save();
-            $product_id=$product->id;
-            $response['success'] = true;
-            $response['message'] = $product_id;
-          }
-        return json_encode($response);
-  }
+    public function saveproduct(Request $request)
+    {
+        $response = []; // Initialize the response array
+
+        if ($request->hasfile('profile')) {
+            $files = $request->file('profile');
+
+            foreach ($files as $index=> $file) {
+
+                $filename = time(). $index . '_' . $file->getClientOriginalName(); // Add original file name to avoid overwriting
+                $file->move('uploads/profile/', $filename);
+
+                $product = new ProductImages;
+                $product->image = url('uploads/profile/' . $filename);
+
+                // If you need to associate the image with a product or any other relation, do it here
+                // For example:
+                // $product->product_id = $someProductId;
+
+                $product->save();
+
+                $product_id = $product->id;
+
+                // Add each product ID to the response array
+                $response[] = $product_id;
+            }
+
+            // Return the response as JSON
+            return response()->json([
+                'success' => true,
+                'message' => 'Images uploaded successfully',
+                'product_ids' => implode(',',$response) // You can return product IDs if needed
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No files were uploaded.'
+        ]);
+    }
+
    public function vendorId(){
        if(Auth::user()->role=='Vendor')
             $vendor_id=Auth::user()->id;
@@ -798,8 +837,9 @@ class ProductController extends Controller
            $vendor_id=Auth::user()->vendor_id;
        return $vendor_id;
    }
-   public function saveproducts(Request $request){
+   public function saveproductsorignal(Request $request){
      $input = $request->all();
+
 
 
     if($request->payradious =='1'){
@@ -991,6 +1031,509 @@ class ProductController extends Controller
         return redirect()->route('product-list');
      }
 
+   public function saveproducts(Request $request){
+     $input = $request->all();
+
+    if($request->payradious =='1'){
+       $this->validate($request,([
+           'name'=>'required',
+           'description'=>'required',
+           'tags'=>'required',
+           'varient_name.*' => 'required',
+           'varient_price.*' => 'required',
+           'varient_sku.*' => 'required',
+           'varient_grams.*' => 'required',
+//		'varient_quantity.0' => 'required'
+       ]));
+     }
+     else{
+       $request->validate([
+        'name'=>'required',
+        'description'=>'required',
+        'tags'=>'required',
+        'price'=>'required',
+        'sku'=>'required',
+        'grams'=>'required',
+//        'quantity'=>'required',
+        'selected_categories'=>'required',
+        ]);
+       }
+
+
+        $vendor=$this->vendorId();
+
+
+
+           $product_type_id=$request->product_type;
+           $product_type=ProductType::find($product_type_id);
+            $selected_tags=$request->tags;
+
+       if(count($request->selected_categories) > 0){
+           $vendor_categories_tags=VendorCategory::whereIn('id',$request->selected_categories)->where('vendor_id',$vendor)->pluck('name')->toArray();
+           $selected_tags=$selected_tags.','.implode(',',$vendor_categories_tags);
+       $category_id=implode(',',$request->selected_categories);
+       }
+       if($request->brand){
+           $selected_tags=$selected_tags.',brand:'.$request->brand;
+       }
+
+
+       $options_array = [];
+       if($request->attribute1) {
+           $option_values = explode(",", $request->option1);
+           array_push($options_array, [
+               'name' => $request->attribute1,
+               'position' => 1,
+               'values' => $option_values
+           ]);
+       }
+       if($request->attribute2) {
+           $option_values1 = explode(",", $request->option2);
+           array_push($options_array, [
+               'name' => $request->attribute2,
+               'position' => 2,
+               'values' => $option_values1
+           ]);
+       }
+       if($request->attribute3) {
+           $option_values2 = explode(",", $request->option3);
+           array_push($options_array, [
+               'name' => $request->attribute3,
+               'position' => 3,
+               'values' => $option_values2
+           ]);
+       }
+
+
+       $product = new Product;
+        $product->title = $request->name;
+        $product->body_html = $request->description;
+        $product->vendor = $vendor;
+        $product->tags = $selected_tags;
+        $product->orignal_tags = $request->tags;
+        $product->is_variants = $request->payradious;
+        $product->category = $category_id;
+        $product->product_type_id = $product_type_id;
+        $product->product_status = $request->product_status;
+        $product->brand = $request->brand;
+        $product->options=json_encode($options_array);
+        $product->save();
+        $product_id=$product->id;
+		$Tags=explode(",",$selected_tags);
+            if(in_array("Saree",$Tags))
+                $is_saree = 1;
+            else
+                $is_saree = 0;
+		if(in_array("furniture",$Tags))
+            {
+                $is_furniture = 1;
+                $volumetric_Weight = 10000/5000;
+            }
+            else
+            {
+                $is_furniture = 0;
+                $volumetric_Weight = 0;
+            }
+        if($request->payradious!=1)
+        {
+            $grams=$request->grams;
+            $pricing_weight=$grams;
+            if($product_type && $product_type->base_weight){
+                $pricing_weight=max($grams, $product_type->base_weight);
+            }
+
+			$volumetric_Weight = 0;
+			if( $request->height!='' && $request->width!='' && $request->length!='')
+				$volumetric_Weight = $request->height * $request->width * $request->length/5000;
+            $product_info = new ProductInfo;
+            $product_info->product_id = $product_id;
+            $product_info->sku = $request->sku;
+			$prices=Helpers::calc_price_new($request->price,$pricing_weight,$selected_tags,$volumetric_Weight,$vendor);
+			$product_info->price = $prices['inr'];
+			$product_info->price_usd = $prices['usd'];
+			$product_info->price_aud = $prices['aud'];
+			$product_info->price_cad = $prices['cad'];
+			$product_info->price_gbp = $prices['gbp'];
+			$product_info->price_nld = $prices['nld'];
+			$product_info->price_irl = $prices['irl'];
+			$product_info->price_ger = $prices['ger'];
+			$product_info->base_price = $request->price;
+            $product_info->grams = $grams;
+            $product_info->pricing_weight = $pricing_weight;
+            $product_info->qty = $request->quantity;
+            $product_info->stock = 1;
+            $product_info->shelf_life = $request->shelf_life;
+            $product_info->temp_require = $request->temp;
+            $product_info->dimensions = $request->height.'-'.$request->width.'-'.$request->length;
+            $product_info->vendor_id = $vendor;
+            $product_info->save();
+			$info=$product_info->id;
+			///image
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = $info . "-" . time() . '.jpg'; // Force the extension to be jpg
+                // Save the file
+                $file->move('uploads/profile/', $filename);
+
+                // Get the full path of the saved image
+                $img_full_path = url('uploads/profile/' . $filename);
+
+                // Update or create a record in the database
+                ProductImages::updateOrCreate(['variant_ids' => $info],
+                    ['image' => $img_full_path, 'product_id' => $product_id, 'variant_ids' => $info],
+                );
+            }
+
+        }
+        else
+        {
+
+
+            foreach($request->varient_value as $key => $value) {
+                $v_value = explode("/", $value);
+                $variant_option1 = (isset($v_value[0])) ? $v_value[0] : null;
+                $variant_option2 = (isset($v_value[1])) ? $v_value[1] : null;
+                $variant_option3 = (isset($v_value[2])) ? $v_value[2] : null;
+
+                $grams=$request->varient_grams[$key];
+                $pricing_weight=$grams;
+                if($product_type && $product_type->base_weight){
+                    $pricing_weight=max($grams, $product_type->base_weight);
+                }
+
+				$volumetric_Weight = 0;
+			if( $request->varient_height[$key]!='' && $request->varient_width[$key]!='' && $request->varient_length[$key]!='')
+				$volumetric_Weight = $request->varient_height[$key] * $request->varient_width[$key] * $request->varient_length[$key]/5000;
+            $product_info = new ProductInfo;
+            $product_info->product_id = $product_id;
+            $product_info->vendor_id = Auth::user()->id;
+            $product_info->sku = $request->varient_sku[$key];
+            $product_info->title = $value;
+            $product_info->varient_name = $request->attribute1;
+            $product_info->varient_value = $variant_option1;
+            $product_info->varient1_name = $request->attribute2;
+            $product_info->varient1_value = $variant_option2;
+                $product_info->varient2_name = $request->attribute3;
+                $product_info->varient2_value = $variant_option3;
+			//$prices=Helpers::($request->varient_price[$key],$request->varient_grams[$key],$is_saree,$is_furniture,$volumetric_Weight);
+			$prices=Helpers::calc_price_new($request->varient_price[$key],$pricing_weight,$selected_tags,$volumetric_Weight,$vendor);
+			$product_info->price = $prices['inr'];
+			$product_info->price_usd = $prices['usd'];
+			$product_info->price_aud = $prices['aud'];
+			$product_info->price_cad = $prices['cad'];
+			$product_info->price_gbp = $prices['gbp'];
+			$product_info->price_nld = $prices['nld'];
+			$product_info->price_irl = $prices['irl'];
+			$product_info->price_ger = $prices['ger'];
+			$product_info->base_price = $request->varient_price[$key];
+            $product_info->grams = $grams;
+            $product_info->pricing_weight = $pricing_weight;
+            $product_info->qty = $request->varient_quantity[$key];
+            $product_info->shelf_life = $request->varient_shelf_life[$key];
+            $product_info->temp_require = $request->varient_temp[$key];
+            $product_info->stock = 1;
+            $product_info->dimensions = $request->varient_height[$key].'-'.$request->varient_width[$key].'-'.$request->varient_length[$key];
+            $product_info->save();
+			$info=$product_info->id;
+
+
+			if ($request->hasfile('varient_image')) {
+			$file = $request->file('varient_image');
+			if(isset($file[$key])) {
+            $extension = $file[$key]->getClientOriginalExtension();
+			if($extension!=''){
+            $file = $file[$key];
+//            $extension = $file->getClientOriginalExtension();
+                $filename = $info . "-" . time() . '.jpg';
+            $file->move('uploads/profile/',$filename);
+			$img_full_path=url('uploads/profile/'.$filename);
+			ProductImages::updateOrCreate(['variant_ids' => $info],
+				['image' => $img_full_path, 'product_id' => $product_id, 'variant_ids' => $info],
+			);
+          }
+			}
+			}
+       }
+       }
+       if($request->images!='')
+       {
+           $img_arr=explode(",",$request->images);
+           foreach($img_arr as $v)
+           {
+               ProductImages::where('id', $v)->update(['product_id' => $product_id]);
+           }
+       }
+       return redirect()->route('product-list')->with('success', 'Product Created Successfully!');
+     }
+
+    public function updateProduct(Request $request,$id){
+        $input = $request->all();
+
+        if($request->payradious =='1'){
+            $this->validate($request,([
+                'name'=>'required',
+                'description'=>'required',
+                'tags'=>'required',
+                'varient_name.*' => 'required',
+                'varient_price.*' => 'required',
+                'varient_sku.*' => 'required',
+                'varient_grams.*' => 'required',
+//		'varient_quantity.0' => 'required'
+            ]));
+        }
+        else{
+            $request->validate([
+                'name'=>'required',
+                'description'=>'required',
+                'tags'=>'required',
+                'price'=>'required',
+                'sku'=>'required',
+                'grams'=>'required',
+//        'quantity'=>'required',
+                'selected_categories'=>'required',
+            ]);
+        }
+
+
+        $vendor=$this->vendorId();
+
+
+
+        $product_type_id=$request->product_type;
+        $product_type=ProductType::find($product_type_id);
+        $selected_tags=$request->tags;
+
+        if(count($request->selected_categories) > 0){
+            $vendor_categories_tags=VendorCategory::whereIn('id',$request->selected_categories)->where('vendor_id',$vendor)->pluck('name')->toArray();
+            $selected_tags=$selected_tags.','.implode(',',$vendor_categories_tags);
+            $category_id=implode(',',$request->selected_categories);
+        }
+        if($request->brand){
+            $selected_tags=$selected_tags.',brand:'.$request->brand;
+        }
+
+
+        $options_array = [];
+        if($request->attribute1) {
+            $option_values = explode(",", $request->option1);
+            array_push($options_array, [
+                'name' => $request->attribute1,
+                'position' => 1,
+                'values' => $option_values
+            ]);
+        }
+        if($request->attribute2) {
+            $option_values1 = explode(",", $request->option2);
+            array_push($options_array, [
+                'name' => $request->attribute2,
+                'position' => 2,
+                'values' => $option_values1
+            ]);
+        }
+        if($request->attribute3) {
+            $option_values2 = explode(",", $request->option3);
+            array_push($options_array, [
+                'name' => $request->attribute3,
+                'position' => 3,
+                'values' => $option_values2
+            ]);
+        }
+
+
+        $product = Product::find($id);
+        $product->title = $request->name;
+        $product->body_html = $request->description;
+        $product->vendor = $vendor;
+        $product->tags = $selected_tags;
+        $product->orignal_tags = $request->tags;
+        $product->is_variants = $request->payradious;
+        $product->category = $category_id;
+        $product->product_type_id = $product_type_id;
+        $product->product_status = $request->product_status;
+        $product->brand = $request->brand;
+        $product->options=json_encode($options_array);
+        $product->save();
+        $product_id=$product->id;
+        $Tags=explode(",",$selected_tags);
+        if(in_array("Saree",$Tags))
+            $is_saree = 1;
+        else
+            $is_saree = 0;
+        if(in_array("furniture",$Tags))
+        {
+            $is_furniture = 1;
+            $volumetric_Weight = 10000/5000;
+        }
+        else
+        {
+            $is_furniture = 0;
+            $volumetric_Weight = 0;
+        }
+
+       $product_images= ProductImages::where('product_id',$id)->whereNotNull('variant_ids')->delete();
+
+        ProductInfo::where('product_id',$id)->delete();
+
+
+        if($request->payradious!=1)
+        {
+            $grams=$request->grams;
+            $pricing_weight=$grams;
+            if($product_type && $product_type->base_weight){
+                $pricing_weight=max($grams, $product_type->base_weight);
+            }
+
+            $volumetric_Weight = 0;
+            if( $request->height!='' && $request->width!='' && $request->length!='')
+                $volumetric_Weight = $request->height * $request->width * $request->length/5000;
+            $product_info = new ProductInfo;
+            $product_info->product_id = $product_id;
+            $product_info->sku = $request->sku;
+            $prices=Helpers::calc_price_new($request->price,$pricing_weight,$selected_tags,$volumetric_Weight,$vendor);
+            $product_info->price = $prices['inr'];
+            $product_info->price_usd = $prices['usd'];
+            $product_info->price_aud = $prices['aud'];
+            $product_info->price_cad = $prices['cad'];
+            $product_info->price_gbp = $prices['gbp'];
+            $product_info->price_nld = $prices['nld'];
+            $product_info->price_irl = $prices['irl'];
+            $product_info->price_ger = $prices['ger'];
+            $product_info->base_price = $request->price;
+            $product_info->grams = $grams;
+            $product_info->pricing_weight = $pricing_weight;
+            $product_info->qty = $request->quantity;
+            $product_info->stock = 1;
+            $product_info->shelf_life = $request->shelf_life;
+            $product_info->temp_require = $request->temp;
+            $product_info->dimensions = $request->height.'-'.$request->width.'-'.$request->length;
+            $product_info->vendor_id = $vendor;
+            $product_info->save();
+            $info=$product_info->id;
+            ///image
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = $info . "-" . time() . '.jpg'; // Force the extension to be jpg
+                // Save the file
+                $file->move('uploads/profile/', $filename);
+
+                // Get the full path of the saved image
+                $img_full_path = url('uploads/profile/' . $filename);
+
+                // Update or create a record in the database
+                ProductImages::updateOrCreate(['variant_ids' => $info],
+                    ['image' => $img_full_path, 'product_id' => $product_id, 'variant_ids' => $info],
+                );
+            }
+            else{
+                ProductImages::updateOrCreate(['variant_ids' => $info],
+                    ['image' => $request->existing_single_img, 'product_id' => $product_id, 'variant_ids' => $info],
+                );
+            }
+
+        }
+        else
+        {
+
+
+            foreach($request->varient_value as $key => $value) {
+                $v_value = explode("/", $value);
+                $variant_option1 = (isset($v_value[0])) ? $v_value[0] : null;
+                $variant_option2 = (isset($v_value[1])) ? $v_value[1] : null;
+                $variant_option3 = (isset($v_value[2])) ? $v_value[2] : null;
+
+                $grams=$request->varient_grams[$key];
+                $pricing_weight=$grams;
+                if($product_type && $product_type->base_weight){
+                    $pricing_weight=max($grams, $product_type->base_weight);
+                }
+
+                $volumetric_Weight = 0;
+                if( $request->varient_height[$key]!='' && $request->varient_width[$key]!='' && $request->varient_length[$key]!='')
+//                    $volumetric_Weight = $request->varient_height[$key] * $request->varient_width[$key] * $request->varient_length[$key]/5000;
+
+                    $volumetric_Weight = (float) $request->varient_height[$key] *
+                        (float) $request->varient_width[$key] *
+                        (float) $request->varient_length[$key] / 5000;
+                    $product_info = new ProductInfo;
+                $product_info->product_id = $product_id;
+                $product_info->vendor_id = Auth::user()->id;
+                $product_info->sku = $request->varient_sku[$key];
+                $product_info->title = $value;
+                $product_info->varient_name = $request->attribute1;
+                $product_info->varient_value = $variant_option1;
+                $product_info->varient1_name = $request->attribute2;
+                $product_info->varient1_value = $variant_option2;
+                $product_info->varient2_name = $request->attribute3;
+                $product_info->varient2_value = $variant_option3;
+                //$prices=Helpers::($request->varient_price[$key],$request->varient_grams[$key],$is_saree,$is_furniture,$volumetric_Weight);
+                $prices=Helpers::calc_price_new($request->varient_price[$key],$pricing_weight,$selected_tags,$volumetric_Weight,$vendor);
+                $product_info->price = $prices['inr'];
+                $product_info->price_usd = $prices['usd'];
+                $product_info->price_aud = $prices['aud'];
+                $product_info->price_cad = $prices['cad'];
+                $product_info->price_gbp = $prices['gbp'];
+                $product_info->price_nld = $prices['nld'];
+                $product_info->price_irl = $prices['irl'];
+                $product_info->price_ger = $prices['ger'];
+                $product_info->base_price = $request->varient_price[$key];
+                $product_info->grams = $grams;
+                $product_info->pricing_weight = $pricing_weight;
+                $product_info->qty = $request->varient_quantity[$key];
+                $product_info->shelf_life = $request->varient_shelf_life[$key];
+                $product_info->temp_require = $request->varient_temp[$key];
+                $product_info->stock = 1;
+                $product_info->dimensions = $request->varient_height[$key].'-'.$request->varient_width[$key].'-'.$request->varient_length[$key];
+                $product_info->save();
+                $info=$product_info->id;
+
+
+                if ($request->hasfile('varient_image')) {
+
+//                    ProductImages::where('product_id',$id)->whereNotNull('variant_ids')->delete();
+                    $file = $request->file('varient_image');
+                    if(isset($file[$key])) {
+                        $extension = $file[$key]->getClientOriginalExtension();
+                        if($extension!=''){
+                            $file = $file[$key];
+//            $extension = $file->getClientOriginalExtension();
+                            $filename = $info . "-" . time() . '.jpg';
+                            $file->move('uploads/profile/',$filename);
+                            $img_full_path=url('uploads/profile/'.$filename);
+                            ProductImages::updateOrCreate(['variant_ids' => $info],
+                                ['image' => $img_full_path, 'product_id' => $product_id, 'variant_ids' => $info],
+                            );
+                        }
+                    }
+                    else{
+                        if($request->existing_varient_images[$key]) {
+                            ProductImages::updateOrCreate(['variant_ids' => $info],
+                                ['image' => $request->existing_varient_images[$key], 'product_id' => $product_id, 'variant_ids' => $info],
+                            );
+                        }
+                    }
+                }
+                else{
+                        if($request->existing_varient_images[$key]) {
+                            ProductImages::updateOrCreate(['variant_ids' => $info],
+                                ['image' => $request->existing_varient_images[$key], 'product_id' => $product_id, 'variant_ids' => $info],
+                            );
+                        }
+                }
+            }
+        }
+        if($request->images!='')
+        {
+            $img_arr=explode(",",$request->images);
+            foreach($img_arr as $v)
+            {
+                ProductImages::where('id', $v)->update(['product_id' => $product_id]);
+            }
+        }
+
+        return redirect()->route('product-list')->with('success', 'Product Updated Successfully!');
+//        return redirect()->route('product-list');
+    }
+
      public function updateProducts(Request $request)
      {
         $this->validate($request,([
@@ -1001,17 +1544,10 @@ class ProductController extends Controller
         $product =Product::find($request->pid);
 
          $category=Category::find($request->category);
-         $product_type_id=null;
-         if($category) {
-             $product_type = ProductType::where('product_type', $category->category)->where('vendor_id', $product->vendor)->first();
-             if ($product_type == null) {
-                 $product_type = new ProductType();
-             }
-             $product_type->product_type = $category->category;
-             $product_type->vendor_id = $product->vendor;
-             $product_type->save();
-             $product_type_id=$product_type->id;
-         }
+
+
+             $product_type_id=$request->product_type;
+
 
 
          //zain
@@ -1344,10 +1880,20 @@ class ProductController extends Controller
     }
     public function editproduct($id){
       $product = Product::find($id);
+
       //$prodcut_info=ProductInfo::where('product_id',$id)->get();
-      $prodcut_images=ProductImages::where('product_id',$id)->get();
+      $prodcut_images=ProductImages::where('product_id',$id)->pluck('id')->toArray();
+
       $category = Category::all();
-      return view('subadmin.edit-product',compact('product','category','prodcut_images'));
+        $product_types=ProductType::where('vendor_id',Auth::id())->get();
+//      return view('subadmin.edit-product',compact('product','category','prodcut_images'));
+
+        $categories_data= VendorCategory::where('vendor_id', Auth::id())->whereNull('parent_id')
+            ->with('childrenRecursive')
+            ->get();
+
+
+      return view('subadmin.edit-product-new',compact('product','category','prodcut_images','product_types','categories_data'));
 
     }
     public function editVariant($id){
@@ -2704,8 +3250,17 @@ echo "ok";
 
 	public function allCategory()
 	{
+        $id = Auth::id();
+        $user=\Illuminate\Support\Facades\Auth::user();
 		$data=Category::all();
-		return view('subadmin.category',compact('data'));
+        $vendor_categories_data= VendorCategory::where('vendor_id', $id)->whereNull('parent_id')
+            ->with('childrenRecursive')
+            ->get();
+
+
+        $vendor_categories= VendorCategory::where('vendor_id', $id)->get();
+
+		return view('subadmin.category',compact('data','vendor_categories','vendor_categories_data','user'));
 	}
 	public function addCategory()
 	{
@@ -2713,10 +3268,125 @@ echo "ok";
 	}
 	public function saveCategory(Request $request)
 	{
-		$res=new Category;
-		$res->category=$request->name;
-		$res->save();
-		return redirect()->to('/category');
+//		$res=new Category;
+//		$res->category=$request->name;
+//		$res->save();
+
+//        $options = new Options();
+//        $options->setVersion('2020-01');
+//        $setting = Setting::first();
+//        if ($setting) {
+//            $API_KEY = $setting->api_key;
+//            $PASSWORD = $setting->password;
+//            $SHOP_URL = $setting->shop_url;
+//
+//        }
+//        else {
+//            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+//            $PASSWORD = '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';
+//            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+//        }
+//
+//// Create the client and session
+//        $api = new BasicShopifyAPI($options);
+//        $api->setSession(new \Gnikyt\BasicShopifyAPI\Session('cherrypick-testing.myshopify.com', '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'));
+//
+//
+//
+//                    $query = 'mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+//                              stagedUploadsCreate(input: $input) {
+//                                stagedTargets {
+//                                  resourceUrl
+//                                  url
+//                                  parameters {
+//                                    name
+//                                    value
+//                                  }
+//                                }
+//                                userErrors {
+//                                  field
+//                                  message
+//                                }
+//                              }
+//                            }
+//                                        ';
+//        $file = $request->file('file');
+//
+//        $variables = [
+//            "input" => [
+//                "filename" => $file->getClientOriginalName(),
+//                "httpMethod" => "POST",
+//                "mimeType" => "image/" . $file->extension(),
+//                "resource" => "FILE",
+//            ],
+//        ];
+//
+//        $result = $api->graph($query, $variables);
+//        $result = json_decode(json_encode($result));
+//
+//
+//        $result = $result->body->data->stagedUploadsCreate->stagedTargets[0];
+//
+//
+//
+//        $formData = [];
+//
+//        // Add each parameter to the formData array
+//        foreach ($result->parameters as $param) {
+//            $formData[$param->name] = $param->value;
+//        }
+//
+//        // Add the file to the formData array
+////        $formData['file'] = fopen($file->getPathname(), 'r');
+//        $formData['file'] = $file;
+//
+//        // Calculate the Content-Length
+//        $fileSize = filesize($file->getPathname());
+//        $contentLength = $fileSize + 5000; // Add 5000 as per your requirement
+//
+//        // Send the POST request to Shopify's AWS S3 bucket
+////        dd($formData);
+//        $response = Http::withHeaders([
+//            'Content-Length' => $contentLength,
+//            'Content-Type' => 'multipart/form-data',// Set the Content-Length header
+//        ])->post($result->url, $formData);
+//
+////        $response = Http::withHeaders([
+////            'Content-Type' => 'multipart/form-data', // Ensure the correct MIME type is set
+////        ])->attach('file', $file->getPathname(), $file->getClientOriginalName(), [
+////            'Content-Type' => $file->getMimeType(),
+////        ])->post($result->url);
+//dd($response,$result,$formData);
+
+        $id = Auth::id();
+        $vendor_category=new VendorCategory();
+        $vendor_category->name=$request->name;
+        $vendor_category->vendor_id=$id;
+        $vendor_category->tags=$request->tags;
+        $vendor_category->is_active=1;
+        if ($request->parent_id == "0") {
+            $vendor_category->parent_id = null;
+            $vendor_category->level = 1;
+        }
+        else {
+            $parentCategory = VendorCategory::find($request->parent_id);
+            if ($parentCategory) {
+                $vendor_category->parent_id = $request->parent_id;
+                $vendor_category->level = $parentCategory->level + 1;
+            }
+        }
+        if ($request->hasFile('file')) {
+            $file=$request->file('file');
+            $name = str_replace(' ', '', $file->getClientOriginalName());
+            $name = "category_image_".time().'_'.$name;
+            $file->move(public_path() . '/category-images/', $name);
+            $image = asset('/category-images').'/' . $name;
+            $vendor_category->category_image=$image;
+        }
+
+            $vendor_category->save();
+        $this->CreateUpdateMetafield($id);
+        return back()->with('success','Category Added successfully');
 	}
 	public function editCategory($id)
 	{
@@ -2725,17 +3395,151 @@ echo "ok";
 	}
 	public function updateCategory(Request $request)
 	{
-		$res=Category::find($request->id);
-		$res->category=$request->name;
-		$res->save();
-		return redirect()->to('/category');
+        $vendor_category=VendorCategory::find($request->id);
+        if($vendor_category){
+            $vendor_category->name=$request->name;
+            $vendor_category->tags=$request->tags;
+            if ($request->parent_id == "0") {
+                $vendor_category->parent_id = null;
+                $vendor_category->level = 1;
+            }
+            else {
+                $parentCategory = VendorCategory::find($request->parent_id);
+                if ($parentCategory) {
+                    $vendor_category->parent_id = $request->parent_id;
+                    $vendor_category->level = $parentCategory->level + 1;
+                }
+            }
+
+            if ($request->hasFile('file')) {
+                $file=$request->file('file');
+                $name = str_replace(' ', '', $file->getClientOriginalName());
+                $name = "category_image_".time().'_'.$name;
+                $file->move(public_path() . '/category-images/', $name);
+                $image = asset('/category-images').'/' . $name;
+                $vendor_category->category_image=$image;
+            }
+            $vendor_category->save();
+            $this->CreateUpdateMetafield($vendor_category->vendor_id);
+        }
+
+        return back()->with('success','Category Updated successfully');
 	}
 	public function deleteCategory($id)
 	{
-		$res=Category::find($id);
-		$res->delete();
-		return redirect()->to('/category')->with('success', 'Category Deleted Successfully!!');
+
+		$res=VendorCategory::find($id);
+        if($res) {
+            $vid=$res->vendor_id;
+            $res->delete();
+            $this->CreateUpdateMetafield($vid);
+            return back()->with('success', 'Category Deleted successfully');
+        }
 	}
+
+
+    public function deleteCategoryImage(Request $request){
+
+        $category= VendorCategory::find($request->id);
+        if($category) {
+            $category->category_image = null;
+            $category->save();
+        }
+        return json_encode(array('status'=>'success'));
+
+    }
+
+
+    public function CreateUpdateMetafield($id){
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+        $store=Store::find($id);
+        if($store) {
+
+            $categories_array = array();
+
+            $vendor_categories = VendorCategory::where('vendor_id', $id)->whereNull('parent_id')
+                ->with('childrenRecursive')
+                ->get();
+
+            foreach ($vendor_categories as $vendor_category) {
+
+                $category['name'] = $vendor_category->name;
+                $category['image'] = $vendor_category->category_image;
+                $category['tags'] = $vendor_category->tags;
+
+                $category['subcategories'] = $this->formatChildren($vendor_category->childrenRecursive);
+
+                array_push($categories_array, $category);
+            }
+
+
+            $metafield_data = [
+                "metafield" =>
+                    [
+                        "key" => 'records',
+                        "value" => json_encode($categories_array),
+                        "type" => "json",
+                        "namespace" => "categories",
+
+                    ]
+            ];
+
+            if ($store->collections_ids) {
+
+                $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/smart_collections/$store->collections_ids/metafields.json";
+
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                //curl_setopt($curl, CURLOPT_HEADER, 1);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($metafield_data));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+                $response = curl_exec($curl);
+                curl_close($curl);
+            }
+        }
+    }
+
+    private function formatChildren($children)
+    {
+        $formattedChildren = [];
+
+        foreach ($children as $child) {
+            $formattedChild['name'] = $child->name;
+            $formattedChild['image'] = $child->category_image;
+            $formattedChild['tags'] = $child->tags;
+
+            // Recursive call if children of children are needed
+             $formattedChild['subcategories'] = $this->formatChildren($child->childrenRecursive);
+
+            array_push($formattedChildren, $formattedChild);
+        }
+
+        return $formattedChildren;
+    }
+
 
 
     public function ChangeImageUrl(){
@@ -2780,6 +3584,59 @@ echo "ok";
 
     }
 
+
+    public function AddProductType(Request $request){
+        $vendor= \Illuminate\Support\Facades\Auth::user();
+
+        $product_type=ProductType::where('product_type',$request->product_type)->where('vendor_id',$vendor->id)->first();
+        if($product_type==null){
+            $product_type=new ProductType();
+            $product_type->product_type=$request->product_type;
+            $product_type->vendor_id=$vendor->id;
+            $product_type->save();
+        }
+        return json_encode(array('status'=>'success','product_type_id'=>$product_type->id,'product_type_name'=>$product_type->product_type));
+
+    }
+
+
+public function getVariantDetail(Request $request){
+        $product_variant=ProductInfo::where('product_id',$request->id)->where('title',$request->title)->first();
+    return response()->json(['status' => 'success', 'product_variant'=>$product_variant]);
+
+
+}
+
+public function deleteProductExistingImage(Request $request){
+    $image= ProductImages::find($request->id);
+    if($image) {
+      $image->delete();
+        $product_images=ProductImages::where('product_id',$request->product_id)->pluck('id')->toArray();
+        $response=implode(',',$product_images);
+        return response()->json([
+            'status' => "success",
+            'product_ids' =>$response
+        ]);
+
+    }
+
+}
+
+    public function changeCategoryHierarchyStatus(Request $request)
+    {
+        $id=$request->id;
+        $result = Store::find($id);
+        if($result->category_hierarchy_status==1){
+            $result->category_hierarchy_status=0;
+        }else{
+            $result->category_hierarchy_status=1;
+        }
+        $result->save();
+        return response()->json([
+            'status' => "success",
+        ]);
+
+    }
 
 
 }

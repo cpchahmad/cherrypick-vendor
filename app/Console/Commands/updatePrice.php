@@ -105,27 +105,27 @@ class updatePrice extends Command
                             $USD_com = $row->price_usd;
                         }
                         $arr['23571431599'] = array(
-                            'compare_at_price' => $INR,
+                            'compare_at_price' => '',
                             'price' => $INR_com,
                             'currecy' => 'INR'
                         );
                         $arr['23366041775'] = array(
-                            'compare_at_price' => $CAD,
+                            'compare_at_price' => '',
                             'price' => $CAD_com,
                             'currecy' => 'CAD'
                         );
                         $arr['23550656687'] = array(
-                            'compare_at_price' => $GBP,
+                            'compare_at_price' => '',
                             'price' => $GBP_com,
                             'currecy' => 'GBP'
                         );
                         $arr['23593582767'] = array(
-                            'compare_at_price' => $AUD,
+                            'compare_at_price' => '',
                             'price' => $AUD_com,
                             'currecy' => 'AUD'
                         );
                         $arr['23550689455'] = array(
-                            'compare_at_price' => $EUR,
+                            'compare_at_price' => '',
                             'price' => $EUR_com,
                             'currecy' => 'EUR'
                         );
@@ -134,7 +134,7 @@ class updatePrice extends Command
                         $data['variant'] = array(
                             "id" => $variant_id,
                             "price" => $USD_com,
-                            "compare_at_price" => $USD,
+                            "compare_at_price" => '',
                             "grams" => $row->pricing_weight,
                         );
 
@@ -191,10 +191,7 @@ class updatePrice extends Command
 		"priceListId": "gid://shopify/PriceList/' . $k . '",
 		"prices": [
 		{
-			"compareAtPrice": {
-					"amount": ' . $v['compare_at_price'] . ',
-					"currencyCode": "' . $v['currecy'] . '"
-			},
+
 			"price": {
 				"amount": ' . $v['price'] . ',
 				"currencyCode": "' . $v['currecy'] . '"

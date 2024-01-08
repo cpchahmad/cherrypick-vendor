@@ -15,6 +15,9 @@
         background-color: #fff;
         border: 1px solid #dadcde;
     }
+    .filter_btn{
+        font-size:11px !important;
+    }
 </style>
 @section('main')
   <main id="main" class="main">
@@ -30,13 +33,13 @@
                 <div class="row">
                     <div class="col-6">
                         <p style="margin-bottom: 3px;">Total Products: ({{$total_products}})</p>
-                        <p>Total Variants: ({{$total_variants}})
+{{--                        <p>Total Variants: ({{$total_variants}})--}}
 
                     </div>
-              <div class="col-6">
-                  <p style="margin-bottom: 3px;">In-Stock: ({{$total_products_in_stock}}/{{$total_variants_in_stock}})</p>
-                <p style="margin-bottom: 3px;">Out-of-Stock: ({{$total_products_out_of_stock}}/{{$total_variants_out_of_stock}})</p>
-              </div>
+{{--              <div class="col-6">--}}
+{{--                  <p style="margin-bottom: 3px;">In-Stock: ({{$total_products_in_stock}}/{{$total_variants_in_stock}})</p>--}}
+{{--                <p style="margin-bottom: 3px;">Out-of-Stock: ({{$total_products_out_of_stock}}/{{$total_variants_out_of_stock}})</p>--}}
+{{--              </div>--}}
                 </div>
             </div>
             <div class="col-6" style="text-align: right;margin-bottom: 6px;">
@@ -111,12 +114,14 @@
               </div>
           </div>
 
+
           <div class="label-area sort-area mx-2">
               @php
 
               $product_type=Request::get('product_type');
                $selectedProductTypes =explode(',',$product_type);
               @endphp
+
               <label>Select Product Type</label>
               <select class="js-example-basic-multiple form-control" onchange="filterByProductType(this)" multiple="multiple" name="product_type[]" >
                   <option value="" ></option>
@@ -129,6 +134,7 @@
           </div>
 
 
+
           <div class="label-area mt-4 sort-area mx-2">
               <select class="form-select" aria-label="Default select example" onchange='filterByStock(this.value)'>
                   <option value=''  selected="">Select Stock Type</option>
@@ -138,7 +144,69 @@
           </div>
 
 
-{{--          <div class="label-area sort-area mx-2">--}}
+          <div class="label-area mt-4 sort-area mx-2" style="width: unset">
+
+
+              <div class="dropdown">
+                  <!-- Dropdown Button -->
+                  <button class="btn btn-primary dropdown-toggle" data-filter="by_price" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    By Price
+                  </button>
+
+                  <!-- Dropdown Menu -->
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <!-- Input Field within Dropdown -->
+                      <div class="dropdown-item">
+                          <input type="text" class="minimum_field_price form-control"  name="minimum_value_price" id='search' value='{{Request::get('minimum_value_price')}}' placeholder="Minimum" title="Enter search keyword">
+                      </div>
+                      <div class="dropdown-item">
+                 <input type="text" class="maximum_field_price form-control"  name="maximum_value_price" id='search' value='{{Request::get('maximum_value_price')}}' placeholder="Maximum" title="Enter search keyword">
+                      </div>
+                      <div class="dropdown-item" style="text-align: center">
+                      <button class="btn btn-primary btn-sm filter_btn by_price_search ">Search</button>
+                      </div>
+                  </div>
+              </div>
+
+
+{{--              <select class="form-select filter_weight_price" name="filter" aria-label="Default select example" >--}}
+{{--                  <option value=''  selected="">Select Filter</option>--}}
+{{--                  <option value="by_price" {{ Request::get('filter') == "by_price" ? 'selected' : '' }}>By Price</option>--}}
+{{--                  <option value="by_weight" {{ Request::get('filter') == "by_weight" ? 'selected' : '' }}>By Weight</option>--}}
+{{--              </select>--}}
+          </div>
+
+          <div class="label-area mt-4 sort-area mx-2" style="width: unset">
+
+
+              <div class="dropdown">
+                  <!-- Dropdown Button -->
+                  <button class="btn btn-primary dropdown-toggle" data-filter="by_weight" type="button" id="dropdownMenuButton_weight" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      By Weight
+                  </button>
+
+                  <!-- Dropdown Menu -->
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton_weight">
+                      <!-- Input Field within Dropdown -->
+                      <div class="dropdown-item">
+                          <input type="text" class="minimum_field_weight form-control"  name="minimum_value_weight" id='search' value='{{Request::get('minimum_value_weight')}}' placeholder="Minimum" title="Enter search keyword">
+                      </div>
+                      <div class="dropdown-item">
+                          <input type="text" class="maximum_field_weight form-control"  name="maximum_value_weight" id='search' value='{{Request::get('maximum_value_weight')}}' placeholder="Maximum" title="Enter search keyword">
+                      </div>
+                      <div class="dropdown-item" style="text-align: center">
+                          <button class="btn btn-primary btn-sm filter_btn by_weight_search ">Search</button>
+                      </div>
+                  </div>
+              </div>
+
+          </div>
+
+
+
+
+
+          {{--          <div class="label-area sort-area mx-2">--}}
 {{--              @php--}}
 
 {{--                  $product_tags=Request::get('tags');--}}
@@ -157,6 +225,31 @@
 
 
       </div>
+
+{{--        <div class="sort-by filters_div weight_price_div" style="@if(Request::get('filter') == "by_price" || Request::get('filter') == "by_weight" ) display: flex @else display:none @endif">--}}
+{{--            <div class="label-area sort-area mx-2">--}}
+{{--            </div>--}}
+{{--            <div class="label-area sort-area mx-2 ">--}}
+{{--            </div>--}}
+{{--            <div class="label-area sort-area mx-2">--}}
+{{--            </div>--}}
+{{--            <div class="member-plan-search header onetime-search">--}}
+{{--                <div class="search-bar mt-4" style="min-width: unset;width: unset">--}}
+
+{{--                    <form class="search-form d-flex align-items-center" method="get" action="">--}}
+{{--                        <input type="text" class="minimum_field"  name="minimum_value" id='search' value='{{Request::get('minimum_value')}}' placeholder="Minimum" title="Enter search keyword">--}}
+{{--                    </form>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--            <div class="member-plan-search header onetime-search">--}}
+{{--                <div class="search-bar mt-4" style="min-width: unset;width: unset">--}}
+
+{{--                    <form class="search-form d-flex align-items-center" method="get" action="">--}}
+{{--                        <input type="text" class="maximum_field"  name="maximum_value" id='search' value='{{Request::get('maximum_value')}}' placeholder="Maximum" title="Enter search keyword">--}}
+{{--                    </form>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
         <form class="add-product-form mt-4">
                 <div class="card table-card">
                   <div class="table-responsive">
@@ -238,7 +331,19 @@
          var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
          var productTypeParam = selectedOptions.join(',');
          var stock='{{Request::get('stock')}}';
-          window.location.href='products?search='+search+'&vendor='+id+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock;
+
+         var selectedFilter = $('#dropdownMenuButton').data('filter');
+         var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+         var minimum_value=$('.minimum_field_price').val();
+         var maximum_value=$('.maximum_field_price').val();
+
+         var maximum_value_weight=$('.maximum_field_weight').val();
+         var minimum_value_weight=$('.minimum_field_weight').val();
+
+
+
+          window.location.href='products?search='+search+'&vendor='+id+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
      }
 
      function filterByStatus(id)
@@ -252,7 +357,17 @@
          var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
          var productTypeParam = selectedOptions.join(',');
          var stock='{{Request::get('stock')}}';
-         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+id+'&shopify_status='+shopify_status+'&stock='+stock;
+
+         var selectedFilter = $('#dropdownMenuButton').data('filter');
+         var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+         var minimum_value=$('.minimum_field_price').val();
+         var maximum_value=$('.maximum_field_price').val();
+
+         var maximum_value_weight=$('.maximum_field_weight').val();
+         var minimum_value_weight=$('.minimum_field_weight').val();
+
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+id+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
      }
 
      function filterByShopifyStatus(val)
@@ -267,7 +382,17 @@
          var productTypeParam = selectedOptions.join(',');
          var stock='{{Request::get('stock')}}';
 
-         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+val+'&stock='+stock;
+
+         var selectedFilter = $('#dropdownMenuButton').data('filter');
+         var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+         var minimum_value=$('.minimum_field_price').val();
+         var maximum_value=$('.maximum_field_price').val();
+
+         var maximum_value_weight=$('.maximum_field_weight').val();
+         var minimum_value_weight=$('.minimum_field_weight').val();
+
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+val+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
      }
 
      function filterByName(val)
@@ -283,7 +408,17 @@
              var status='{{Request::get('status')}}';
              var shopify_status='{{Request::get('shopify_status')}}';
              var stock='{{Request::get('stock')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock;
+
+             var selectedFilter = $('#dropdownMenuButton').data('filter');
+             var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+             var minimum_value=$('.minimum_field_price').val();
+             var maximum_value=$('.maximum_field_price').val();
+
+             var maximum_value_weight=$('.maximum_field_weight').val();
+             var minimum_value_weight=$('.minimum_field_weight').val();
+
+             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
          }
      }
      function filterByDate(val)
@@ -298,7 +433,17 @@
              var status='{{Request::get('status')}}';
              var shopify_status='{{Request::get('shopify_status')}}';
              var stock='{{Request::get('stock')}}';
-             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+val+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock;
+
+             var selectedFilter = $('#dropdownMenuButton').data('filter');
+             var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+             var minimum_value=$('.minimum_field_price').val();
+             var maximum_value=$('.maximum_field_price').val();
+
+             var maximum_value_weight=$('.maximum_field_weight').val();
+             var minimum_value_weight=$('.minimum_field_weight').val();
+
+             window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+val+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
          }
      }
 
@@ -316,7 +461,16 @@
          var vendor='{{Request::get('vendor')}}';
          var stock='{{Request::get('stock')}}';
 
-         window.location.href = 'products?search=' + search + '&vendor='+vendor+ '&product_type=' + productTypeParam + '&date=' + date + '&status=' + status+'&shopify_status='+shopify_status+'&stock='+stock;
+         var selectedFilter = $('#dropdownMenuButton').data('filter');
+         var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+         var minimum_value=$('.minimum_field_price').val();
+         var maximum_value=$('.maximum_field_price').val();
+
+         var maximum_value_weight=$('.maximum_field_weight').val();
+         var minimum_value_weight=$('.minimum_field_weight').val();
+
+         window.location.href = 'products?search=' + search + '&vendor='+vendor+ '&product_type=' + productTypeParam + '&date=' + date + '&status=' + status+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
      }
 
 
@@ -352,7 +506,17 @@
          var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
          var productTypeParam = selectedOptions.join(',');
 
-         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+val;
+         var selectedFilter = $('#dropdownMenuButton').data('filter');
+         var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+         var minimum_value=$('.minimum_field_price').val();
+         var maximum_value=$('.maximum_field_price').val();
+
+         var maximum_value_weight=$('.maximum_field_weight').val();
+         var minimum_value_weight=$('.minimum_field_weight').val();
+
+         window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+val+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
+
      }
 
 
@@ -380,6 +544,16 @@
             {{--var v_token = "{{csrf_token()}}";--}}
             {{--var formData= new FormData();--}}
             {{--formData.append('ids' , array);--}}
+
+
+            var selectedFilter = $('#dropdownMenuButton').data('filter');
+            var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+            var minimum_value=$('.minimum_field_price').val();
+            var maximum_value=$('.maximum_field_price').val();
+
+            var maximum_value_weight=$('.maximum_field_weight').val();
+            var minimum_value_weight=$('.minimum_field_weight').val();
 
 
             $.ajax({
@@ -522,6 +696,14 @@
             var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
             var productTypeParam = selectedOptions.join(',');
 
+            var selectedFilter = $('#dropdownMenuButton').data('filter');
+            var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+            var minimum_value=$('.minimum_field_price').val();
+            var maximum_value=$('.maximum_field_price').val();
+
+            var maximum_value_weight=$('.maximum_field_weight').val();
+            var minimum_value_weight=$('.minimum_field_weight').val();
             $.ajax({
                 type: 'GET',
                 url: "{{ route('superadmin.approve-selected-products') }}",
@@ -532,7 +714,13 @@
                     status: status,
                     shopify_status:shopify_status,
                     product_type:productTypeParam,
-                    stock:stock
+                    stock:stock,
+                    filter_price:selectedFilter,
+                    filter_weight:selectedFilter_weight,
+                    minimum_value_price:minimum_value,
+                    maximum_value_price:maximum_value,
+                    minimum_value_weight:minimum_value_weight,
+                    maximum_value_weight:maximum_value_weight,
 
                 },
                 success: function (response) {
@@ -556,10 +744,22 @@
             var status='{{Request::get('status')}}';
 
             var shopify_status='{{Request::get('shopify_status')}}';
-
+            var stock='{{Request::get('stock')}}';
             var productTypeSelect = document.querySelector('.js-example-basic-multiple');
             var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
             var productTypeParam = selectedOptions.join(',');
+
+
+
+            var selectedFilter = $('#dropdownMenuButton').data('filter');
+            var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+            var minimum_value=$('.minimum_field_price').val();
+            var maximum_value=$('.maximum_field_price').val();
+
+            var maximum_value_weight=$('.maximum_field_weight').val();
+            var minimum_value_weight=$('.minimum_field_weight').val();
+
             $.ajax({
                 type: 'GET',
                 url: "{{ route('superadmin.deny-selected-products') }}",
@@ -569,7 +769,14 @@
                     date: date,
                     status: status,
                     shopify_status:shopify_status,
-                    product_type:productTypeParam
+                    product_type:productTypeParam,
+                    stock:stock,
+                    filter_price:selectedFilter,
+                    filter_weight:selectedFilter_weight,
+                    minimum_value_price:minimum_value,
+                    maximum_value_price:maximum_value,
+                    minimum_value_weight:minimum_value_weight,
+                    maximum_value_weight:maximum_value_weight,
                 },
                 success: function (response) {
                     var json = $.parseJSON(response);
@@ -579,6 +786,68 @@
                     }
                 }
             });
+
+        });
+
+
+        $('.filter_weight_price').on('change', function () {
+            var filter = $(this).val();
+            if(filter){
+                $('.weight_price_div').show();
+            }else{
+                $('.weight_price_div').hide();
+            }
+
+        });
+
+        $('.by_price_search').on('click', function() {
+
+            var maximum_value=$('.maximum_field_price').val();
+            var minimum_value=$('.minimum_field_price').val();
+
+            var maximum_value_weight=$('.maximum_field_weight').val();
+            var minimum_value_weight=$('.minimum_field_weight').val();
+
+            var search='{{Request::get('search')}}';
+            var vendor='{{Request::get('vendor')}}';
+            var date='{{Request::get('date')}}';
+            var status='{{Request::get('status')}}';
+            var shopify_status='{{Request::get('shopify_status')}}';
+            var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+            var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+            var productTypeParam = selectedOptions.join(',');
+            var stock='{{Request::get('stock')}}';
+
+            var selectedFilter = $('#dropdownMenuButton').data('filter');
+            var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+            window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
+
+        });
+
+
+        $('.by_weight_search').on('click', function() {
+
+            var maximum_value=$('.maximum_field_price').val();
+            var minimum_value=$('.minimum_field_price').val();
+
+            var maximum_value_weight=$('.maximum_field_weight').val();
+            var minimum_value_weight=$('.minimum_field_weight').val();
+
+            var search='{{Request::get('search')}}';
+            var vendor='{{Request::get('vendor')}}';
+            var date='{{Request::get('date')}}';
+            var status='{{Request::get('status')}}';
+            var shopify_status='{{Request::get('shopify_status')}}';
+            var productTypeSelect = document.querySelector('.js-example-basic-multiple');
+            var selectedOptions = Array.from(productTypeSelect.selectedOptions).map(option => option.value);
+            var productTypeParam = selectedOptions.join(',');
+            var stock='{{Request::get('stock')}}';
+
+            var selectedFilter = $('#dropdownMenuButton').data('filter');
+            var selectedFilter_weight = $('#dropdownMenuButton_weight').data('filter');
+
+            window.location.href='products?search='+search+'&vendor='+vendor+'&product_type=' + productTypeParam+'&date='+date+'&status='+status+'&shopify_status='+shopify_status+'&stock='+stock+'&filter_price='+selectedFilter+'&minimum_value_price='+minimum_value+'&maximum_value_price='+maximum_value+'&filter_weight='+selectedFilter_weight+'&minimum_value_weight='+minimum_value_weight+'&maximum_value_weight='+maximum_value_weight;
 
         });
     });

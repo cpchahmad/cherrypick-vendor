@@ -2161,4 +2161,9 @@ $store=Store::find($vid);
         $market_price=['usd' => $Variant_Price, 'gbp' => $price_gbp_final, 'nld' => $price_nld_final, 'inr' => $price_inr_final, 'cad' => $price_cad_final, 'aud' => $price_aud_final, 'irl' => $price_irl_final, 'ger' => $price_ger_final];
         return $market_price;
     }
+
+
+
+
+
 }

@@ -11,5 +11,12 @@ class Store extends Model
     protected $table = 'stores';
     protected $fillable = ['name','mobile','email','role','logo','description','status','password','profile_picture'];
 
+// In your Store model
+    public function products()
+    {
+        return $this->hasMany(\App\Models\Product::class, 'vendor', 'id');
+    }
+
+
 
 }

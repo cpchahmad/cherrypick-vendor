@@ -80,6 +80,17 @@
                      </span>
                     </div>
 
+
+{{--                      <div class="col-12">--}}
+{{--                          <label for="yourEmail" class="form-label">Store Type</label>--}}
+{{--                          <select class="form-control" name="store_type" required>--}}
+{{--                              <option value="shopify_store">Shopify Store</option>--}}
+{{--                              <option value="magento_store">Magento Store</option>--}}
+{{--                              <option value="fttp_store">FTTP Store</option>--}}
+{{--                          </select>--}}
+{{--                      </div>--}}
+
+
                     <div class="col-12">
                       <label for="yourUsername" class="form-label">Username</label>
                       <div class="input-group has-validation">

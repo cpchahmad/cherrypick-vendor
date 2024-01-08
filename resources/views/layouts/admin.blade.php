@@ -30,6 +30,8 @@
   <link href="{{url('subadmin/assets/css/custom.css')}}" rel="stylesheet">
 
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/css/select2.min.css" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="{{asset('richtexteditor/rte_theme_default.css')}}">
 </head>
 
 <body>
@@ -269,6 +271,9 @@
 <script src="{{url('subadmin/assets/js/main.js')}}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.min.js"></script>
+
+  <script src="{{asset('richtexteditor/rte.js')}}"></script>
+
  <script>
       $(document).ready(function() {
       $("#e2").select2({
@@ -329,6 +334,42 @@
       document.querySelector('.chatbot-right').style.display = 'none';
     });
 
+
+  </script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js" integrity="sha512-VvWznBcyBJK71YKEKDMpZ0pCVxjNuKwApp4zLF3ul+CiflQi6aIJR+aZCP/qWsoFBA28avL5T5HA+RE+zrGQYg==" crossorigin="anonymous"></script>
+
+
+  <script>
+      toastr.options =
+          {
+              "closeButton" : true,
+              "progressBar" : false,
+              "positionClass": "toast-bottom-center",
+
+          }
+      @if(Session::has('success'))
+
+      toastr.success("{{ session('success') }}");
+      @endif
+
+      @if(Session::has('error'))
+
+      toastr.error("{{ session('error') }}");
+      @endif
+
+      @if(Session::has('info'))
+
+      toastr.info("{{ session('info') }}");
+      @endif
+
+      @if(Session::has('warning'))
+
+      toastr.warning("{{ session('warning') }}");
+      @endif
   </script>
 
 @yield('js')

@@ -98,16 +98,17 @@ class ApproveAllProducts implements ShouldQueue
                     $check_log=Log::where('id',$this->log_id)->first();
                     if($check_existing_log==null){
 //                        $check_log=new Log();
-                        $check_log->status='In-Progress';
+                        $check_log->status='Processing';
                         $check_log->is_running=1;
                         $check_log->is_complete=0;
                         $check_log->start_time=now();
 
                     }else{
 //                        $check_log=new Log();
-                        $check_log->is_running=0;
+                        $check_log->status='Processing';
+                        $check_log->is_running=1;
                         $check_log->is_complete=0;
-                        $check_log->status='In-Queue';
+                        $check_log->start_time=now();
                     }
                     $check_log->running_at=now();
 //                    $check_log->date = $currentTime->format('F j, Y');

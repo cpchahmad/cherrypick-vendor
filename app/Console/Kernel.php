@@ -36,7 +36,14 @@ class Kernel extends ConsoleKernel
 //		$schedule->command('update:otp')->everyFiveMinutes();
 		$schedule->command('update:price')->everyMinute()->withoutOverlapping();
 //		$schedule->command('products:approve')->everyMinute()->withoutOverlapping();
-		$schedule->command('fetch:jsonproduct')->daily()->withoutOverlapping();
+
+        //comment because new approach is developed
+//		$schedule->command('fetch:jsonproduct')->daily()->withoutOverlapping();
+
+
+        $schedule->command('fetch:product-shopifyurl-main')->daily()->withoutOverlapping();
+        $schedule->command('fetch:product-shopifyurl')->everyMinute();
+
         $schedule->command('update:priceConversionRate')->everyMinute();
 
 
@@ -45,8 +52,11 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('sync:api-categories')->daily()->withoutOverlapping();
         $schedule->command('sync:api-product-attributes')->daily()->withoutOverlapping();
-        $schedule->command('fetch:product-api')->weekly()->withoutOverlapping();
-        $schedule->command('sync:api-inventory')->daily()->withoutOverlapping();
+
+        //comment because new approach is developed
+//        $schedule->command('fetch:product-api')->daily()->withoutOverlapping();
+
+//        $schedule->command('sync:api-inventory')->daily()->withoutOverlapping();
 
 
 //        $schedule->command('fetch:jsonproductandupdateprice')->monthly();

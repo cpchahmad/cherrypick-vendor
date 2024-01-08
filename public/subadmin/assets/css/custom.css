@@ -504,7 +504,7 @@ section#chatbots .card {
   background-color: #F5F5F5;
 }
 
-.chatbot-left::-webkit-scrollbar, .chat-body::-webkit-scrollbar { 
+.chatbot-left::-webkit-scrollbar, .chat-body::-webkit-scrollbar {
   width: 0px;
   background-color: #F5F5F5;
 }
@@ -605,7 +605,7 @@ button.nav-link.active {
 .time-item {
   width: 22%;
   text-align: center;
-  margin: 0px 5px;  
+  margin: 0px 5px;
   background: #f4c106;
   color: #fff;
   padding-bottom: 5px;
@@ -1732,7 +1732,7 @@ form.multi-form .tab-pan .col-12 {
 .multi-form select.form-select {
   color: #3d3d3d;
 }
-form.multi-form .tab-pan .col-12 input[type="text"], 
+form.multi-form .tab-pan .col-12 input[type="text"],
 form.multi-form .tab-pan .col-12 select {
   height: 50px;
   border-radius: 2px;
@@ -1763,7 +1763,7 @@ form.multi-form .tab-pan .col-12 .seprate {
 form.multi-form .tab-pan .col-12 .timer-label input {
   height: 40px;
 }
-.ac-dates input[type="date"], 
+.ac-dates input[type="date"],
 .ac-dates input[type="time"] {
   height: 44px;
   border-radius: 2px;
@@ -1808,7 +1808,7 @@ form.multi-form .tab-pan .col-12 .timer-label input {
 .template-desgin .email-item {
   margin-bottom: 20px;
 }
-.template-desgin .email-item input, 
+.template-desgin .email-item input,
 .template-desgin .email-item select {
   border-radius: 2px;
   height: 48px;
@@ -2049,7 +2049,7 @@ p.need-text {
   font-size: 14px;
 }
 .modal-footer.email-eet {
-  justify-content: flex-start; 
+  justify-content: flex-start;
 }
 .success-text {
   padding: 30px;
@@ -2424,8 +2424,8 @@ th.fl-input {
   margin-right: 5px;
 }
 .preview-images-zone > .preview-image {
-  height: 90px;
-  width: 90px;
+  height: 185px;
+  width: 185px;
   position: relative;
   margin-right: 5px;
   float: left;
@@ -2766,7 +2766,7 @@ form.add-product-form .col-6 {
 }
 .edit-timer-form .seprate.offer, .edit-timer-form .seprate  {
     width: 100%;
-} 
+}
 .fill-timer .timer-label:first-child {
   margin-left: 0px;
 }
@@ -2898,7 +2898,7 @@ span.chat-date:before, span.chat-date:after {
   padding: 10px 16px;
   font-size: 14px;
 }
-.amp-plan table.table.table-bordered tr, 
+.amp-plan table.table.table-bordered tr,
 .amp-plan table.table.table-bordered th {
   min-width: 150px;
   font-size: 14px;
@@ -3120,7 +3120,7 @@ button.extra-fields-customer {
 }
 
 @media screen and (min-width: 1500px) and (max-width: 1600px) {
-  .chat-body { 
+  .chat-body {
       height: 50vh;
   }
   i.bi.bi-clipboard span {
@@ -3131,7 +3131,7 @@ button.extra-fields-customer {
   }
   }
 @media screen and (min-width: 1601px) and (max-width: 1800px) {
-    .chat-body { 
+    .chat-body {
         height: 52vh;
 }
 h4.name-hour p {
@@ -3164,7 +3164,7 @@ i.bi.bi-clipboard span {
 }
 }
 @media screen and (min-width: 1801px) and (max-width: 1920px) {
-  .chat-body { 
+  .chat-body {
       height: 53vh;
 }
 h4.name-hour p {

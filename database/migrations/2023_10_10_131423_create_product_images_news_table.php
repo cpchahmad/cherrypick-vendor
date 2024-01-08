@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('width')->nullable();
             $table->integer('height')->nullable();
             $table->bigInteger('image_id')->nullable();
+            $table->bigInteger('shopify_image_id')->nullable();
             $table->timestamps();
         });
     }

@@ -52,9 +52,9 @@
                   <div class="container">
                      <fieldset class="form-group">
                         <a href="javascript:void(0)" onclick="$('#pro-image').click()" class="fileLabel">Upload image</a>
-                        <input type="file" id="pro-image" name="pro_image" style="display: none;" class="form-control" multiple>
+                        <input type="file" id="pro-image" name="pro_image[]" style="display: none;" class="form-control" multiple>
                     </fieldset>
-                    <input type="hidden" id="img" name="images">
+                    <input type="hidden" id="img" name="images" value="">
                     <span style="color:red;">
                       @error('profile')
                       {{$message}}
@@ -563,7 +563,10 @@ $(document).on("click", ".remove-field", function (e) {
           let TotalFiles = $('#pro-image')[0].files.length;
             profile = e.target.files[0];
             var formData= new FormData();
-            formData.append('profile' , profile);
+       let files = $('#pro-image')[0].files;
+       for (let i = 0; i < files.length; i++) {
+           formData.append('profile[]', files[i]);
+       }
             $.ajax({
                 cache: false,
                 contentType: false,
@@ -573,13 +576,14 @@ $(document).on("click", ".remove-field", function (e) {
                 headers: {'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')},
                 url:"{{ route('save-product') }}",
                 success:function(response){
+                    console.log('response',response);
                     var img_val=$('#img').val();
-                    var json = $.parseJSON(response);
+                    // var json = $.parseJSON(response);
                     if(img_val=='')
-                        $('#img').val(json.message);
+                        $('#img').val(response.product_ids);
                     else
                     {
-                         $('#img').val(img_val+","+json.message);
+                         $('#img').val(img_val+","+response.product_ids);
                     }
                 }
             });

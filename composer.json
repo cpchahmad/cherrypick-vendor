@@ -11,6 +11,7 @@
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
         "laravelcollective/html": "^6.3",
+            "gnikyt/basic-shopify-api": "*",
         "maatwebsite/excel": "^3.1",
         "spatie/simple-excel": "^3.2"
 

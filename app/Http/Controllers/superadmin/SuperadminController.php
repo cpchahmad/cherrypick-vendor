@@ -24,6 +24,8 @@ use App\Models\ThirdPartyAPICategory;
 use App\Models\ThirdPartyAPIProductAttribute;
 use App\Models\ThirdPartyAPIProductAttributeOptions;
 use App\Models\VariantChange;
+use App\Models\VendorCategory;
+use App\Models\VendorUrl;
 use http\Client;
 use Illuminate\Http\Request;
 use App\Models\Store;
@@ -582,8 +584,10 @@ class SuperadminController extends Controller
         $total_month_approval=Product::where('status', 1)->whereBetween('approve_date',[Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->lastOfMonth()->toDateString()])->count();
 
 
-        $sql_out_of_stock=ProductInfo::where('stock', 0)->get()->toArray();
-        $total_out_of_stock=count($sql_out_of_stock);
+        // $sql_out_of_stock=ProductInfo::where('stock', 0)->get()->toArray();
+        // $total_out_of_stock=count($sql_out_of_stock);
+
+        $total_out_of_stock=ProductInfo::where('stock', 0)->count();
 
 
 
@@ -597,7 +601,7 @@ class SuperadminController extends Controller
 
         $data = DB::table('products_variants')
                 ->select(array(DB::raw('COUNT(products_variants.id) as products'),'stores.name','stores.email','stores.status','stores.id'))
-                ->where('products_variants.stock', '=', 0)
+//                ->where('products_variants.stock', '=', 0)
                 ->join('stores', 'products_variants.vendor_id', '=', 'stores.id')
                 ->groupBy('products_variants.vendor_id')
                 ->get();
@@ -877,142 +881,193 @@ class SuperadminController extends Controller
 
    }
 
-   public function productlist(Request $request){
-
-
-//     $res = Product::whereIn('status',[0,2]);
-     $res = Product::query();
-
-
-       if ($request->search != "") {
-           $res->where('title', 'LIKE', '%' . $request->search . '%')
-               ->orWhereHas('productInfo', function ($query) use ($request) {
-                   $query->where('sku', 'LIKE', '%' . $request->search . '%');
-               });
-       }
-      if($request->vendor != ""){
-         $res->where('vendor' , $request->vendor);
-      }
-
-      if($request->date != "" && $request->date!='undefined'){
-          $request->date = str_replace('/', '-', $request->date);
-          $res->whereDate('created_at' , date('Y-m-d',strtotime($request->date)));
-      }
-      if($request->status!=""){
-          $res->where('status',$request->status);
-      }
-
-       if($request->shopify_status!=""){
-           $res->where('shopify_status',$request->shopify_status);
-       }
-
-      if($request->product_type!=""){
-
-          $ex_product_type=explode(',',$request->product_type);
-          $res->whereIn('product_type_id',$ex_product_type);
-      }
-
-       $product_type_ids=$res->pluck('product_type_id');
-
-      $product_types=ProductType::whereIn('id',$product_type_ids)->get();
+    public function productlist(Request $request){
 
 
 
 
-//       $product_tags=$res->pluck('tags');
-//       $tag_array=array();
-//       foreach ($product_tags as $product_tag){
+        //     $res = Product::whereIn('status',[0,2]);
+        $res = Product::query();
+
+
+        if ($request->search != "") {
+            $res->where('title', 'LIKE', '%' . $request->search . '%')
+                ->orWhereHas('productInfo', function ($query) use ($request) {
+                    $query->where('sku', 'LIKE', '%' . $request->search . '%');
+                });
+        }
+        if($request->vendor != ""){
+            $res->where('vendor' , $request->vendor);
+        }
+
+        if($request->date != "" && $request->date!='undefined'){
+            $request->date = str_replace('/', '-', $request->date);
+            $res->whereDate('created_at' , date('Y-m-d',strtotime($request->date)));
+        }
+        if($request->status!=""){
+            $res->where('status',$request->status);
+        }
+
+        if($request->shopify_status!=""){
+            $res->where('shopify_status',$request->shopify_status);
+        }
+        $product_types=[];
+        if($request->product_type!=""){
+
+            $ex_product_type=explode(',',$request->product_type);
+            $res->whereIn('product_type_id',$ex_product_type);
+        }
+
+        $product_types=[];
+        if($request->vendor) {
+
+            $product_type_ids=$res->pluck('product_type_id');
+            $product_types = ProductType::whereIn('id', $product_type_ids)->get();
+        }
+
+
+
+
+
+
+
+
+
+
+
+        $total_variants=0;
+        $total_variants_in_stock=0;
+        $total_variants_out_of_stock=0;
+
+        $product_ids = $res->pluck('id')->toArray();
+        //   $total_variants=ProductInfo::whereIn('product_id',$product_ids)->count();
+        //   $total_variants_in_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',1)->count();
+        //   $total_variants_out_of_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',0)->count();
+
+
+
+
+
+
+        $total_products_in_stock=0;
+        $total_products_out_of_stock=0;
+
+        $inStockProductIds = [];
+        $outOfStockProductIds = [];
+
+
+
+        $all_product_ids=[];
+        $by_weight=0;
+        $by_price=0;
+
+        $enter=0;
+        if($request->vendor) {
+
+// Initialize all_product_ids array
+            $all_product_ids = [];
+
+// Fetch products based on criteria
+            Product::whereIn('id', $product_ids)
+                ->with(['productInfos' => function ($query) {
+                    $query->select('product_id', 'stock', 'base_price', 'grams');
+                }])
+                ->chunk(200, function ($products) use (&$all_product_ids, $request,&$enter) {
+                    foreach ($products as $product) {
+                        $meetsCriteria = true;
+
+                        // Filter by stock
+                        if ($request->has('stock')) {
+                            $enter = 1;
+
+                            $stockValues = $product->productInfos->pluck('stock')->toArray(); // Assign the result to a variable
+
+                            if ($request->stock == 'in-stock' && !in_array(1, $stockValues)) {
+                                $meetsCriteria = false;
+                            }
+                            elseif ($request->stock == 'out-of-stock' && (count(array_unique($stockValues)) !== 1 || reset($stockValues) !== 0)) {
+                                $meetsCriteria = false;
+                            }
+                        }
+
+
+
+                        // Filter by price
+                        if ($request->has('filter_price')) {
+                            if ($request->filter_price == 'by_price') {
+
+                                $basePrices = $product->productInfos->pluck('base_price')->toArray();
+                                // Add your price filtering logic here
+                                if ($request->has('minimum_value_price') && $request->minimum_value_price && min($basePrices) < $request->minimum_value_price) {
+                                    $enter=1;
+                                    $meetsCriteria = false;
+                                }
+                                if ($request->has('maximum_value_price') && $request->maximum_value_price && max($basePrices) > $request->maximum_value_price) {
+                                    $enter=1;
+                                    $meetsCriteria = false;
+                                }
+                            }
+                        }
+
+                        // Filter by weight
+                        if ($request->has('filter_weight')) {
+                            if ($request->filter_weight == 'by_weight') {
+                                $baseWeights = $product->productInfos->pluck('grams')->toArray();
+                                // Add your weight filtering logic here
+                                if ($request->has('minimum_value_weight') && $request->minimum_value_weight && min($baseWeights) < $request->minimum_value_weight) {
+                                    $enter=1;
+                                    $meetsCriteria = false;
+                                }
+                                if ($request->has('maximum_value_weight') && $request->maximum_value_weight && max($baseWeights) > $request->maximum_value_weight) {
+                                    $enter=1;
+                                    $meetsCriteria = false;
+                                }
+                            }
+                        }
+
+                        // If product meets all criteria, add its ID to all_product_ids
+                        if ($meetsCriteria) {
+                            $all_product_ids[] = $product->id;
+                        }
+                    }
+                });
+
+// Filter products based on the collected IDs
+
+
+
+        }
+        if (!empty($all_product_ids) && $enter==0) {
+            $res->whereIn('id', $all_product_ids);
+        }
+        elseif ($enter==1){
+            $res->whereIn('id', $all_product_ids);
+        }
+
+
+        $total_products_out_of_stock=0;
+        $total_variants_out_of_stock=0;
+        $total_products_in_stock=0;
+        $total_variants_in_stock=0;
+//        if($request->stock!="" || $by_price==1 || $by_weight==1)
+//        {
+//            $res->whereIn('id', $all_product_ids);
 //
-//           $tags_data=explode(',',$product_tag);
-//
-//           $tag_array = array_merge($tag_array, $tags_data);
-//       }
-//       $tags = array_unique($tag_array);
-//
-//      if($request->tags!=""){
-//
-//          $ex_tags=explode(',',$request->tags);
-//
-//
-//
-//      }
+//        }
 
 
 
+        $total_products = $res->count();
 
-       $total_products = $res->count();
-
-
-
-
-       $product_ids = $res->pluck('id')->toArray();
-       $total_variants=ProductInfo::whereIn('product_id',$product_ids)->count();
-       $total_variants_in_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',1)->count();
-       $total_variants_out_of_stock=ProductInfo::whereIn('product_id',$product_ids)->where('stock',0)->count();
+        $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
 
 
+        $vendorlist = Store::where('role','Vendor')->get();
 
 
+        //dd($data);
+        return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products','total_variants','total_variants_in_stock','total_variants_out_of_stock','total_products_in_stock','total_products_out_of_stock'));
 
-
-       $total_products_in_stock=0;
-       $total_products_out_of_stock=0;
-
-       $inStockProductIds = [];
-       $outOfStockProductIds = [];
-
-
-       Product::whereIn('id', $product_ids)
-           ->with(['productInfos' => function ($query) {
-               $query->select('product_id', 'stock');
-           }])
-           ->chunk(200, function ($products) use (&$total_products_in_stock, &$total_products_out_of_stock, &$inStockProductIds, &$outOfStockProductIds) {
-               foreach ($products as $product) {
-                   $stockCounts = $product->productInfos->pluck('stock')->toArray();
-
-                   if (in_array(1, $stockCounts)) {
-                       // If at least one variant has stock 1
-                       $total_products_in_stock++;
-                       $inStockProductIds[] = $product->id;
-                   } elseif (count(array_unique($stockCounts)) === 1 && reset($stockCounts) === 0) {
-                       // If all variants have stock 0
-                       $total_products_out_of_stock++;
-                       $outOfStockProductIds[] = $product->id;
-
-                   }
-               }
-           });
-
-
-
-       if($request->stock!="")
-       {
-           if($request->stock=='in-stock'){
-
-           $res->whereIn('id', $inStockProductIds)->get();
-               $total_products_out_of_stock=0;
-               $total_variants_out_of_stock=0;
-
-
-           }elseif ($request->stock=='out-of-stock'){
-
-               $res->whereIn('id', $outOfStockProductIds)->get();
-
-               $total_products_in_stock=0;
-               $total_variants_in_stock=0;
-           }
-
-       }
-
-
-      $data = $res->orderBy('updated_at', 'DESC')->paginate(30)->appends($request->all());
-
-
-      $vendorlist = Store::where('role','Vendor')->get();
-
-
-      //dd($data);
-     return view('superadmin.products-list',compact('data','vendorlist','product_types','total_products','total_variants','total_variants_in_stock','total_variants_out_of_stock','total_products_in_stock','total_products_out_of_stock'));
     }
 	public function updateAllProductPrices()
 	{
@@ -1134,16 +1189,17 @@ class SuperadminController extends Controller
             $currentTime = now();
             if($check_log==null){
                 $check_log=new Log();
-                $check_log->status='In-Progress';
+                $check_log->status='Processing';
                 $check_log->is_running=1;
                 $check_log->is_complete=0;
                 $check_log->start_time = $currentTime;
 
             }else{
                 $check_log=new Log();
-                $check_log->is_running=0;
+                $check_log->status='Processing';
+                $check_log->is_running=1;
                 $check_log->is_complete=0;
-                $check_log->status='In-Queue';
+                $check_log->start_time = $currentTime;
             }
 
 
@@ -1443,7 +1499,8 @@ class SuperadminController extends Controller
                         "tags" => explode(",", $tags),
                         "variants" => $variants,
                         "options" => $options_array,
-                        "metafields" => $metafield_data
+                        "metafields" => $metafield_data,
+                        "status"=>$product->product_status
                     )
                 );
 
@@ -1496,6 +1553,7 @@ class SuperadminController extends Controller
 
 
 
+
                     $shopify_product_id = $result['product']['id'];
                     $shopify_handle = $result['product']['handle'];
                     //echo "<pre>"; print_r($result); die();
@@ -1512,6 +1570,7 @@ class SuperadminController extends Controller
                         );
 
                     }
+
                     $this->shopifyUploadeImage($product->id, $shopify_product_id, $variant_ids_array);
 
                     $values = array();
@@ -2030,7 +2089,7 @@ class SuperadminController extends Controller
                                     "option3" => $product_info->varient2_value,
                                     "sku" => $product_info->sku,
                                     "price" => $product_info->price_usd,
-                                    "compare_at_price" => $product_info->price_usd,
+                                    "compare_at_price" => '',
                                     "grams" => $product_info->pricing_weight,
                                     "taxable" => false,
                                     "inventory_management" => "shopify",
@@ -2046,7 +2105,7 @@ class SuperadminController extends Controller
                                     "option3" => $product_info->varient2_value,
                                     "sku" => $product_info->sku,
                                     "price" => $product_info->price_usd,
-                                    "compare_at_price" => $product_info->price_usd,
+                                    "compare_at_price" => '',
                                     "grams" => $product_info->pricing_weight,
                                     "taxable" => false,
                                     "inventory_management" => ($product_info->stock) ? null : "shopify",
@@ -2064,7 +2123,7 @@ class SuperadminController extends Controller
                                     "id" => $invid,
                                     "sku" => $product_info->sku,
                                     "price" => $product_info->price_usd,
-                                    "compare_at_price" => $product_info->price_usd,
+                                    "compare_at_price" => '',
                                     "grams" => $product_info->pricing_weight,
                                     "taxable" => false,
                                     "inventory_management" => "shopify",
@@ -2075,7 +2134,7 @@ class SuperadminController extends Controller
                                     "id" => $invid,
                                     "sku" => $product_info->sku,
                                     "price" => $product_info->price_usd,
-                                    "compare_at_price" => $product_info->price_usd,
+                                    "compare_at_price" => '',
                                     "grams" => $product_info->pricing_weight,
                                     "taxable" => false,
                                     "inventory_management" => ($product_info->stock) ? null : "shopify",
@@ -2208,7 +2267,7 @@ class SuperadminController extends Controller
         $response = curl_exec ($curl);
         curl_close ($curl);
 	}
-    public function shopifyUploadeImage($id,$shopify_id,$variant_ids_array)
+    public function shopifyUploadeImageold($id,$shopify_id,$variant_ids_array)
     {
 
         $setting=Setting::first();
@@ -2265,7 +2324,7 @@ class SuperadminController extends Controller
 			$img_result=json_decode($response, true);
 
 			if(isset($img_result['image']['id']))
-			ProductImages::where('id', $img_val->id)->update(['image_id' => $img_result['image']['id']]);
+			ProductImages::where('id', $img_val->id)->update(['shopify_image_id' => $img_result['image']['id']]);
 
 
             if($img_val->image2) {
@@ -2373,6 +2432,184 @@ class SuperadminController extends Controller
                 $img_result = json_decode($response, true);
             }
         }
+
+    }
+
+    public function shopifyUploadeImage($id,$shopify_id,$variant_ids_array)
+    {
+
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_id/images.json";
+        $product_images = ProductImages::where('product_id',$id)->get();
+        foreach($product_images as $index=> $img_val)
+        {
+            if($img_val->variant_ids) {
+
+                $get_variant=ProductInfo::find($img_val->variant_ids);
+                if($get_variant) {
+
+                    $data['image'] = array(
+                        'src' => $img_val->image,
+                        'alt' => $img_val->alt_text,
+                        'variant_ids' => [$get_variant->inventory_id]
+
+                    );
+                }else{
+                    $data['image'] = array(
+                        'src' => $img_val->image,
+                        'alt' => $img_val->alt_text,
+
+                    );
+                }
+            }else{
+                $data['image'] = array(
+                    'src' => $img_val->image,
+                    'alt' => $img_val->alt_text,
+
+                );
+            }
+
+
+
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+            $headers = array(
+                "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+                "Content-Type: application/json",
+                "charset: utf-8"
+            );
+            curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_VERBOSE, 0);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+            $response = curl_exec ($curl);
+            $img_result=json_decode($response, true);
+
+            if(isset($img_result['image']['id']))
+                ProductImages::where('id', $img_val->id)->update(['shopify_image_id' => $img_result['image']['id']]);
+
+
+            if($img_val->image2) {
+                $data['image'] = array(
+                    'src' => $img_val->image2,
+                    'alt' => $img_val->alt_text,
+
+                );
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                $response = curl_exec($curl);
+                $img_result = json_decode($response, true);
+
+            }
+
+            if($img_val->image3) {
+                $data['image'] = array(
+                    'src' => $img_val->image3,
+                    'alt' => $img_val->alt_text,
+
+
+                );
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                $response = curl_exec($curl);
+                $img_result = json_decode($response, true);
+
+            }
+
+            if($img_val->image4) {
+                $data['image'] = array(
+                    'src' => $img_val->image4,
+                    'alt' => $img_val->alt_text,
+
+
+                );
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                $response = curl_exec($curl);
+                $img_result = json_decode($response, true);
+            }
+
+            if($img_val->image5) {
+                $data['image'] = array(
+                    'src' => $img_val->image5,
+                    'alt' => $img_val->alt_text,
+
+
+                );
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                $headers = array(
+                    "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                    "Content-Type: application/json",
+                    "charset: utf-8"
+                );
+                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+                $response = curl_exec($curl);
+                $img_result = json_decode($response, true);
+            }
+        }
+
     }
 
 
@@ -3286,277 +3523,216 @@ class SuperadminController extends Controller
 		foreach($products as $index=> $row) {
 
 
+            $matchedNames = [];
+            $matched_category_tags=null;
 
+            $vendor_store=Store::find($vid);
+            if($vendor_store && $vendor_store->category_hierarchy_status==0) {
+                $vendorCategories = VendorCategory::where('vendor_id', $vid)->get();
+                foreach ($vendorCategories as $category) {
+                    // Convert comma-separated tags from database into an array
+                    $categoryTags = explode(',', $category->tags);
+
+                    // Check if any of the category tags match with the tagsToMatch array
+                    if (!empty(array_intersect($row['tags'], $categoryTags))) {
+                        // If a match is found, add the name to the matchedNames array
+                        $matchedNames[] = $category->name;
+                    }
+                }
+                $matched_category_tags = implode(',', $matchedNames);
+            }
 
                 // Extract the first two options
-                $selectedOptions=null;
-                if(count($row['options']) > 0){
+                $selectedOptions = null;
+            if (count($row['options']) > 0) {
 //                    $selectedOptions = array_slice($row['options'], 0, 2);
-                    $selectedOptions = $row['options'];
+                $selectedOptions = $row['options'];
+            }
+
+
+            $weight_available = 0;
+            foreach ($row['options'] as $option) {
+
+                foreach ($option['values'] as $value) {
+                    if (strpos($value, 'Gms') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'gms') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'kg') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'Grams') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'Gram') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'Kgs') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'G') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'KG') !== false) {
+                        $weight_available = 1;
+                    }
                 }
 
 
-                $html = $row['body_html'];
+            }
 
-                //remove image
-                $html = preg_replace('/<img[^>]*>/', '', $html);
-                $linkToRemove = 'https://www.violetandpurple.com/index.php/faq';
+
+            $html = $row['body_html'];
+
+            //remove image
+            $html = preg_replace('/<img[^>]*>/', '', $html);
+            $linkToRemove = 'https://www.violetandpurple.com/index.php/faq';
 // Find the position of the link
-                $position = strpos($html, $linkToRemove);
+            $position = strpos($html, $linkToRemove);
 
 // If the link is found, find the parent <p> tag and remove it
-                if ($position !== false) {
-                    $startTagPosition = strrpos(substr($html, 0, $position), '<p');
-                    $endTagPosition = strpos($html, '</p>', $position) + 4;
+            if ($position !== false) {
+                $startTagPosition = strrpos(substr($html, 0, $position), '<p');
+                $endTagPosition = strpos($html, '</p>', $position) + 4;
 
-                    // Remove the parent <p> tag
-                    $modifiedHtml = substr_replace($html, '', $startTagPosition, $endTagPosition - $startTagPosition);
-                } else {
-                    // If the link is not found, keep the original HTML
-                    $modifiedHtml = $html;
-                }
+                // Remove the parent <p> tag
+                $modifiedHtml = substr_replace($html, '', $startTagPosition, $endTagPosition - $startTagPosition);
+            } else {
+                // If the link is not found, keep the original HTML
+                $modifiedHtml = $html;
+            }
 
 // Output the modified HTML
-                $html = $modifiedHtml;
+            $html = $modifiedHtml;
 
-                $product_check = Product::where('reference_shopify_id', $row['id'])->where('vendor', $vid)->first();
+            $product_check = Product::where('reference_shopify_id', $row['id'])->where('vendor', $vid)->first();
 
-                $product_type = ProductType::where('product_type', $row['product_type'])->where('vendor_id', $vid)->first();
-                if ($product_type == null) {
-                    $product_type = new ProductType();
+            $product_type = ProductType::where('product_type', $row['product_type'])->where('vendor_id', $vid)->first();
+            if ($product_type == null) {
+                $product_type = new ProductType();
+            }
+            $product_type->product_type = $row['product_type'];
+            $product_type->vendor_id = $vid;
+            $product_type->save();
+
+
+            //echo $pid; die;
+            if ($product_check == null)  ////////New Product
+            {
+                $cat = Category::where('category', $row['product_type'])->first();
+                if ($cat)
+                    $category_id = $cat->id;
+                else {
+                    $cate_que = new Category;
+                    $cate_que->category = $row['product_type'];
+                    $cate_que->save();
+                    $category_id = $cate_que->id;
                 }
-                $product_type->product_type = $row['product_type'];
-                $product_type->vendor_id = $vid;
-                $product_type->save();
 
 
-                //echo $pid; die;
-                if ($product_check == null)  ////////New Product
-                {
-                    $cat = Category::where('category', $row['product_type'])->first();
-                    if ($cat)
-                        $category_id = $cat->id;
-                    else {
-                        $cate_que = new Category;
-                        $cate_que->category = $row['product_type'];
-                        $cate_que->save();
-                        $category_id = $cate_que->id;
-                    }
+                $shopify_id = $row['id'];
+                $title = $row['title'];
+                $description = $html;
+                $vendor = $row['vendor'];
+                $tags = implode(",", $row['tags']);
+                $tags=$tags.','.$matched_category_tags;
+                $handle = $row['handle'];
+                $store_id = $vid;
+
+                $product = new Product;
+                $product->title = $title;
+                $product->reference_shopify_id = $shopify_id;
+                $product->body_html = $description;
+                $product->shopify_updated_at = $row['updated_at'];
+                $product->vendor = $store_id;
+                $product->orignal_vendor = $vendor;
+                $product->options = json_encode($selectedOptions);
+                $product->tags = $tags;
+                $product->category = $category_id;
+                $product->product_type_id = $product_type->id;
+                $product->is_updated_by_url = 1;
+                $product->is_available = 1;
+                $product->save();
+                $product_id = $product->id;
+
+                $product_logs = new ProductLog();
+                $product_logs->title = 'Product Created';
+                $product_logs->date_time = now()->format('F j, Y H:i:s');
+                $product_logs->product_id = $product_id;
+                $product_logs->log_id = $log_id;
+                $product_logs->save();
+
+                $i = 0;
 
 
-                    $shopify_id = $row['id'];
-                    $title = $row['title'];
-                    $description = $html;
-                    $vendor = $row['vendor'];
-                    $tags = implode(",", $row['tags']);
-                    $handle = $row['handle'];
-                    $store_id = $vid;
-
-                    $product = new Product;
-                    $product->title = $title;
-                    $product->reference_shopify_id = $shopify_id;
-                    $product->body_html = $description;
-                    $product->vendor = $store_id;
-                    $product->orignal_vendor = $vendor;
-                    $product->options = json_encode($selectedOptions);
-                    $product->tags = $tags;
-                    $product->category = $category_id;
-                    $product->product_type_id = $product_type->id;
-                    $product->is_updated_by_url = 1;
-                    $product->is_available = 1;
-                    $product->save();
-                    $product_id = $product->id;
-
-                    $product_logs = new ProductLog();
-                    $product_logs->title = 'Product Created';
-                    $product_logs->date_time = now()->format('F j, Y H:i:s');
-                    $product_logs->product_id = $product_id;
-                    $product_logs->log_id = $log_id;
-                    $product_logs->save();
-
-                    $i = 0;
-
-
-                    $grams = 0;
-                    $store = Store::find($vid);
-                    if ($store->base_weight) {
-                        $grams = $store->base_weight;
-                    }
-                    if ($product_type && $product_type->base_weight) {
-                        $grams = $product_type->base_weight;
-                    }
-                    $grams_selected = 0;
-                    if ($row['variants'][0]['grams'] > 0) {
-                        $grams_selected = 1;
-                        $grams = $row['variants'][0]['grams'];
-                    } else {
-                        foreach ($row['variants'] as $var) {
-                            if ($var['grams'] > 0 && $grams_selected == 0) {
-                                $grams_selected = 1;
-                                $grams = $var['grams'];
-                            }
-                        }
-                    }
-
+                $grams = 0;
+                $store = Store::find($vid);
+                if ($store->base_weight) {
+                    $grams = $store->base_weight;
+                }
+                if ($product_type && $product_type->base_weight) {
+                    $grams = $product_type->base_weight;
+                }
+                $grams_selected = 0;
+                if ($row['variants'][0]['grams'] > 0) {
+                    $grams_selected = 1;
+                    $grams = $row['variants'][0]['grams'];
+                } else {
                     foreach ($row['variants'] as $var) {
-
-                        $variant_grams = ($var['grams'] > 0) ? $var['grams'] : $grams;
-                        $pricing_weight = $variant_grams;
-
-                        if ($product_type && $product_type->base_weight) {
-                            $pricing_weight = max($variant_grams, $product_type->base_weight);
-                        }
-                        $i++;
-                        $check = ProductInfo::where('reference_shopify_id', $var['id'])->where('product_id', $product_id)->first();
-
-
-                        if ($check == null) {
-
-                            if ($var['sku']) {
-                                $sku = $var['sku'];
-                            } else {
-                                if ($store->sku_count < 10) {
-                                    $count = $store->sku_count + 1;
-                                    if ($product_type && $product_type->product_type) {
-                                        $sku = $store->name . '-' . $product_type->product_type . '-0' . $count;
-                                    } else {
-                                        $sku = $store->name . '-0' . $count;
-                                    }
-                                } else {
-                                    $count = $store->sku_count + 1;
-                                    if ($product_type && $product_type->product_type) {
-                                        $sku = $store->name . '-' . $product_type->product_type . '-' . $count;
-                                    } else {
-                                        $sku = $store->name . '-' . $count;
-                                    }
-                                }
-                                $store->sku_count = $store->sku_count + 1;
-                                $store->save();
-                            }
-
-                            $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
-                            $product_info = new ProductInfo;
-                            $product_info->product_id = $product_id;
-                            $product_info->sku = $sku;
-                            $product_info->price = $prices['inr'];
-                            $product_info->price_usd = $prices['usd'];
-                            $product_info->price_nld = $prices['nld'];
-                            $product_info->price_gbp = $prices['gbp'];
-                            $product_info->price_cad = $prices['cad'];
-                            $product_info->price_aud = $prices['aud'];
-                            $product_info->price_irl = $prices['nld'];
-                            $product_info->price_ger = $prices['nld'];
-                            $product_info->base_price = $prices['base_price'];
-                            $product_info->grams = $variant_grams;
-                            $product_info->pricing_weight = $pricing_weight;
-                            $product_info->stock = $var['available'];
-                            $product_info->vendor_id = $store_id;
-                            $product_info->reference_shopify_id = $var['id'];
-                            $product_info->dimensions = '0-0-0';
-                            if (isset($row['options'])) {
-                                $product_info->varient_name = $row['options'][0]['name'];
-                            }
-
-                            if (isset($row['options']) && isset($row['options'][1])) {
-                                $product_info->varient1_name = $row['options'][1]['name'];
-                            }
-                            if (isset($row['options']) && isset($row['options'][2])) {
-                                $product_info->varient2_name = $row['options'][2]['name'];
-                            }
-                            $product_info->varient_value = $var['option1'];
-                            $product_info->varient1_value = $var['option2'];
-                            $product_info->varient2_value = $var['option3'];
-                            $product_info->save();
+                        if ($var['grams'] > 0 && $grams_selected == 0) {
+                            $grams_selected = 1;
+                            $grams = $var['grams'];
                         }
                     }
-                    if ($i > 1) {
-                        Product::where('id', $product_id)->update(['is_variants' => 1]);
-                    }
-                    foreach ($row['images'] as $img_val) {
-                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_id)->exists();
-                        if (!$imgCheck) {
-                            $url = $img_val['src'];
-//								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
-//								file_put_contents($img, file_get_contents($url));
-//								$img_name=url($img);
-                            $img_name = $url;
-                            $product_img = new ProductImages;
-                            $product_img->image = $img_name;
-                            $product_img->image_id = $img_val['id'];
-                            $product_img->product_id = $product_id;
-//                                $product_img->image_id = $img_val['id'];
-//                                $product_img->width = $img_val['width'];
-//                                $product_img->height = $img_val['height'];
-                            $product_img->save();
+                }
+
+                foreach ($row['variants'] as $var) {
+
+                    $variant_grams = ($var['grams'] > 0) ? $var['grams'] : $grams;
+                    if ($variant_grams == 0 && $weight_available == 1) {
+                        if (preg_match('/(\d+)\s*Gms/', $var['option1'], $matches)) {
+
+                            $variant_grams = $matches[1]; // This will give you '250'
+
                         }
+                        elseif (preg_match('/(\d+)\s*gms/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        }
+
+
+                        elseif (preg_match('/(\d+)\s*kg/i', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1] * 1000; // This will give you '1' if the string contains '1kg'
+                            // Outputs: 1
+                        } elseif (preg_match('/(\d+)\s*KG/i', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1] * 1000; // This will give you '1' if the string contains '1kg'
+                            // Outputs: 1
+                        } elseif (preg_match('/(\d+)\s*G/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        } elseif (preg_match('/(\d+)\s*Grams/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        } elseif (preg_match('/(\d+)\s*Gram/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        } elseif (preg_match('/(\d+)\s*kgs/i', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1] * 1000; // This will give you '1' if the string contains '1kg'
+                            // Outputs: 1
+                        }
+
                     }
-                } else  //Existing Product
-                {
-                    $vendor = $row['vendor'];
-                    $data['title'] = $row['title'];
-                    $data['body_html'] = $html;
-                    $data['tags'] = implode(",", $row['tags']);
-                    $data['product_type_id'] = $product_type->id;
-                    $data['orignal_vendor'] = $vendor;
-                    $data['is_updated_by_url'] = 1;
-                    $data['is_available'] = 1;
-                    $data['options'] = json_encode($selectedOptions);
-                    Product::where('id', $product_check->id)->update($data);
-                    $product_id = $product_check->id;
 
 
-                    $product_logs = new ProductLog();
-                    $product_logs->title = 'Product Update';
-                    $product_logs->date_time = now()->format('F j, Y H:i:s');
-                    $product_logs->product_id = $product_id;
-                    $product_logs->log_id = $log_id;
-                    $product_logs->save();
-                    $i = 0;
+                    $pricing_weight = $variant_grams;
 
-
-                    $grams = 0;
-                    $store = Store::find($vid);
-                    if ($store->base_weight) {
-                        $grams = $store->base_weight;
-                    }
                     if ($product_type && $product_type->base_weight) {
-                        $grams = $product_type->base_weight;
+                        $pricing_weight = max($variant_grams, $product_type->base_weight);
                     }
-                    $grams_selected = 0;
-                    if ($row['variants'][0]['grams'] > 0) {
-                        $grams_selected = 1;
-                        $grams = $row['variants'][0]['grams'];
-                    } else {
-                        foreach ($row['variants'] as $var) {
-                            if ($var['grams'] > 0 && $grams_selected == 0) {
-                                $grams_selected = 1;
-                                $grams = $var['grams'];
-                            }
-                        }
-                    }
+                    $i++;
+                    $check = ProductInfo::where('reference_shopify_id', $var['id'])->where('product_id', $product_id)->first();
 
 
-                    $check_info_v = ProductInfo::where('product_id', $product_check->id)->get();
-                    foreach ($check_info_v as $v_get) {
+                    if ($check == null) {
 
-                        if ($v_get->inventory_id == null) {
-                            if ($v_get->manual_weight == 0) {
-                                $v_get->delete();
-                            }
-                        }
-                    }
-
-                    foreach ($row['variants'] as $var) {
-
-                        $variant_grams = ($var['grams'] > 0) ? $var['grams'] : $grams;
-
-                        $pricing_weight = $variant_grams;
-
-                        if ($product_type && $product_type->base_weight) {
-                            $pricing_weight = max($variant_grams, $product_type->base_weight);
-                        }
-                        $i++;
-                        $check_info = ProductInfo::where('reference_shopify_id', $var['id'])->first();
                         if ($var['sku']) {
                             $sku = $var['sku'];
                         } else {
@@ -3578,110 +3754,291 @@ class SuperadminController extends Controller
                             $store->sku_count = $store->sku_count + 1;
                             $store->save();
                         }
-                        if (!$check_info) {
 
-
-                            $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
-                            $product_info = new ProductInfo;
-                            $product_info->product_id = $product_id;
-                            $product_info->sku = $sku;
-                            $product_info->reference_shopify_id = $var['id'];
-                            $product_info->price = $prices['inr'];
-                            $product_info->price_usd = $prices['usd'];
-                            $product_info->price_nld = $prices['nld'];
-                            $product_info->price_gbp = $prices['gbp'];
-                            $product_info->price_cad = $prices['cad'];
-                            $product_info->price_aud = $prices['aud'];
-                            $product_info->price_irl = $prices['nld'];
-                            $product_info->price_ger = $prices['nld'];
-                            $product_info->base_price = $prices['base_price'];
-                            $product_info->grams = $variant_grams;
-                            $product_info->pricing_weight = $pricing_weight;
-                            $product_info->stock = $var['available'];
-                            $product_info->vendor_id = $vid;
-                            $product_info->dimensions = '0-0-0';
-                            if (isset($row['options'])) {
-                                $product_info->varient_name = $row['options'][0]['name'];
-                            }
-
-                            if (isset($row['options']) && isset($row['options'][1])) {
-                                $product_info->varient1_name = $row['options'][1]['name'];
-                            }
-                            if (isset($row['options']) && isset($row['options'][2])) {
-                                $product_info->varient2_name = $row['options'][2]['name'];
-                            }
-
-                            $product_info->varient_value = $var['option1'];
-                            $product_info->varient1_value = $var['option2'];
-                            $product_info->varient2_value = $var['option3'];
-
-                            $product_info->save();
-                        } else   //update variants
-                        {
-
-                            if ($check_info->manual_weight == 1) {
-                                $pricing_weight = $check_info->pricing_weight;
-                            }
-                            $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
-                            $info_id = $check_info->id;
-                            $info['price'] = $prices['inr'];
-                            $info['price_usd'] = $prices['usd'];
-                            $info['price_nld'] = $prices['nld'];
-                            $info['price_gbp'] = $prices['gbp'];
-                            $info['price_cad'] = $prices['cad'];
-                            $info['price_aud'] = $prices['aud'];
-                            $info['price_irl'] = $prices['nld'];
-                            $info['price_ger'] = $prices['nld'];
-                            $info['base_price'] = $prices['base_price'];
-                            $info['grams'] = $variant_grams;
-                            $info['sku'] = $sku;
-                            if ($check_info->manual_weight == 0) {
-                                $info['pricing_weight'] = $pricing_weight;
-                            }
-                            $info['stock'] = $var['available'];
-
-
-                            if (isset($row['options'])) {
-                                $info['varient_name'] = $row['options'][0]['name'];
-                            }
-                            if (isset($row['options']) && isset($row['options'][1])) {
-                                $info['varient1_name'] = $row['options'][1]['name'];
-                            }
-
-                            if (isset($row['options']) && isset($row['options'][2])) {
-                                $info['varient2_name'] = $row['options'][2]['name'];
-                            }
-                            $info['varient_value'] = $var['option1'];
-                            $info['varient1_value'] = $var['option2'];
-                            $info['varient2_value'] = $var['option3'];
-                            ProductInfo::where('id', $info_id)->update($info);
+                        $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
+                        $product_info = new ProductInfo;
+                        $product_info->product_id = $product_id;
+                        $product_info->sku = $sku;
+                        $product_info->price = $prices['inr'];
+                        $product_info->price_usd = $prices['usd'];
+                        $product_info->price_nld = $prices['nld'];
+                        $product_info->price_gbp = $prices['gbp'];
+                        $product_info->price_cad = $prices['cad'];
+                        $product_info->price_aud = $prices['aud'];
+                        $product_info->price_irl = $prices['nld'];
+                        $product_info->price_ger = $prices['nld'];
+                        $product_info->base_price = $prices['base_price'];
+                        $product_info->grams = $variant_grams;
+                        $product_info->pricing_weight = $pricing_weight;
+                        $product_info->stock = $var['available'];
+                        $product_info->vendor_id = $store_id;
+                        $product_info->reference_shopify_id = $var['id'];
+                        $product_info->dimensions = '0-0-0';
+                        if (isset($row['options'])) {
+                            $product_info->varient_name = $row['options'][0]['name'];
                         }
+
+                        if (isset($row['options']) && isset($row['options'][1])) {
+                            $product_info->varient1_name = $row['options'][1]['name'];
+                        }
+                        if (isset($row['options']) && isset($row['options'][2])) {
+                            $product_info->varient2_name = $row['options'][2]['name'];
+                        }
+                        $product_info->varient_value = $var['option1'];
+                        $product_info->varient1_value = $var['option2'];
+                        $product_info->varient2_value = $var['option3'];
+                        $product_info->save();
                     }
-                    if ($i > 1) {
-                        Product::where('id', $product_id)->update(['is_variants' => 1]);
-                    }
-                    foreach ($row['images'] as $img_val) {
-                        $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_id)->exists();
-                        if (!$imgCheck) {
-                            $url = $img_val['src'];
+                }
+                if ($i > 1) {
+                    Product::where('id', $product_id)->update(['is_variants' => 1]);
+                }
+                foreach ($row['images'] as $img_val) {
+                    $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_id)->exists();
+                    if (!$imgCheck) {
+                        $url = $img_val['src'];
 //								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
 //								file_put_contents($img, file_get_contents($url));
 //								$img_name=url($img);
-                            $img_name = $url;
-                            $product_img = new ProductImages;
-                            $product_img->image = $img_name;
-                            $product_img->image_id = $img_val['id'];
-                            $product_img->product_id = $product_id;
-//								$product_img->image_id = $img_val['id'];
-//								$product_img->width = $img_val['width'];
-//								$product_img->height = $img_val['height'];
-                            $product_img->save();
+                        $img_name = $url;
+                        $product_img = new ProductImages;
+                        $product_img->image = $img_name;
+                        $product_img->image_id = $img_val['id'];
+                        $product_img->product_id = $product_id;
+//                                $product_img->image_id = $img_val['id'];
+//                                $product_img->width = $img_val['width'];
+//                                $product_img->height = $img_val['height'];
+                        $product_img->save();
+                    }
+                }
+            }
+            else  //Existing Product
+            {
+                $tags = implode(",", $row['tags']);
+                $tags=$tags.','.$matched_category_tags;
+
+                $vendor = $row['vendor'];
+                $data['title'] = $row['title'];
+                $data['body_html'] = $html;
+                $data['tags'] = $tags;
+                $data['product_type_id'] = $product_type->id;
+                $data['orignal_vendor'] = $vendor;
+                $data['is_updated_by_url'] = 1;
+                $data['shopify_updated_at'] = $row['updated_at'];
+                $data['is_available'] = 1;
+                $data['options'] = json_encode($selectedOptions);
+                Product::where('id', $product_check->id)->update($data);
+                $product_id = $product_check->id;
+
+
+                $product_logs = new ProductLog();
+                $product_logs->title = 'Product Update';
+                $product_logs->date_time = now()->format('F j, Y H:i:s');
+                $product_logs->product_id = $product_id;
+                $product_logs->log_id = $log_id;
+                $product_logs->save();
+                $i = 0;
+
+
+                $grams = 0;
+                $store = Store::find($vid);
+                if ($store->base_weight) {
+                    $grams = $store->base_weight;
+                }
+                if ($product_type && $product_type->base_weight) {
+                    $grams = $product_type->base_weight;
+                }
+                $grams_selected = 0;
+                if ($row['variants'][0]['grams'] > 0) {
+                    $grams_selected = 1;
+                    $grams = $row['variants'][0]['grams'];
+                } else {
+                    foreach ($row['variants'] as $var) {
+                        if ($var['grams'] > 0 && $grams_selected == 0) {
+                            $grams_selected = 1;
+                            $grams = $var['grams'];
                         }
                     }
                 }
 
 
+                $check_info_v = ProductInfo::where('product_id', $product_check->id)->get();
+                foreach ($check_info_v as $v_get) {
+
+                    if ($v_get->inventory_id == null) {
+                        if ($v_get->manual_weight == 0) {
+                            $v_get->delete();
+                        }
+                    }
+                }
+
+                foreach ($row['variants'] as $var) {
+
+                    $variant_grams = ($var['grams'] > 0) ? $var['grams'] : $grams;
+
+                    if ($variant_grams == 0 && $weight_available == 1) {
+                        if (preg_match('/(\d+)\s*Gms/', $var['option1'], $matches)) {
+
+                            $variant_grams = $matches[1]; // This will give you '250'
+
+                        }
+                        elseif (preg_match('/(\d+)\s*gms/', $var['option1'], $matches)) {
+
+                            $variant_grams = $matches[1]; // This will give you '250'
+
+                        }
+                        elseif (preg_match('/(\d+)\s*kg/i', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1] * 1000; // This will give you '1' if the string contains '1kg'
+                            // Outputs: 1
+                        } elseif (preg_match('/(\d+)\s*KG/i', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1] * 1000; // This will give you '1' if the string contains '1kg'
+                            // Outputs: 1
+                        } elseif (preg_match('/(\d+)\s*G/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        } elseif (preg_match('/(\d+)\s*Grams/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        } elseif (preg_match('/(\d+)\s*Gram/', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1]; // This will give you '250'
+                        } elseif (preg_match('/(\d+)\s*kgs/i', $var['option1'], $matches)) {
+                            $variant_grams = $matches[1] * 1000; // This will give you '1' if the string contains '1kg'
+                            // Outputs: 1
+                        }
+
+                    }
+
+                    $pricing_weight = $variant_grams;
+
+                    if ($product_type && $product_type->base_weight) {
+                        $pricing_weight = max($variant_grams, $product_type->base_weight);
+                    }
+                    $i++;
+                    $check_info = ProductInfo::where('reference_shopify_id', $var['id'])->first();
+                    if ($var['sku']) {
+                        $sku = $var['sku'];
+                    } else {
+                        if ($store->sku_count < 10) {
+                            $count = $store->sku_count + 1;
+                            if ($product_type && $product_type->product_type) {
+                                $sku = $store->name . '-' . $product_type->product_type . '-0' . $count;
+                            } else {
+                                $sku = $store->name . '-0' . $count;
+                            }
+                        } else {
+                            $count = $store->sku_count + 1;
+                            if ($product_type && $product_type->product_type) {
+                                $sku = $store->name . '-' . $product_type->product_type . '-' . $count;
+                            } else {
+                                $sku = $store->name . '-' . $count;
+                            }
+                        }
+                        $store->sku_count = $store->sku_count + 1;
+                        $store->save();
+                    }
+                    if (!$check_info) {
+
+
+                        $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
+                        $product_info = new ProductInfo;
+                        $product_info->product_id = $product_id;
+                        $product_info->sku = $sku;
+                        $product_info->reference_shopify_id = $var['id'];
+                        $product_info->price = $prices['inr'];
+                        $product_info->price_usd = $prices['usd'];
+                        $product_info->price_nld = $prices['nld'];
+                        $product_info->price_gbp = $prices['gbp'];
+                        $product_info->price_cad = $prices['cad'];
+                        $product_info->price_aud = $prices['aud'];
+                        $product_info->price_irl = $prices['nld'];
+                        $product_info->price_ger = $prices['nld'];
+                        $product_info->base_price = $prices['base_price'];
+                        $product_info->grams = $variant_grams;
+                        $product_info->pricing_weight = $pricing_weight;
+                        $product_info->stock = $var['available'];
+                        $product_info->vendor_id = $vid;
+                        $product_info->dimensions = '0-0-0';
+                        if (isset($row['options'])) {
+                            $product_info->varient_name = $row['options'][0]['name'];
+                        }
+
+                        if (isset($row['options']) && isset($row['options'][1])) {
+                            $product_info->varient1_name = $row['options'][1]['name'];
+                        }
+                        if (isset($row['options']) && isset($row['options'][2])) {
+                            $product_info->varient2_name = $row['options'][2]['name'];
+                        }
+
+                        $product_info->varient_value = $var['option1'];
+                        $product_info->varient1_value = $var['option2'];
+                        $product_info->varient2_value = $var['option3'];
+
+                        $product_info->save();
+                    } else   //update variants
+                    {
+
+                        if ($check_info->manual_weight == 1) {
+                            $pricing_weight = $check_info->pricing_weight;
+                        }
+                        $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
+                        $info_id = $check_info->id;
+                        $info['price'] = $prices['inr'];
+                        $info['price_usd'] = $prices['usd'];
+                        $info['price_nld'] = $prices['nld'];
+                        $info['price_gbp'] = $prices['gbp'];
+                        $info['price_cad'] = $prices['cad'];
+                        $info['price_aud'] = $prices['aud'];
+                        $info['price_irl'] = $prices['nld'];
+                        $info['price_ger'] = $prices['nld'];
+                        $info['base_price'] = $prices['base_price'];
+                        $info['grams'] = $variant_grams;
+                        $info['sku'] = $sku;
+                        if ($check_info->manual_weight == 0) {
+                            $info['pricing_weight'] = $pricing_weight;
+                        }
+                        $info['stock'] = $var['available'];
+
+
+                        if (isset($row['options'])) {
+                            $info['varient_name'] = $row['options'][0]['name'];
+                        }
+                        if (isset($row['options']) && isset($row['options'][1])) {
+                            $info['varient1_name'] = $row['options'][1]['name'];
+                        }
+
+                        if (isset($row['options']) && isset($row['options'][2])) {
+                            $info['varient2_name'] = $row['options'][2]['name'];
+                        }
+                        $info['varient_value'] = $var['option1'];
+                        $info['varient1_value'] = $var['option2'];
+                        $info['varient2_value'] = $var['option3'];
+                        ProductInfo::where('id', $info_id)->update($info);
+                    }
+                }
+                if ($i > 1) {
+                    Product::where('id', $product_id)->update(['is_variants' => 1]);
+                }
+                foreach ($row['images'] as $img_val) {
+                    $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_id)->exists();
+                    if (!$imgCheck) {
+                        $url = $img_val['src'];
+//								$img = "uploads/shopifyimages/".$img_val['id'].".jpg";
+//								file_put_contents($img, file_get_contents($url));
+//								$img_name=url($img);
+                        $img_name = $url;
+                        $product_img = new ProductImages;
+                        $product_img->image = $img_name;
+                        $product_img->image_id = $img_val['id'];
+                        $product_img->product_id = $product_id;
+//								$product_img->image_id = $img_val['id'];
+//								$product_img->width = $img_val['width'];
+//								$product_img->height = $img_val['height'];
+                        $product_img->save();
+                    }
+                }
+            }
+
+
         }
+
 //        }
 
 	}
@@ -3928,9 +4285,99 @@ class SuperadminController extends Controller
     }
 
 
-    public function vendors(){
-        $vendorlist = Store::where('role','Vendor')->get();
-        return view('superadmin.vendors',compact('vendorlist'));
+    public function vendors() {
+
+        // Fetch all vendors
+
+
+        $vendorData = [];
+        $vendors = Store::select('id','status','vendor_discount','premium','name','email')->where('role','Vendor')->paginate(10);
+
+        //    Store::select('id','status','vendor_discount','premium','name','email')->where('role', 'Vendor')->chunk(5, function ($vendors) use (&$vendorData) {
+        foreach ($vendors as $vendor) {
+
+            $vendorId = $vendor->id;
+
+            $data_product=Product::select('id')->where('vendor', $vendorId)->newQuery();
+            // $data_variant=ProductInfo::select('id')->where('vendor_id', $vendorId)->newQuery();
+
+            // Products counts for the vendor
+            $totalProducts =$data_product->count();
+
+            // ProductInfo (variants) counts for the vendor
+            // $totalVariants =  $data_variant->count();
+
+
+            // Counts for each status
+            $statuses = [
+                0 => 'pending_products',
+                1 => 'approved_products',
+                2 => 'changes_pending_products',
+                3 => 'deny_products'
+                // Add more statuses as needed
+            ];
+
+
+            $shopify_statuses = [
+                'shopify_pushed_products'=> 'Complete',
+                'shopify_pending_products'=> 'Pending',
+                'shopify_inprogress_products'=> 'In-Progress',
+                'shopify_failed_products'=> 'Failed'
+                // Add more statuses as needed
+            ];
+
+
+
+            $statusCounts = [];
+
+            foreach ($statuses as $status => $key) {
+
+                $product_data = clone $data_product;
+                // $variant_data=clone $data_variant;
+                $statusCounts[$key] = $product_data->where('status', $status)->count();
+
+
+                // $statusCounts["total_{$key}_variants"] = $variant_data->whereIn('product_id',$product_data->pluck('id')->toArray())->count();
+            }
+
+
+
+
+            foreach ($shopify_statuses as $shopify_status =>$key1) {
+
+                $product_data = clone $data_product;
+                // $variant_data=clone $data_variant;
+                $statusCounts[$shopify_status] = $product_data->where('shopify_status', $key1)->count();
+
+                // $statusCounts["total_" . strtolower($shopify_status) . "_variants"] = $variant_data->whereIn('product_id', $product_data->pluck('id')->toArray())->count();
+            }
+
+
+
+
+            $data = [
+                'total_products' => $totalProducts,
+                // 'total_variants' => $totalVariants,
+                'id' => $vendor->id,
+                'status' => $vendor->status,
+                'vendor_discount' => $vendor->vendor_discount,
+                'premium' => $vendor->premium,
+                'name'=>$vendor->name,
+                'email'=>$vendor->email
+            ];
+
+            $data = array_merge($data, $statusCounts);  // Merge all the status counts into the main data array
+
+            array_push($vendorData, $data);
+
+
+
+        }
+
+//    });
+        $vendorData=json_decode(json_encode($vendorData),false);
+
+        return view('superadmin.vendors', compact('vendorData','vendors'));
     }
 
 
@@ -4234,44 +4681,90 @@ class SuperadminController extends Controller
         $inStockProductIds = [];
         $outOfStockProductIds = [];
 
+        $filteredProductIds = [];
+        $filteredProductIdsWeight = [];
+        $all_product_ids=[];
 
+        $by_weight=0;
+        $enter=0;
+        $by_price=0;
         Product::whereIn('id', $product_ids)
             ->with(['productInfos' => function ($query) {
-                $query->select('product_id', 'stock');
+                $query->select('product_id', 'stock','base_price','grams');
             }])
-            ->chunk(200, function ($products_get) use (&$total_products_in_stock, &$total_products_out_of_stock, &$inStockProductIds, &$outOfStockProductIds) {
+            ->chunk(200, function ($products_get) use (&$all_product_ids, $request,&$enter) {
                 foreach ($products_get as $product_g) {
-                    $stockCounts = $product_g->productInfos->pluck('stock')->toArray();
+                    $meetsCriteria = true;
 
-                    if (in_array(1, $stockCounts)) {
-                        // If at least one variant has stock 1
+                    // Filter by stock
+                    if ($request->has('stock')) {
+                        $stockValues = $product_g->productInfos->pluck('stock')->toArray();
+                        if ($request->stock == 'in-stock' && !in_array(1, $stockValues)) {
+                            $enter = 1;
+                            $meetsCriteria = false;
+                        }
+                        elseif ($request->stock == 'out-of-stock' && (count(array_unique($stockValues)) !== 1 || reset($stockValues) !== 0)) {
+                            $enter = 1;
+                            $meetsCriteria = false;
+                        }
+                    }
 
-                        $inStockProductIds[] = $product_g->id;
-                    } elseif (count(array_unique($stockCounts)) === 1 && reset($stockCounts) === 0) {
-                        // If all variants have stock 0
+                    // Filter by price
+                    if ($request->has('filter_price')) {
+                        if ($request->filter_price == 'by_price') {
+                            $basePrices = $product_g->productInfos->pluck('base_price')->toArray();
+                            // Add your price filtering logic here
+                            if ($request->has('minimum_value_price') && $request->minimum_value_price && min($basePrices) < $request->minimum_value_price) {
+                                $enter=1;
+                                $meetsCriteria = false;
+                            }
+                            if ($request->has('maximum_value_price') && $request->maximum_value_price && max($basePrices) > $request->maximum_value_price) {
+                                $enter=1;
+                                $meetsCriteria = false;
+                            }
+                        }
+                    }
 
-                        $outOfStockProductIds[] = $product_g->id;
+                    // Filter by weight
+                    if ($request->has('filter_weight')) {
+                        if ($request->filter_weight == 'by_weight') {
+                            $baseWeights = $product_g->productInfos->pluck('grams')->toArray();
+                            // Add your weight filtering logic here
+                            if ($request->has('minimum_value_weight') && $request->minimum_value_weight && min($baseWeights) < $request->minimum_value_weight) {
+                                $enter=1;
+                                $meetsCriteria = false;
+                            }
+                            if ($request->has('maximum_value_weight') && $request->maximum_value_weight && max($baseWeights) > $request->maximum_value_weight) {
+                                $enter=1;
+                                $meetsCriteria = false;
+                            }
+                        }
+                    }
 
+                    // If product meets all criteria, add its ID to all_product_ids
+                    if ($meetsCriteria) {
+                        $all_product_ids[] = $product_g->id;
                     }
                 }
             });
 
-        if($request->stock!="")
-        {
-            if($request->stock=='in-stock'){
 
-                $res->whereIn('id', $inStockProductIds)->get();
+        $total_products_out_of_stock=0;
+        $total_variants_out_of_stock=0;
+        $total_products_in_stock=0;
+        $total_variants_in_stock=0;
+//        if($request->stock!="" || $by_price==1 || $by_weight==1)
+//        {
+//            $res->whereIn('id', $all_product_ids);
+//
+//        }
 
-
-
-            }elseif ($request->stock=='out-of-stock'){
-
-                $res->whereIn('id', $outOfStockProductIds)->get();
-
-            }
-
+        if (!empty($all_product_ids) && $enter==0) {
+            $res->whereIn('id', $all_product_ids);
         }
-
+        elseif ($enter==1){
+            $res->whereIn('id', $all_product_ids);
+        }
 
         $products=$res->get();
 
@@ -4317,7 +4810,74 @@ class SuperadminController extends Controller
             $ex_product_type=explode(',',$request->product_type);
             $res->whereIn('product_type_id',$ex_product_type);
         }
+        $product_ids = $res->pluck('id')->toArray();
+        $all_product_ids=[];
+        $enter=0;
+        Product::whereIn('id', $product_ids)
+            ->with(['productInfos' => function ($query) {
+                $query->select('product_id', 'stock','base_price','grams');
+            }])
+            ->chunk(200, function ($products_get) use (&$all_product_ids, $request,&$enter) {
+                foreach ($products_get as $product_g) {
+                    $meetsCriteria = true;
 
+                    // Filter by stock
+                    if ($request->has('stock')) {
+                        $stockValues = $product_g->productInfos->pluck('stock')->toArray();
+                        if ($request->stock == 'in-stock' && !in_array(1, $stockValues)) {
+                            $enter = 1;
+                            $meetsCriteria = false;
+                        } elseif ($request->stock == 'out-of-stock' && (count(array_unique($stockValues)) !== 1 || reset($stockValues) !== 0)) {
+                            $enter = 1;
+                            $meetsCriteria = false;
+                        }
+                    }
+
+                    // Filter by price
+                    if ($request->has('filter_price')) {
+                        if ($request->filter_price == 'by_price') {
+                            $basePrices = $product_g->productInfos->pluck('base_price')->toArray();
+                            // Add your price filtering logic here
+                            if ($request->has('minimum_value_price') && $request->minimum_value_price && min($basePrices) < $request->minimum_value_price) {
+                                $enter = 1;
+                                $meetsCriteria = false;
+                            }
+                            if ($request->has('maximum_value_price') && $request->maximum_value_price && max($basePrices) > $request->maximum_value_price) {
+                                $enter = 1;
+                                $meetsCriteria = false;
+                            }
+                        }
+                    }
+
+                    // Filter by weight
+                    if ($request->has('filter_weight')) {
+                        if ($request->filter_weight == 'by_weight') {
+                            $baseWeights = $product_g->productInfos->pluck('grams')->toArray();
+                            // Add your weight filtering logic here
+                            if ($request->has('minimum_value_weight') && $request->minimum_value_weight && min($baseWeights) < $request->minimum_value_weight) {
+                                $enter = 1;
+                                $meetsCriteria = false;
+                            }
+                            if ($request->has('maximum_value_weight') && $request->maximum_value_weight && max($baseWeights) > $request->maximum_value_weight) {
+                                $enter = 1;
+                                $meetsCriteria = false;
+                            }
+                        }
+                    }
+
+                    // If product meets all criteria, add its ID to all_product_ids
+                    if ($meetsCriteria) {
+                        $all_product_ids[] = $product_g->id;
+                    }
+                }
+            });
+
+        if (!empty($all_product_ids) && $enter==0) {
+            $res->whereIn('id', $all_product_ids);
+        }
+        elseif ($enter==1){
+            $res->whereIn('id', $all_product_ids);
+        }
         $products=$res->get();
 
         DenyAllProducts::dispatch($products);
@@ -4507,7 +5067,7 @@ $tag_array=array();
         $log=Log::find($id);
         if($log){
             $log->is_enabled=1;
-            $log->status='In-Progress';
+            $log->status='Processing';
             $log->is_running=1;
             $log->start_time=now();
             $log->save();
@@ -4561,6 +5121,16 @@ $tag_array=array();
             $product_ids = explode(',', $log->product_ids);
             return view('superadmin.logs-detail', compact('log', 'product_ids'));
         }
+
+    }
+
+    public function VendorLogsDetail($id)
+    {
+
+        $vendor_logs = VendorUrl::where('log_id',$id)->get();
+        $log=Log::find($id);
+            return view('superadmin.vendor-logs-detail', compact('log','vendor_logs'));
+
 
     }
 
@@ -4957,7 +5527,7 @@ $tag_array=array();
 
             curl_close($curl);
             $data = json_decode($response, true);
-            dd($data);
+
                 foreach ($data['items'] as $index => $row) {
 
                     $stock = 0;
@@ -5023,6 +5593,30 @@ $tag_array=array();
         public function UpdateSomeProduct(){
 
 
+            $response = '{
+  "errors": {
+    "product": [
+      "Daily variant creation limit reached. Please try again later. See https://help.shopify.com/api/getting-started/api-call-limit for more information about rate limits and how to avoid them."
+    ]
+  }
+}';
+
+            $response = json_decode($response, true);
+
+            $expectedErrorMessage = "Daily variant creation limit reached. Please try again later. See https://help.shopify.com/api/getting-started/api-call-limit for more information about rate limits and how to avoid them.";
+
+            if (
+                isset($response['errors']['product'][0]) &&
+                $response['errors']['product'][0] == $expectedErrorMessage
+            ) {
+                dd(2);
+            } else {
+                dd(3);
+            }
+
+
+
+
             $store=Store::where('name','Kalamandir')->first();
             if($store) {
 
@@ -5054,5 +5648,419 @@ $tag_array=array();
 //        ProductInfo::where('vendor_id',63)->update(['stock'=>1]);
 
         }
+
+
+
+
+
+        public function Testing()
+        {
+            $vid = 69;
+            $store = Store::find($vid);
+
+                    $curl = curl_init();
+
+                    curl_setopt_array($curl, array(
+                        CURLOPT_URL => 'http://admin.kalamandir.com/rest/V1/products?searchCriteria[filter_groups][0][filters][0][field]=visibility&searchCriteria[filter_groups][0][filters][0][value]=4&searchCriteria[filter_groups][0][filters][0][condition_type]=eq&searchCriteria[filter_groups][1][filters][1][field]=status&searchCriteria[filter_groups][1][filters][1][value]=1&searchCriteria[filter_groups][1][filters][1][condition_type]=eq&searchCriteria[filter_groups][2][filters][2][field]=type_id&searchCriteria[filter_groups][2][filters][2][condition_type]=eq&searchCriteria[filter_groups][2][filters][2][value]=simple&searchCriteria[sortOrders][0][direction]=DESC',
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_ENCODING => '',
+                        CURLOPT_MAXREDIRS => 10,
+                        CURLOPT_TIMEOUT => 0,
+                        CURLOPT_FOLLOWLOCATION => true,
+                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                        CURLOPT_CUSTOMREQUEST => 'GET',
+                        CURLOPT_HTTPHEADER => array(
+                            'Authorization: Bearer dm8qawgncp0qr66kmk5o4azixm59qe9c',
+                            'Cookie: PHPSESSID=ub0mpqgtmvauj6qjf90s74u6e9'
+                        ),
+                    ));
+
+                    $response = curl_exec($curl);
+
+                    curl_close($curl);
+                    $data = json_decode($response, true);
+
+
+
+
+
+                    foreach ($data['items'] as $index => $row) {
+
+
+                            $product_check = Product::where('reference_shopify_id', $row['id'])->where('vendor', $vid)->first();
+
+
+                            if ($product_check) {
+                                $imgCheck1 = ProductImages::where('product_id', $product_check->id)->first();
+                                if($imgCheck1==null) {
+                                    if (count($row['media_gallery_entries']) > 0) {
+                                        foreach ($row['media_gallery_entries'] as $img_val) {
+                                            if ($img_val['id'] && $product_check) {
+                                                $imgCheck = ProductImages::where('image_id', $img_val['id'])->where('product_id', $product_check->id)->exists();
+
+                                                if (!$imgCheck) {
+                                                    $url = 'https://kalamandir.com/media/catalog/product' . $img_val['file'];
+                                                    $img_name = $url;
+                                                    $product_img = new ProductImages;
+                                                    $product_img->image = $img_name;
+                                                    $product_img->image_id = $img_val['id'];
+                                                    $product_img->product_id = $product_check->id;
+                                                    $product_img->save();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+//                                $tags = ''; // Initialize tags
+//
+//                                if (isset($row['extension_attributes']) && count($row['extension_attributes']) > 0) {
+//
+//                                    if (isset($row['extension_attributes']['category_links']) && count($row['extension_attributes']['category_links']) > 0) {
+//
+//                                        foreach ($row['extension_attributes']['category_links'] as $category_link) {
+//
+//                                            $get_tag = ThirdPartyAPICategory::where('category_id', $category_link['category_id'])->where('vendor_id', $vid)->first();
+//
+//                                            if ($get_tag) {
+//                                                $tags = $this->UpdateTags($get_tag, $vid, $tags); // Update $tags value
+//                                            }
+//                                        }
+//
+//
+//                                        $product_check->tags = $tags;
+//                                        $product_check->save();
+//
+//                                        dd($product_check);
+//
+//                                    }
+//                                }
+                            }
+
+                    }
+                    dd('done');
+        }
+
+
+        public function Dadu(){
+
+            $context = stream_context_create(
+                array(
+                    "http" => array(
+                        "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
+                    )
+                )
+            );
+            for($i=1;$i<=100;$i++)
+            {
+                $str=file_get_contents("https://www.dadus.co.in/collections/all/products.json?page=".$i."&limit=250", false, $context);
+                $arr=json_decode($str,true);
+
+                if(count($arr['products']) < 250)
+                {
+
+                    foreach($arr['products'] as $index=> $row) {
+
+                        if($row['id']=='8346524320024'){
+                            dd($row);
+                        }
+                    }
+                }
+                else
+                {
+
+                    foreach($arr['products'] as $index=> $row) {
+
+                        $flag=0;
+                        foreach ($row['options'] as $option) {
+                            if ($option['name'] === 'Size') {
+
+                                foreach ($option['values'] as $value) {
+                                    if (strpos($value, 'Gms') !== false) {
+                                       $flag=1;
+                                    }
+                                    if (strpos($value, 'kg') !== false) {
+                                        $flag=1;
+                                    }
+                                }
+
+                            }
+                        }
+                        if($row['id']=='8346524320024'){
+                            foreach ($row['variants'] as $var) {
+
+                                if($var['grams']==0 &&  $flag==1) {
+                                    if (preg_match('/(\d+)\s*Gms/', $var['option1'], $matches)) {
+
+                                        $variant_grams = $matches[1]; // This will give you '250'
+
+                                    }elseif (preg_match('/(\d+)\s*kg/', $var['option1'], $matches)) {
+
+                                        $variant_grams = $matches[1]*1000; // This will give you '1' if the string contains '1kg'
+                                       // Outputs: 1
+                                    }
+                                    $pricing_weight = $variant_grams;
+                                }
+
+                            }
+                       dd(2);
+                        }
+
+                    }
+                }
+
+            }
+        }
+
+    public function UpdateTags($get_tag, $vid, $tags) {
+        if ($get_tag->level == 1) {
+            return $tags;
+        } else {
+            $tags = $tags . ',' . $get_tag->name;
+
+            // Update $get_tag with the parent tag
+            $parent_tag = ThirdPartyAPICategory::where('category_id', $get_tag->parent_id)->first();
+
+            if ($parent_tag) {
+                return $this->UpdateTags($parent_tag, $vid, $tags);
+            } else {
+                return $tags; // Or handle the case when parent_tag is not found
+            }
+        }
+    }
+
+        public function Kalamandir(){
+
+                $products=Product::where('vendor',69)->whereNotNull('shopify_id')->get();
+
+            $setting=Setting::first();
+            if($setting){
+                $API_KEY =$setting->api_key;
+                $PASSWORD = $setting->password;
+                $SHOP_URL =$setting->shop_url;
+
+            }else{
+                $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+                $PASSWORD = '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';
+                $SHOP_URL = 'cityshop-company-store.myshopify.com';
+            }
+
+
+
+                foreach ($products as $product){
+                    $variant_ids_array=array();
+                    $shopify_product_id=$product->shopify_id;
+                    dd($shopify_product_id);
+                    $vendor = Store::find($product->vendor);
+                    $tags = $product->tags;
+                    if ($product->orignal_vendor) {
+                        $result = strcmp($vendor->name, $product->orignal_vendor);
+                        if ($result != 0) {
+                            $tags = $product->tags . ',' . $product->orignal_vendor;
+                        }
+
+                    }
+                    $use_store_hsncode = 0;
+                    if ($product->product_type_id) {
+                        $product_type_check = ProductType::find($product->product_type_id);
+                        if ($product_type_check) {
+                            if ($product_type_check->hsn_code) {
+                                $use_store_hsncode = 1;
+                                $tags = $tags . ',HSN:' . $product_type_check->hsn_code;
+                            }
+                            $tags = $tags . ',' . $product_type_check->product_type;
+                        }
+                    }
+                    $images_array = array();
+//                    $product_images = ProductImages::where('product_id',$product->id)->get();
+//                    foreach($product_images as $index=> $img_val)
+//                    {
+//                        array_push($images_array, [
+//                            'alt' =>  $img_val->alt_text,
+//                            'src' => $img_val->image,
+//                        ]);
+//                    }
+
+                    if ($vendor && $vendor->hsn_code) {
+                        if ($use_store_hsncode == 0) {
+                            $tags = $tags . ',HSN:' . $vendor->hsn_code;
+                        }
+                    }
+                    $data['product'] = array(
+                        "id" => $shopify_product_id,
+                        "tags" => $tags,
+                        "images"=>$images_array
+                    );
+                    $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$shopify_product_id.json";
+                    $curl = curl_init();
+                    curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+                    $headers = array(
+                        "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+                        "Content-Type: application/json",
+                        "charset: utf-8"
+                    );
+                    curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($curl, CURLOPT_VERBOSE, 0);
+                    //curl_setopt($curl, CURLOPT_HEADER, 1);
+                    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+                    //curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+                    $response = curl_exec ($curl);
+                    $this->shopifyUploadeImage1($product->id, $shopify_product_id, $variant_ids_array);
+
+                    dd($response,'done');
+
+                }
+            dd('done');
+        }
+
+
+    public function shopifyUploadeImage1($id,$shopify_id,$variant_ids_array)
+    {
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+
+        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2020-04/products/$shopify_id/images.json";
+        $product_images = ProductImages::where('product_id',$id)->get();
+        foreach($product_images as $index=> $img_val)
+        {
+            if($img_val->variant_ids && isset($variant_ids_array[$index])) {
+
+                $data['image'] = array(
+                    'src' => $img_val->image,
+                    'alt' => $img_val->alt_text,
+                    'variant_ids' => [$variant_ids_array[$index]]
+
+                );
+            }else{
+                $data['image'] = array(
+                    'src' => $img_val->image,
+                    'alt' => $img_val->alt_text,
+
+
+                );
+            }
+
+            //$image='{"image":{"src":"https://sslimages.shoppersstop.com/sys-master/images/h98/hcf/28719001468958/GHM9150K_BLUE.jpg_230Wx334H"}}';
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+            $headers = array(
+                "Authorization: Basic ".base64_encode("$API_KEY:$PASSWORD"),
+                "Content-Type: application/json",
+                "charset: utf-8"
+            );
+            curl_setopt($curl, CURLOPT_HTTPHEADER,$headers);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_VERBOSE, 0);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+            $response = curl_exec ($curl);
+            $img_result=json_decode($response, true);
+            if(isset($img_result['image']['id']))
+                ProductImages::where('id', $img_val->id)->update(['shopify_image_id' => $img_result['image']['id']]);
+
+
+        }
+    }
+
+
+
+    public function DadusUpdate(){
+
+        $products=Product::where('vendor',70)->whereNotNull('shopify_id')->get();
+
+        $setting=Setting::first();
+        if($setting){
+            $API_KEY =$setting->api_key;
+            $PASSWORD = $setting->password;
+            $SHOP_URL =$setting->shop_url;
+
+        }else{
+            $API_KEY = '6bf56fc7a35e4dc3879b8a6b0ff3be8e';
+            $PASSWORD = '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';
+            $SHOP_URL = 'cityshop-company-store.myshopify.com';
+        }
+        foreach ($products as $product){
+            dd($product);
+            $product_variants=ProductInfo::where('product_id',$product->id)->get();
+            foreach ($product_variants as $product_variant) {
+                if ($product_variant->stock) {
+                    $upload_product = 1;
+                }
+                if ($product_variant->qty) {
+                    $variants[] = array(
+                        "option1" => $product_variant->varient_value,
+                        "option2" => $product_variant->varient1_value,
+                        "option3" => $product_variant->varient2_value,
+                        "sku" => $product_variant->sku,
+                        "price" => $product_variant->price_usd,
+                        "compare_at_price" => '',
+                        "grams" => $product_variant->pricing_weight,
+                        "taxable" => false,
+                        "inventory_management" => "shopify",
+                        "inventory_quantity" => $product_variant->qty,
+                    );
+                } else {
+                    $variants[] = array(
+                        "option1" => $product_variant->varient_value,
+                        "option2" => $product_variant->varient1_value,
+                        "option3" => $product_variant->varient2_value,
+                        "sku" => $product_variant->sku,
+                        "price" => $product_variant->price_usd,
+                        "compare_at_price" => '',
+                        "grams" => $product_variant->pricing_weight,
+                        "taxable" => false,
+                        "inventory_management" => ($product_variant->stock ? null : "shopify"),
+
+                    );
+                }
+            }
+
+            $products_array = array(
+                "product" => array(
+                    "variants" => $variants,
+                )
+            );
+
+            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$product->shopify_id.json";
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
+            $headers = array(
+                "Authorization: Basic " . base64_encode("$API_KEY:$PASSWORD"),
+                "Content-Type: application/json",
+                "X-Shopify-Api-Features: include-presentment-prices",
+                "charset: utf-8"
+            );
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_VERBOSE, 0);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($products_array));
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+        }
+    }
+
+
+
+
 
 }

@@ -136,6 +136,12 @@
                                         $shopify_status=null;
                                         $product_type=null;
                                         $stock=null;
+                                        $filter_price=null;
+                                        $filter_weight=null;
+                                        $minimum_value_price=null;
+                                        $maximum_value_price=null;
+                                        $maximum_value_weight=null;
+                                        $minimum_value_weight=null;
 
 
                                             $data = json_decode($log->filters, true);
@@ -166,16 +172,45 @@
                                             if(isset($data['stock'])){
                                             $stock=$data['stock'];
                                             }
+                                              if(isset($data['minimum_value_price'])){
+                                                $minimum_value_price=$data['minimum_value_price'];
+                                                }
+
+                                                if(isset($data['maximum_value_price'])){
+                                            $maximum_value_price=$data['maximum_value_price'];
+                                            }
+
+                                                   if(isset($data['minimum_value_weight'])){
+                                            $minimum_value_weight=$data['minimum_value_weight'];
+                                            }
+                                                      if(isset($data['maximum_value_weight'])){
+                                            $maximum_value_weight=$data['maximum_value_weight'];
+                                            }
+                                            if($minimum_value_price || $maximum_value_price ){
+                                            $filter_price=$data['filter_price'];
+                                            }
+                                            if($minimum_value_weight || $maximum_value_weight ){
+                                            $filter_weight=$data['filter_weight'];
+                                                }
+
+
                                             }
                                     @endphp
                                     <td class="item_parent">
 
+                                     @if($log->name=='Fetch Products')
+                                            <a target="_blank" href="{{route('superadmin.vendor.logs.detail',$log->id)}}">
+
+                                                {{ $log->name }}
+                                            </a>
+                                         @else
                                    <a target="_blank" href="{{route('superadmin.logs.detail',$log->id)}}">
 
                                   {{ $log->name }}   @if($log->name=='Approve Product Push')
 
                                            <i class="bi bi-question-circle items"></i> @endif
                                    </a>
+                                        @endif
                                      <br>
                                      <small>{{ $log->date }}</small>
 
@@ -206,6 +241,14 @@
                                                     @if($stock!==null)
                                                         <p>Stock Type: {{$stock}} </p>
                                                     @endif
+                                                    @if($filter_price!==null)
+                                                        <p>Price Filter: @if($minimum_value_price!==null) Min: {{$minimum_value_price}} @endif @if($maximum_value_price!==null) Max: {{$maximum_value_price}} @endif  </p>
+                                                    @endif
+                                                    @if($filter_weight!==null)
+                                                        <p>Weight Filter: @if($minimum_value_weight!==null) Min: {{$minimum_value_weight}} @endif @if($maximum_value_weight!==null) Max: {{$maximum_value_weight}} @endif  </p>
+                                                    @endif
+
+
                                             </div>
                                         </div>
                                             @endif

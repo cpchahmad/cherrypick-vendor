@@ -219,7 +219,7 @@
                 @foreach($data as $k=>$row)
                   <tr>
                     <td>{{$k+1}}</td>
-                    <td>{{$row->name}}</td>
+                    <td><a style="color:red;" target="_blank" href="{{route('superadmin.allproduct')}}?vendor={{$row->id}}"> {{$row->name}}</a></td>
                     <td>{{$row->email}}</td>
                     <td>{{$row->products}}</td>
                     <td>{{$row->status}}</td>

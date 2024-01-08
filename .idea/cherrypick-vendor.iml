@@ -128,6 +128,11 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/backtrace" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/ignition" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/laravel-ignition" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/simple-excel" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/caseyamcl/guzzle_retry_middleware" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/openspout/openspout" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/gnikyt/basic-shopify-api" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/carbonphp/carbon-doctrine-types" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

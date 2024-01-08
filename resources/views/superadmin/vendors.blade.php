@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-    <style>
+<style>
     .table-responsive {
         overflow-x: auto;
     }
@@ -31,7 +31,7 @@
             <div class="pagetitle">
                 <h1>Stores</h1>
             </div><!-- End Page Title -->
-{{--            <a class="btn btn-primary" href="{{url('superadmin/updateprice')}}">Update Product Prices</a>--}}
+            {{--            <a class="btn btn-primary" href="{{url('superadmin/updateprice')}}">Update Product Prices</a>--}}
         </div>
 
         <section class="section up-banner">
@@ -62,73 +62,40 @@
                                 </thead>
                                 <tbody>
                                 <?php $i=1; ?>
-                                @foreach($vendorlist as $vendor)
+                                @foreach($vendorData as $vendor)
 
 
-                                    @php
-                                    $total_products=\App\Models\Product::where('vendor',$vendor->id)->count();
-                                   $total_variants=\App\Models\ProductInfo::where('vendor_id',$vendor->id)->count();
-                                    $pending_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',0)->pluck('id');
-                                    $pending_products=count($pending_products_ids);
-                                    $total_pending_variants=\App\Models\ProductInfo::whereIn('product_id',$pending_products_ids)->count();
-
-
-                                    $changes_pending_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',2)->pluck('id');
-                                    $changes_pending_products=count($changes_pending_products_ids);
-                                    $total_changes_pending_variants=\App\Models\ProductInfo::whereIn('product_id',$changes_pending_products_ids)->count();
-
-
-                                    $approved_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',1)->pluck('id');
-                                    $approved_products=count($approved_products_ids);
-                                    $total_approved_variants=\App\Models\ProductInfo::whereIn('product_id',$approved_products_ids)->count();
-
-
-
-                                    $deny_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('status',3)->pluck('id');
-                                    $deny_products=count($deny_products_ids);
-                                     $total_deny_variants=\App\Models\ProductInfo::whereIn('product_id',$deny_products_ids)->count();
-
-
-                                    $shopify_pushed_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Complete')->pluck('id');
-                                    $shopify_pushed_products=count($shopify_pushed_products_ids);
-                                    $total_shopify_pushed_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_pushed_products_ids)->count();
-
-
-                                    $shopify_pending_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Pending')->pluck('id');
-                                    $shopify_pending_products=count($shopify_pushed_products_ids);
-                                    $total_shopify_pending_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_pending_products_ids)->count();
-
-
-                                    $shopify_inprogress_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','In-Progress')->pluck('id');
-                                    $shopify_inprogress_products=count($shopify_inprogress_products_ids);
-                                     $total_shopify_inprogress_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_inprogress_products_ids)->count();
-
-
-
-
-                                    $shopify_failed_products_ids=\App\Models\Product::where('vendor',$vendor->id)->where('shopify_status','Failed')->pluck('id');
-                                    $shopify_failed_products=count($shopify_failed_products_ids);
-                                     $total_shopify_failed_variants=\App\Models\ProductInfo::whereIn('product_id',$shopify_failed_products_ids)->count();
-
-
-
-                                    @endphp
                                     <tr>
 
                                         <td>
                                             <span><a style="font-weight: 600;" href="{{route('vendor.setting',$vendor->id)}}">{{$vendor->name}}</a></span>
+                                            <br>
                                             <span>{{$vendor->email}}</span>
                                         </td>
 
-                                        <td>{{$total_products}}/{{$total_variants}}</td>
-                                        <td>{{$pending_products}}/{{$total_pending_variants}}</td>
-                                        <td>{{$changes_pending_products}}/{{$total_changes_pending_variants}}</td>
-                                        <td>{{$approved_products}}/{{$total_approved_variants}}</td>
-                                        <td>{{$deny_products}}/{{$total_deny_variants}}</td>
-                                        <td>{{$shopify_pushed_products}}/{{$total_shopify_pushed_variants}}</td>
-                                        <td>{{$shopify_pending_products}}/{{$total_shopify_pending_variants}}</td>
-                                        <td>{{$shopify_inprogress_products}}/{{$total_shopify_inprogress_variants}}</td>
-                                        <td>{{$shopify_failed_products}}/{{$total_shopify_failed_variants}}</td>
+
+                                        {{-- <td>{{$vendor->total_products}}/{{$vendor->total_variants}}</td>
+                                        <td>{{$vendor->pending_products}}/{{$vendor->total_pending_products_variants}}</td>
+                                        <td>{{$vendor->changes_pending_products}}/{{$vendor->total_changes_pending_products_variants}}</td>
+                                        <td>{{$vendor->approved_products}}/{{$vendor->total_approved_products_variants}}</td>
+                                        <td>{{$vendor->deny_products}}/{{$vendor->total_deny_products_variants}}</td>
+                                        <td>{{$vendor->shopify_pushed_products}}/{{$vendor->total_shopify_pushed_products_variants}}</td>
+                                        <td>{{$vendor->shopify_pending_products}}/{{$vendor->total_shopify_pending_products_variants}}</td>
+                                        <td>{{$vendor->shopify_inprogress_products}}/{{$vendor->total_shopify_inprogress_products_variants}}</td>
+                                        <td>{{$vendor->shopify_failed_products}}/{{$vendor->total_shopify_failed_products_variants}}</td> --}}
+
+
+                                        <td>{{$vendor->total_products}}</td>
+                                        <td>{{$vendor->pending_products}}</td>
+                                        <td>{{$vendor->changes_pending_products}}</td>
+                                        <td>{{$vendor->approved_products}}</td>
+                                        <td>{{$vendor->deny_products}}</td>
+                                        <td>{{$vendor->shopify_pushed_products}}</td>
+                                        <td>{{$vendor->shopify_pending_products}}</td>
+                                        <td>{{$vendor->shopify_inprogress_products}}</td>
+                                        <td>{{$vendor->shopify_failed_products}}</td>
+
+
                                         <td><input type="text" class="float-number" id="dis_{{$vendor->id}}" value="{{$vendor->vendor_discount}}"><button onclick="updateDiscount({{$vendor->id}})">Save</button></td>
                                         <td class="icon-action">
                   <span class="form-switch">
@@ -138,11 +105,11 @@
                                         <td><span class="@if($vendor->status=='Active') {{'en-recovered'}} @else {{'en-dismissed'}} @endif"></span> {{$vendor->status}}</td>
 
                                         @php
-                                        $json_url=\Illuminate\Support\Facades\DB::table('cron_json_url')->where('vendor_id',$vendor->id)->first();
+                                            $json_url=\Illuminate\Support\Facades\DB::table('cron_json_url')->where('vendor_id',$vendor->id)->first();
                                         @endphp
                                         <td class="icon-action">
                                             @if($json_url)
-                                            <a href="{{route('sync.from.api',$vendor->id)}}" style="font-size: 10px;color:white;" class="btn btn-primary btn-sm">Sync from Api</a>
+                                                <a href="{{route('sync.from.api',$vendor->id)}}" style="font-size: 10px;color:white;" class="btn btn-primary btn-sm">Sync from Api</a>
                                             @endif
                                             <a  href="{{route('vendor.setting',$vendor->id)}}"><i class="bi bi-eye"></i></a>
                                             <span class="form-switch">
@@ -153,6 +120,9 @@
                                 @endforeach
                                 </tbody>
                             </table>
+                            <nav class="mainpg timer-nav">
+                                {{ $vendors->links( "pagination::bootstrap-4") }}
+                            </nav>
                         </div>
                         <!-- End Bordered Table -->
                     </div>

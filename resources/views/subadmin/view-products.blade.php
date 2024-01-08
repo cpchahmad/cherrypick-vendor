@@ -73,7 +73,7 @@
                             <td>@if($row->status=='1') <span class="en-recovered"></span>{{'Approved'}}@elseif($row->status=='2') <span class="en-in-progress"></span>{{'Changes Pending'}} @elseif($row->status=='3') <span class="en-dismissed"></span>{{'Deny'}} @else <span class="en-dismissed"></span>{{'Pending'}} @endif</td>
                             <td class="icon-action">
                                 <a href="{{route('edit-product',$row->id)}}" title="Edit Product"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>
-                                <a title="Edit Variant" href="{{route('edit-variant',$row->id)}}"><span><img style="width:20px;" src="{{url('subadmin/assets/img/Edit-Variant.png')}}" alt=""></span></a>
+{{--                                <a title="Edit Variant" href="{{route('edit-variant',$row->id)}}"><span><img style="width:20px;" src="{{url('subadmin/assets/img/Edit-Variant.png')}}" alt=""></span></a>--}}
 <!--                                <a href="#verticalycentered" id='verticalycentered ' data-bs-toggle="modal"><i class="bi bi-trash"></i></a>-->
                                 <a href="{{url('delete-product')}}/{{$row->id}}" onclick="return confirm('Are you sure you want to delete this product?');"><i class="bi bi-trash"></i></a>
                             </td>

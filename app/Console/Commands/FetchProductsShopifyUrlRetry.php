@@ -108,6 +108,8 @@ class FetchProductsShopifyUrlRetry extends Command
                                                         $total_products = $total_products + count($product);
                                                         $vendor_data->total_products = $total_products;
                                                         $vendor_data->save();
+                                                    }else{
+                                                        break;
                                                     }
 
                                                 }

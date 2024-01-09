@@ -61,7 +61,7 @@ class FetchProductsShopifyUrlRetry extends Command
 
         $vendor_data=VendorUrl::where('status','In-Progress')->first();
         if ($vendor_data && $vendor_data->updated_at) {
-            $thirtyMinutesAgo = now()->subMinutes(30); // Get the current time and subtract 30 minutes
+            $thirtyMinutesAgo = now()->subMinutes(60); // Get the current time and subtract 30 minutes
             if ($vendor_data->updated_at->lt($thirtyMinutesAgo)) {
 
                         $vid = $vendor_data->vendor_id;

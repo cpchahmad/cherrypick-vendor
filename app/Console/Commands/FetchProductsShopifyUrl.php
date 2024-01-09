@@ -93,6 +93,7 @@ class FetchProductsShopifyUrl extends Command
                                         $data = collect($arr['products']);
 
 
+
                                         $date = date('Y-m-d');
                                         //$date='2023-06-24';
 
@@ -100,12 +101,14 @@ class FetchProductsShopifyUrl extends Command
                                             return Str::startsWith($q['updated_at'], $date);
                                         });
 
+
                                         if (sizeof($product) > 0) {
                                             $this->saveStoreFetchProductsFromJson($product, $vid, '', $vendor_data->log_id);
-
                                             $total_products = $total_products + count($product);
                                             $vendor_data->total_products = $total_products;
                                             $vendor_data->save();
+                                        }else{
+                                            break;
                                         }
 
                                     }

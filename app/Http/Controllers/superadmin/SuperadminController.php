@@ -2698,7 +2698,7 @@ class SuperadminController extends Controller
    ///Fetch product from url and store in db
    public function fetchProductUrl(Request $request)
    {
-   //echo "<pre>"; print_r($request->all()); die;
+
 
 	   set_time_limit(0);
 	   $request->validate([
@@ -2730,7 +2730,6 @@ class SuperadminController extends Controller
 			$vid=$store->id;
 		}
 
-
 		if(sizeof($check) == 0){
 		DB::table('cron_json_url')->insert(['vendor_id' =>$vid , 'url' => $request->url,'type'=>'fetch_from_url']);
 
@@ -2761,7 +2760,7 @@ class SuperadminController extends Controller
 				if(count($arr['products']) < 250)
 				{
 					$this->saveStoreFetchProductsFromJson($arr['products'],$vid,$tag_url);
-					return back()->with('success','Product imported successfully');
+//					return back()->with('success','Product imported successfully');
 				}
 				else
 				{
@@ -2773,12 +2772,13 @@ class SuperadminController extends Controller
 
 
 
-       $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
-       foreach ($delete_products as $delete_product){
+       $delete_products = Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available', 0)->pluck('id')->toArray();
+       foreach ($delete_products as $delete_product_id) {
 
-           ProductInfo::where('product_id',$delete_product->id)->delete();
-           $delete_product->delete();
+           ProductInfo::where('product_id', $delete_product_id)->delete();
+           Product::where('id', $delete_product_id)->delete();
        }
+
 
        $setting=Setting::first();
        if($setting){
@@ -2792,19 +2792,23 @@ class SuperadminController extends Controller
            $SHOP_URL = 'cityshop-company-store.myshopify.com';
        }
 
-       $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->get();
-       $update_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',1)->get();
+       $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->pluck('shopify_id')->toArray();
+       $update_products = Product::where('vendor', $vid)
+           ->whereNotNull('shopify_id')
+           ->where('is_update_price_inventory', 1)
+           ->select('id', 'shopify_id')
+           ->get();
 
 
        $data['product']=array(
            "status" =>'draft',
        );
 
-       foreach ($draft_products as $draft_product){
+       foreach ($draft_products as $draft_product_id){
 
 
 
-           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
+           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product_id.json";
            $curl = curl_init();
            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
            $headers = array(
@@ -2912,7 +2916,7 @@ class SuperadminController extends Controller
        }
 
 
-       Product::where('vendor',$vid)->update(['is_updated_by_url'=>0]);
+       Product::where('vendor',$vid)->update(['is_updated_by_url'=>0,'is_update_price_inventory'=>0]);
 
 
    }
@@ -3203,10 +3207,15 @@ class SuperadminController extends Controller
                        $pricing_weight = max($grams, $product_type->base_weight);
                    }
 
-
+                   $is_updated_price_inventory=0;
                    $product_info = ProductInfo::where('product_id', $product_check->id)->where('sku', $row['sku'])->first();
                    if ($product_info == null) {
+                       $is_updated_price_inventory=1;
                        $product_info = new ProductInfo;
+                   }else{
+                       if($stock!=$product_info->stock || $row['price']!=$product_info->base_price){
+                           $is_updated_price_inventory=1;
+                       }
                    }
                    $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $row['price'], $pricing_weight);
                    $product_info->product_id = $product_check->id;
@@ -3227,6 +3236,8 @@ class SuperadminController extends Controller
                    $product_info->vendor_id = $store_id;
                    $product_info->dimensions = '0-0-0';
                    $product_info->save();
+                   $product_check->is_update_price_inventory=$is_updated_price_inventory;
+                   $product_check->save();
                }
                if (count($row['media_gallery_entries']) > 0) {
                    foreach ($row['media_gallery_entries'] as $img_val) {
@@ -3249,11 +3260,10 @@ class SuperadminController extends Controller
 
        }
 
-       $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
-       foreach ($delete_products as $delete_product){
-
-           ProductInfo::where('product_id',$delete_product->id)->delete();
-           $delete_product->delete();
+       $delete_products=Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->pluck('id')->toArray();
+       foreach ($delete_products as $delete_product_id) {
+           ProductInfo::where('product_id', $delete_product_id)->delete();
+           Product::where('id', $delete_product_id)->delete();
        }
 
        $setting=Setting::first();
@@ -3268,19 +3278,22 @@ class SuperadminController extends Controller
            $SHOP_URL = 'cityshop-company-store.myshopify.com';
        }
 
-       $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->get();
-       $update_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',1)->get();
-
+       $draft_products=Product::where('vendor',$vid)->whereNotNull('shopify_id')->where('is_updated_by_url',0)->pluck('shopify_id')->toArray();
+       $update_products = Product::where('vendor', $vid)
+           ->whereNotNull('shopify_id')
+           ->where('is_update_price_inventory', 1)
+           ->select('id', 'shopify_id')
+           ->get();
 
        $data['product']=array(
            "status" =>'draft',
        );
 
-       foreach ($draft_products as $draft_product){
+       foreach ($draft_products as $draft_product_id){
 
 
 
-           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
+           $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product_id.json";
            $curl = curl_init();
            curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
            $headers = array(
@@ -3387,7 +3400,7 @@ class SuperadminController extends Controller
        }
 
 
-       Product::where('vendor',$vid)->update(['is_updated_by_url'=>0]);
+       Product::where('vendor',$vid)->update(['is_updated_by_url'=>0,'is_update_price_inventory'=>0]);
 
 
    }
@@ -3934,7 +3947,7 @@ class SuperadminController extends Controller
                         }
                     }
                 }
-
+                $is_updated_price_inventory=0;
                 foreach ($row['variants'] as $var) {
 
                     $variant_grams = ($var['grams'] > 0) ? $var['grams'] : $grams;
@@ -3999,7 +4012,7 @@ class SuperadminController extends Controller
                     }
                     if (!$check_info) {
 
-
+                        $is_updated_price_inventory=1;
                         $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
                         $product_info = new ProductInfo;
                         $product_info->product_id = $product_id;
@@ -4041,6 +4054,15 @@ class SuperadminController extends Controller
                         if ($check_info->manual_weight == 1) {
                             $pricing_weight = $check_info->pricing_weight;
                         }
+                    if($var['available']==true){
+                        $check_available=1;
+                    }else{
+                        $check_available=0;
+                    }
+                        if($check_available!=$check_info->stock || $var['price']!=$check_info->base_price){
+                            $is_updated_price_inventory=1;
+                        }
+
                         $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $var['price'], $pricing_weight);
                         $info_id = $check_info->id;
                         $info['price'] = $prices['inr'];
@@ -4076,6 +4098,8 @@ class SuperadminController extends Controller
                         ProductInfo::where('id', $info_id)->update($info);
                     }
                 }
+                $update_data['is_update_price_inventory']=$is_updated_price_inventory;
+                Product::where('id',$product_check->id)->update($update_data);
                 if ($i > 1) {
                     Product::where('id', $product_id)->update(['is_variants' => 1]);
                 }

@@ -54,6 +54,8 @@
                                         <th scope="col" style="background-color: #E0E0E0;">Start Time</th>
                                         <th scope="col" style="background-color: #E0E0E0;">End Time</th>
                                         <th scope="col" style="background-color: #E0E0E0;">Total Products</th>
+                                        <th scope="col" style="background-color: #E0E0E0;">Draft Products</th>
+                                        <th scope="col" style="background-color: #E0E0E0;">Update Products</th>
                                         <th scope="col">Status</th>
 
                                     </tr>
@@ -73,6 +75,8 @@
                                                 <td>{{$vendor_log->start_time}}</td>
                                                 <td>{{$vendor_log->end_time}}</td>
                                                 <td>{{$vendor_log->total_products}}</td>
+                                                <td>{{$vendor_log->total_draft_products}}</td>
+                                                <td>{{$vendor_log->total_update_products}}</td>
                                                 <td>
                                 <span class="
                                     @if($vendor_log->status == 'Complete') badge bg-success

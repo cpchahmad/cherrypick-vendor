@@ -286,6 +286,7 @@ class ProductsSyncFromApi implements ShouldQueue
                                 $product->is_updated_by_url = 1;
                                 $product->tags = $tags;
                                 $product->is_available = 1;
+                                $product->is_update_price_inventory = 1;
                                 $product->product_type_id = $product_type_id;
                                 $product->save();
                                 $product_id = $product->id;
@@ -385,10 +386,15 @@ class ProductsSyncFromApi implements ShouldQueue
                                     $pricing_weight = max($grams, $product_type->base_weight);
                                 }
 
-
+                                $is_updated_price_inventory=0;
                                 $product_info = ProductInfo::where('product_id', $product_check->id)->where('sku', $row['sku'])->first();
                                 if ($product_info == null) {
+                                    $is_updated_price_inventory=1;
                                     $product_info = new ProductInfo;
+                                }else{
+                                    if($stock!=$product_info->stock || $row['price']!=$product_info->base_price){
+                                        $is_updated_price_inventory=1;
+                                    }
                                 }
                                 $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $row['price'], $pricing_weight);
                                 $product_info->product_id = $product_check->id;
@@ -410,6 +416,8 @@ class ProductsSyncFromApi implements ShouldQueue
                                 $product_info->dimensions = '0-0-0';
                                 $product_info->save();
 
+                                $product_check->is_update_price_inventory=$is_updated_price_inventory;
+                                $product_check->save();
 
                             }
                             if (count($row['media_gallery_entries']) > 0) {
@@ -435,11 +443,10 @@ class ProductsSyncFromApi implements ShouldQueue
                 }
 
                 if ($flag == 1) {
-                    $delete_products = Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->get();
-                    foreach ($delete_products as $delete_product) {
-
-                        ProductInfo::where('product_id', $delete_product->id)->delete();
-                        $delete_product->delete();
+                    $delete_products = Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available',0)->pluck('id')->toArray();
+                    foreach ($delete_products as $delete_product_id) {
+                        ProductInfo::where('product_id', $delete_product_id)->delete();
+                        Product::where('id', $delete_product_id)->delete();
                     }
                     $setting = Setting::first();
                     if ($setting) {
@@ -453,18 +460,21 @@ class ProductsSyncFromApi implements ShouldQueue
                         $SHOP_URL = 'cityshop-company-store.myshopify.com';
                     }
 
-                    $draft_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 0)->get();
-                    $update_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 1)->get();
-
+                    $draft_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 0)->pluck('shopify_id')->toArray();
+                    $update_products = Product::where('vendor', $vid)
+                        ->whereNotNull('shopify_id')
+                        ->where('is_update_price_inventory', 1)
+                        ->select('id', 'shopify_id')
+                        ->get();
 
                     $data['product'] = array(
                         "status" => 'draft',
                     );
 
-                    foreach ($draft_products as $draft_product) {
+                    foreach ($draft_products as $draft_product_id) {
 
 
-                        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
+                        $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product_id.json";
                         $curl = curl_init();
                         curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
                         $headers = array(
@@ -587,7 +597,7 @@ class ProductsSyncFromApi implements ShouldQueue
                     }
 
 
-                    Product::where('vendor', $vid)->update(['is_updated_by_url' => 0]);
+                    Product::where('vendor', $vid)->update(['is_updated_by_url' => 0,'is_update_price_inventory'=>0]);
 
 
                     $product_log_ids = ProductLog::where('log_id', $log->id)->pluck('product_id')->toArray();

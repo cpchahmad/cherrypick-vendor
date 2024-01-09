@@ -131,7 +131,6 @@ class FetchProductsShopifyUrl extends Command
                         }
                         elseif ($cron_url->type == 'fetch_from_api') {
 
-
                             if ($cron_url->api_link) {
 
                                 try {
@@ -308,6 +307,7 @@ class FetchProductsShopifyUrl extends Command
                                                 $product->tags = $tags;
                                                 $product->is_available = 1;
                                                 $product->product_type_id = $product_type_id;
+                                                $product->is_update_price_inventory = 1;
                                                 $product->save();
                                                 $product_id = $product->id;
 
@@ -358,7 +358,8 @@ class FetchProductsShopifyUrl extends Command
                                                 $product_info->dimensions = '0-0-0';
                                                 $product_info->save();
 
-                                            } else {
+                                            }
+                                            else {
 
 
                                                 $product_check->title = $title;
@@ -404,11 +405,17 @@ class FetchProductsShopifyUrl extends Command
                                                     $pricing_weight = max($grams, $product_type->base_weight);
                                                 }
 
-
+                                                $is_updated_price_inventory=0;
                                                 $product_info = ProductInfo::where('product_id', $product_check->id)->where('sku', $row['sku'])->first();
                                                 if ($product_info == null) {
+                                                    $is_updated_price_inventory=1;
                                                     $product_info = new ProductInfo;
+                                                }else{
+                                                    if($stock!=$product_info->stock || $row['price']!=$product_info->base_price){
+                                                        $is_updated_price_inventory=1;
+                                                    }
                                                 }
+
                                                 $prices = Helpers::calc_price_fetched_products_by_vendor($vid, $row['price'], $pricing_weight);
                                                 $product_info->product_id = $product_check->id;
                                                 $product_info->sku = $row['sku'];
@@ -429,6 +436,9 @@ class FetchProductsShopifyUrl extends Command
                                                 $product_info->dimensions = '0-0-0';
                                                 $product_info->save();
 
+
+                                                $product_check->is_update_price_inventory=$is_updated_price_inventory;
+                                                $product_check->save();
 
                                             }
                                             if (count($row['media_gallery_entries']) > 0) {
@@ -469,11 +479,11 @@ class FetchProductsShopifyUrl extends Command
 
                         }
 
-                        $delete_products = Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available', 0)->get();
-                        foreach ($delete_products as $delete_product) {
+                        $delete_products = Product::where('vendor', $vid)->whereNull('shopify_id')->where('is_available', 0)->pluck('id')->toArray();
+                        foreach ($delete_products as $delete_product_id) {
 
-                            ProductInfo::where('product_id', $delete_product->id)->delete();
-                            $delete_product->delete();
+                            ProductInfo::where('product_id', $delete_product_id)->delete();
+                            Product::where('id', $delete_product_id)->delete();
                         }
 
 
@@ -489,18 +499,24 @@ class FetchProductsShopifyUrl extends Command
                             $SHOP_URL = 'cityshop-company-store.myshopify.com';
                         }
 
-                        $draft_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 0)->get();
-                        $update_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 1)->get();
+                        $draft_products = Product::where('vendor', $vid)->whereNotNull('shopify_id')->where('is_updated_by_url', 0)->pluck('shopify_id')->toArray();
+
+                        $update_products = Product::where('vendor', $vid)
+                            ->whereNotNull('shopify_id')
+                            ->where('is_update_price_inventory', 1)
+                            ->select('id', 'shopify_id')
+                            ->get();
+
 
 
                         $data['product'] = array(
                             "status" => 'draft',
                         );
+                        $vendor_data->fetch_from_api=1;
+                        $vendor_data->save();
+                        foreach ($draft_products as $draft_product_id) {
 
-                        foreach ($draft_products as $draft_product) {
-
-
-                            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product->shopify_id.json";
+                            $SHOPIFY_API = "https://$API_KEY:$PASSWORD@$SHOP_URL/admin/api/2022-10/products/$draft_product_id.json";
                             $curl = curl_init();
                             curl_setopt($curl, CURLOPT_URL, $SHOPIFY_API);
                             $headers = array(
@@ -518,6 +534,8 @@ class FetchProductsShopifyUrl extends Command
 
                             $response = curl_exec($curl);
                             curl_close($curl);
+                            $vendor_data->total_draft_products = $vendor_data->total_draft_products + 1;
+                            $vendor_data->save();
                         }
 
                         foreach ($update_products as $update_product) {
@@ -617,11 +635,12 @@ class FetchProductsShopifyUrl extends Command
                                 curl_close($curl);
                             }
 
-
+                            $vendor_data->total_update_products = $vendor_data->total_update_products + 1;
+                            $vendor_data->save();
                         }
 
 
-                        Product::where('vendor', $vid)->update(['is_updated_by_url' => 0]);
+                        Product::where('vendor', $vid)->update(['is_updated_by_url' => 0,'is_update_price_inventory'=>0]);
 
                         if ($is_error == 0) {
                             $product_log_ids = ProductLog::where('log_id', $vendor_data->log_id)->pluck('product_id')->toArray();
@@ -677,32 +696,32 @@ class FetchProductsShopifyUrl extends Command
 
             $weight_available=0;
             foreach ($row['options'] as $option) {
-                    foreach ($option['values'] as $value) {
-                        if (strpos($value, 'Gms') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'gms') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'kg') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'Grams') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'Gram') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'Kgs') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'G') !== false) {
-                            $weight_available = 1;
-                        }
-                        if (strpos($value, 'KG') !== false) {
-                            $weight_available = 1;
-                        }
+                foreach ($option['values'] as $value) {
+                    if (strpos($value, 'Gms') !== false) {
+                        $weight_available = 1;
                     }
+                    if (strpos($value, 'gms') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'kg') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'Grams') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'Gram') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'Kgs') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'G') !== false) {
+                        $weight_available = 1;
+                    }
+                    if (strpos($value, 'KG') !== false) {
+                        $weight_available = 1;
+                    }
+                }
 
             }
 
@@ -774,6 +793,7 @@ class FetchProductsShopifyUrl extends Command
                 $product->product_type_id=$product_type->id;
                 $product->is_updated_by_url=1;
                 $product->is_available=1;
+                $product->is_update_price_inventory=1;
                 $product->save();
                 $product_id=$product->id;
 
@@ -997,6 +1017,7 @@ class FetchProductsShopifyUrl extends Command
                     }
                 }
 
+                $is_updated_price_inventory=0;
                 foreach($row['variants'] as $var)
                 {
                     $i++;
@@ -1069,6 +1090,8 @@ class FetchProductsShopifyUrl extends Command
 
                     if (!$check_info)
                     {
+                        $is_updated_price_inventory=1;
+
                         $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
                         $product_info = new ProductInfo;
                         $product_info->product_id = $product_id;
@@ -1110,6 +1133,14 @@ class FetchProductsShopifyUrl extends Command
                         if($check_info->manual_weight==1){
                             $pricing_weight=$check_info->pricing_weight;
                         }
+                        if($var['available']==true){
+                            $check_available=1;
+                        }else{
+                            $check_available=0;
+                        }
+                        if($check_available!=$check_info->stock || $var['price']!=$check_info->base_price){
+                            $is_updated_price_inventory=1;
+                        }
 
                         $prices=Helpers::calc_price_fetched_products_by_vendor($vid,$var['price'],$pricing_weight);
                         $info_id=$check_info->id;
@@ -1144,7 +1175,10 @@ class FetchProductsShopifyUrl extends Command
                         $info['varient2_value']=$var['option3'];
                         ProductInfo::where('id', $info_id)->update($info);
                     }
+
                 }
+                $update_data['is_update_price_inventory']=$is_updated_price_inventory;
+                Product::where('id',$product_check->id)->update($update_data);
                 if($i>1)
                 {
                     Product::where('id', $product_id)->update(['is_variants' => 1]);

@@ -44,6 +44,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('fetch:product-shopifyurl-main')->daily()->withoutOverlapping();
         $schedule->command('fetch:product-shopifyurl')->everyMinute();
 
+        $schedule->command('fetch:product-shopifyurl-retry')->everyFiveMinutes()->withoutOverlapping();
+
         $schedule->command('update:priceConversionRate')->everyMinute();
 
 
